@@ -95,7 +95,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Post PR Summary Comment
-        uses: mshick/add-pr-comment@v2  # PR에 요약을 댓글로 추가
+        uses: mshick/add-pr-comment@v2  # PR에 요약을 봇 댓글로 추가
         with:
           message: ${{ steps.store.outputs.comment }}  # 준비된 댓글 메시지 사용
           repo-token: ${{ secrets.GITHUB_TOKEN }}  # GitHub 토큰 사용
