@@ -3,7 +3,7 @@ name: Run Tests Before Merging
 on:
   pull_request:
     branches:
-      - main
+      - dev
 
 jobs:
   test:
