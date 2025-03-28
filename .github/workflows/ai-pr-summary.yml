@@ -2,6 +2,8 @@ name: Gemini PR Summary and Explanation
 
 on:
   pull_request:
+    branches:
+    - dev
     types: [opened, synchronize]  # PR이 열리거나 업데이트될 때 트리거됨
 
 jobs:
