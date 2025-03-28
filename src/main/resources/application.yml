@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: playOn
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  # h2
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  datasource:
+    url: jdbc:h2:./db_dev;MODE=MySQL
+    driverClassName: org.h2.Driver
+    username: sa
+    password: ""
+
+  # JPA
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+
+ # 로깅
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.ll.playon: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
