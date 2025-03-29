@@ -39,19 +39,33 @@ public class BaseInitData {
     public void makeSampleUsers() {
         if(memberRepository.count() != 0) return;
 
-        Member sampleMember = Member.builder()
-                .steamId(123L).username("sampleUser").lastLoginAt(LocalDateTime.now()).build();
-        memberRepository.save(sampleMember);
+        Member sampleMember1 = Member.builder()
+                .steamId(123L).username("sampleUser1").lastLoginAt(LocalDateTime.now()).build();
+        memberRepository.save(sampleMember1);
 
         List<Long> gameAppIds = Arrays.asList(2246340L, 2680010L, 2456740L);
         List<MemberSteamData> games = new ArrayList<>();
         for (Long appId : gameAppIds) {
             MemberSteamData game = MemberSteamData.builder()
-                    .appId(appId).member(sampleMember).build();
+                    .appId(appId).member(sampleMember1).build();
             games.add(game);
         }
-        sampleMember.getGames().addAll(games);
+        sampleMember1.getGames().addAll(games);
 
+        memberSteamDataRepository.saveAll(games);
+
+        Member sampleMember2 = Member.builder()
+                .steamId(456L).username("sampleUser2").lastLoginAt(LocalDateTime.now()).build();
+        memberRepository.save(sampleMember2);
+
+        sampleMember2.getGames().addAll(games);
+        memberSteamDataRepository.saveAll(games);
+
+        Member sampleMember3 = Member.builder()
+                .steamId(789L).username("sampleUser3").lastLoginAt(LocalDateTime.now()).build();
+        memberRepository.save(sampleMember3);
+
+        sampleMember3.getGames().addAll(games);
         memberSteamDataRepository.saveAll(games);
     }
 }
