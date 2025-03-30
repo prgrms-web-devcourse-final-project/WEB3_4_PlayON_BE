@@ -1,7 +1,7 @@
-package com.ll.playon.domain.guild.member.entity;
+package com.ll.playon.domain.guild.guildMember.entity;
 
 import com.ll.playon.domain.guild.guild.entity.Guild;
-import com.ll.playon.domain.guild.member.enums.GuildRole;
+import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.*;
