@@ -3,9 +3,12 @@ package com.ll.playon.domain.member.entity;
 import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Entity
@@ -33,6 +36,13 @@ public class Member extends BaseTime {
     @Builder.Default
     private List<MemberSteamData> games = new ArrayList<>();
 
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    @Column(unique = true)
+    private String apiKey;
+
     // TODO : 회원가입 확정 안되서 일단 기본값 처리
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -48,4 +58,33 @@ public class Member extends BaseTime {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private PreferredGenres preferred_genres = PreferredGenres.RPG;
+
+    public Member(long id, String username, Role role) {
+        super();
+        this.setId(id);
+        this.username = username;
+        this.role = role;
+    }
+
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return getAuthoritiesAsString()
+                .stream()
+                .map(SimpleGrantedAuthority::new)
+                .toList();
+    }
+
+    private List<String> getAuthoritiesAsString() {
+        List<String> authorities = new ArrayList<>();
+
+        if (isAdmin()) authorities.add("ROLE_ADMIN");
+
+        return authorities;
+    }
+
+    private boolean isAdmin() {
+        return this.role == Role.ADMIN;
+    }
+
+
+
 }
