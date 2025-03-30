@@ -1,12 +1,12 @@
 package com.ll.playon.domain.member.controller;
 
 import com.ll.playon.domain.member.service.MemberService;
+import com.ll.playon.global.security.UserContext;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class SteamAuthController {
     private final RestTemplate restTemplate;
     private final MemberService memberService;
+    private final UserContext userContext;
 
     private static final String REALM_URL = "http://localhost:8080"; // TODO : 배포시 해당 도메인으로 수정
     private static final String STEAM_OPENID_URL = "https://steamcommunity.com/openid/login";
@@ -81,5 +82,18 @@ public class SteamAuthController {
             return claimedId.substring(claimedId.lastIndexOf("/") + 1);
         }
         return "Unknown";
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃")
+    public ResponseEntity<Void> logout() {
+
+        userContext.deleteCookie("accessToken");
+        userContext.deleteCookie("apiKey");
+        SecurityContextHolder.clearContext();
+
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
     }
 }
