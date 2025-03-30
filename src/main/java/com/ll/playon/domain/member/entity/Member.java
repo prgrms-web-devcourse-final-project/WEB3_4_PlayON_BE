@@ -1,5 +1,9 @@
 package com.ll.playon.domain.member.entity;
 
+import com.ll.playon.domain.member.entity.enums.Gender;
+import com.ll.playon.domain.member.entity.enums.PlayStyle;
+import com.ll.playon.domain.member.entity.enums.PreferredGenres;
+import com.ll.playon.domain.member.entity.enums.Role;
 import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.*;
 import lombok.*;
@@ -67,6 +71,12 @@ public class Member extends BaseTime {
         this.role = role;
     }
 
+    public Member(Long id, String username) {
+        super();
+        this.setId(id);
+        this.username = username;
+    }
+
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return getAuthoritiesAsString()
                 .stream()
@@ -85,7 +95,4 @@ public class Member extends BaseTime {
     private boolean isAdmin() {
         return this.role == Role.ADMIN;
     }
-
-
-
 }

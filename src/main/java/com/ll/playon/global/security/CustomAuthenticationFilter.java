@@ -1,6 +1,6 @@
 package com.ll.playon.global.security;
 
-import com.ll.playon.domain.member.MemberService;
+import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.domain.member.entity.Member;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

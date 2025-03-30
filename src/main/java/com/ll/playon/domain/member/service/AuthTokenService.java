@@ -1,7 +1,7 @@
-package com.ll.playon.domain.member;
+package com.ll.playon.domain.member.service;
 
 import com.ll.playon.domain.member.entity.Member;
-import com.ll.playon.domain.member.entity.Role;
+import com.ll.playon.domain.member.entity.enums.Role;
 import com.ll.playon.standard.util.Ut;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

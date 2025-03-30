@@ -1,8 +1,10 @@
-package com.ll.playon.domain.member;
+package com.ll.playon.domain.member.service;
 
+import com.ll.playon.domain.member.repository.MemberRepository;
+import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
-import com.ll.playon.domain.member.entity.Role;
+import com.ll.playon.domain.member.entity.enums.Role;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +23,8 @@ public class MemberService {
     private final SteamAPI steamAPI;
     private final MemberSteamDataRepository memberSteamDataRepository;
 
-    public Member findById(Long id){
-        // TODO : 예외 발생
-        return memberRepository.findById(id).get();
+    public Optional<Member> findById(Long id){
+        return memberRepository.findById(id);
     }
 
     public Optional<Member> findByApiKey(String apiKey) {

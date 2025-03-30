@@ -1,5 +1,6 @@
-package com.ll.playon.domain.member;
+package com.ll.playon.domain.member.controller;
 
+import com.ll.playon.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,4 +1,4 @@
-package com.ll.playon.domain.member;
+package com.ll.playon.domain.member.repository;
 
 import com.ll.playon.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
