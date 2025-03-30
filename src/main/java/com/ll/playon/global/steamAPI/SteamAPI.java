@@ -13,6 +13,7 @@ import java.util.Map;
 
 @Service
 public class SteamAPI {
+    // TODO : 스팀 API 장애 대응
 
     @Value("${custom.steam.apikey}")
     private String apikey;
