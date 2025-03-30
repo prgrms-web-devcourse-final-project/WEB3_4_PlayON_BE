@@ -41,6 +41,7 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 
 	// OpenAPI (Swagger) 추가
 	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.1"

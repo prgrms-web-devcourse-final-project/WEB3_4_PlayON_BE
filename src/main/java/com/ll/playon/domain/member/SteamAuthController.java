@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SteamAuthController {
     private final RestTemplate restTemplate;
+    private final MemberService memberService;
 
     private static final String REALM_URL = "http://localhost:8080"; // TODO : 배포시 해당 도메인으로 수정
     private static final String STEAM_OPENID_URL = "https://steamcommunity.com/openid/login";
@@ -58,7 +59,7 @@ public class SteamAuthController {
             String steamId = extractSteamId(params.get("openid.claimed_id"));
 
             System.out.println("[Steam OpenID] User ID: " + steamId); // 스팀 아이디 출력
-            // TODO : 로그인, 회원가입 로직
+            memberService.signupOrSignin(steamId);
 
             return ResponseEntity.ok("Steam OpenID authentication successful!"); // TODO : 응답 형식에 맞게 수정
         } else {
