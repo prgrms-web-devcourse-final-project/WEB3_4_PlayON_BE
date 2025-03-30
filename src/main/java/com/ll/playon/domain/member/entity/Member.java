@@ -29,6 +29,7 @@ public class Member extends BaseTime {
     @Builder.Default
     private boolean is_deleted = false;
 
+    @Setter
     private LocalDateTime lastLoginAt;
 
     @OneToMany(fetch = FetchType.LAZY)

@@ -8,6 +8,7 @@ import com.ll.playon.global.steamAPI.SteamAPI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -56,6 +57,8 @@ public class MemberService {
         } else {
             member = optionalMember.get();
         }
+        member.setLastLoginAt(LocalDateTime.now());
+        memberRepository.save(member);
 
         // 쿠키 세팅
         userContext.makeAuthCookies(member);
