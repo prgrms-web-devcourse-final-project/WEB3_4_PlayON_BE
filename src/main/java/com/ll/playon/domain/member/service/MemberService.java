@@ -5,6 +5,7 @@ import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
+import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
 import lombok.RequiredArgsConstructor;
@@ -47,17 +48,24 @@ public class MemberService {
         return new Member(id, username, role);
     }
 
-    public void signupOrSignin(String steamUserId) {
-        Long steamId = Long.valueOf(steamUserId);
-        Optional<Member> optionalMember = memberRepository.findBySteamId(steamId);
+    public void steamLogin(Long steamId) {
+        Member member = memberRepository.findBySteamId(steamId)
+                .orElseThrow(ErrorCode.USER_NOT_REGISTERED::throwServiceException);
 
-        // 새로운 회원을 생성하거나 기존 회원 조회
-        Member member;
-        if(optionalMember.isEmpty()) {
-            member = signup(steamId);
-        } else {
-            member = optionalMember.get();
+        handleSuccessfulLogin(member);
+    }
+
+    public void steamSignup(Long steamId) {
+        if (memberRepository.findBySteamId(steamId).isPresent()) {
+            throw ErrorCode.USER_ALREADY_REGISTERED.throwServiceException();
         }
+
+        Member member = signup(steamId);
+
+        handleSuccessfulLogin(member);
+    }
+
+    private void handleSuccessfulLogin(Member member) {
         member.setLastLoginAt(LocalDateTime.now());
         memberRepository.save(member);
 
@@ -67,6 +75,7 @@ public class MemberService {
         // 시큐리티 로그인
         userContext.setLogin(member);
     }
+
 
     private Member signup(Long steamId) {
         Map<String, String> profile = steamAPI.getUserProfile(steamId);

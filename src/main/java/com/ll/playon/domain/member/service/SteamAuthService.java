@@ -17,7 +17,7 @@ public class SteamAuthService {
     private final RestTemplate restTemplate;
     private final MemberService memberService;
 
-    public void validateSteamId(Map<String, String> params) {
+    public void validateSteamId(Map<String, String> params, String method) {
         String validationUrl = "https://steamcommunity.com/openid/login";
         String requestBody = buildValidationRequest(params);
 
@@ -29,8 +29,13 @@ public class SteamAuthService {
 
         if (response.getBody() != null && response.getBody().contains("is_valid:true")) {
             String steamId = extractSteamId(params.get("openid.claimed_id"));
+            Long steamUserId = Long.valueOf(steamId);
 
-            memberService.signupOrSignin(steamId); // TODO : 회원가입 로그인 프로세스에 맞게 수정
+            if(method.equals("login")) {
+                memberService.steamLogin(steamUserId);
+            } else {
+                memberService.steamSignup(steamUserId);
+            }
         } else {
             throw ErrorCode.AUTHORIZATION_FAILED.throwServiceException();
         }

@@ -26,13 +26,21 @@ public class SteamAuthController {
     private static final String STEAM_OPENID_URL = "https://steamcommunity.com/openid/login";
     private static final String RETURN_URL = REALM_URL +"/api/auth/steam/callback";
 
-    @GetMapping
-    @Operation(summary = "스팀 로그인 리다이렉트")
-    public RsData<Map<String, String>> redirectToSteam() {
+    @GetMapping("/login")
+    @Operation(summary = "로그인 : 스팀 로그인 리다이렉트")
+    public RsData<Map<String, String>> loginRedirectToSteam() {
+        return redirectToSteam("/login");
+    }
+    @GetMapping("/signup")
+    @Operation(summary = "회원가입 : 스팀 로그인 리다이렉트")
+    public RsData<Map<String, String>> signupRedirectToSteam() {
+        return redirectToSteam("/signup");
+    }
+    private RsData<Map<String, String>> redirectToSteam(String url) {
         String authUrl = STEAM_OPENID_URL + "?openid.ns=http://specs.openid.net/auth/2.0"
                 + "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
                 + "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
-                + "&openid.return_to=" + RETURN_URL
+                + "&openid.return_to=" + RETURN_URL + url
                 + "&openid.realm=" + REALM_URL
                 + "&openid.mode=checkid_setup";
 
@@ -42,14 +50,24 @@ public class SteamAuthController {
         return RsData.success(HttpStatus.OK, response);
     }
 
-    @GetMapping("/callback")
+
+    @GetMapping("/callback/login")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "스팀 인증 검증 및 회원가입, 로그인")
-    public void handleSteamCallback(@RequestParam Map<String, String> params) {
+    @Operation(summary = "스팀 인증 검증 및 로그인")
+    public void loginHandleSteamCallback(@RequestParam Map<String, String> params) {
+        handleSteamCallback(params, "login");
+    }
+    @GetMapping("/callback/siginup")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "스팀 인증 검증 및 회원가입")
+    public void signupHandleSteamCallback(@RequestParam Map<String, String> params) {
+        handleSteamCallback(params, "signup");
+    }
+    public void handleSteamCallback(@RequestParam Map<String, String> params, String method) {
         if (!params.containsKey("openid.mode") || !params.get("openid.mode").equals("id_res")) {
             throw ErrorCode.EXTERNAL_API_UNEXPECTED_REQUEST.throwServiceException();
         }
-        steamAuthService.validateSteamId(params);
+        steamAuthService.validateSteamId(params, method);
     }
 
     @PostMapping("/logout")
