@@ -9,6 +9,7 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -72,5 +73,7 @@ public class Guild extends BaseTime {
 
     public void softDelete() {
         this.isDeleted = true;
+        this.members.clear();
+        this.name = "DELETED_" + UUID.randomUUID();
     }
 }

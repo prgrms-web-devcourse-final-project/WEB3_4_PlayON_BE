@@ -96,6 +96,7 @@ public class GuildService {
         return role == GuildRole.LEADER || role == GuildRole.MANAGER;
     }
 
+    @Transactional
     public void deleteGuild(Long guildId) {
         Member actor = userContext.getActor();
 
