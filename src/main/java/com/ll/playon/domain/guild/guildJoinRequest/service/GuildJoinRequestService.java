@@ -2,13 +2,11 @@ package com.ll.playon.domain.guild.guildJoinRequest.service;
 
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
-import com.ll.playon.domain.guild.guildJoinRequest.dto.request.GuildJoinApproveRequest;
 import com.ll.playon.domain.guild.guildJoinRequest.dto.response.GuildJoinRequestResponse;
 import com.ll.playon.domain.guild.guildJoinRequest.entity.GuildJoinRequest;
 import com.ll.playon.domain.guild.guildJoinRequest.enums.ApprovalState;
 import com.ll.playon.domain.guild.guildJoinRequest.repository.GuildJoinRequestRepository;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
-import com.ll.playon.domain.member.MemberRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,16 +20,12 @@ import java.util.List;
 public class GuildJoinRequestService {
 
     private final GuildRepository guildRepository;
-    private final MemberRepository memberRepository;
     private final GuildJoinRequestRepository guildJoinRequestRepository;
 
     @Transactional
-    public void requestToJoinGuild(Long guildId, Long memberId) {
+    public void requestToJoinGuild(Long guildId, Member member) {
         Guild guild = guildRepository.findById(guildId)
                 .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
-
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
 
         boolean alreadyRequested = guildJoinRequestRepository
                 .existsByGuildAndMemberAndApprovalState(guild, member, ApprovalState.PENDING);
@@ -50,25 +44,22 @@ public class GuildJoinRequestService {
     }
 
     @Transactional
-    public void approveJoinRequest(Long guildId, Long requestId, GuildJoinApproveRequest requestDto) {
-        processJoinRequest(guildId, requestId, requestDto, ApprovalState.APPROVED);
+    public void approveJoinRequest(Long guildId, Long requestId, Member approver) {
+        processJoinRequest(guildId, requestId, approver, ApprovalState.APPROVED);
     }
 
     @Transactional
-    public void rejectJoinRequest(Long guildId, Long requestId, GuildJoinApproveRequest requestDto) {
-        processJoinRequest(guildId, requestId, requestDto, ApprovalState.REJECTED);
+    public void rejectJoinRequest(Long guildId, Long requestId, Member approver) {
+        processJoinRequest(guildId, requestId, approver, ApprovalState.REJECTED);
     }
 
-    private void processJoinRequest(Long guildId, Long requestId, GuildJoinApproveRequest requestDto, ApprovalState targetState) {
+    private void processJoinRequest(Long guildId, Long requestId, Member approver, ApprovalState targetState) {
         GuildJoinRequest joinRequest = guildJoinRequestRepository.findById(requestId)
                 .orElseThrow(() -> ErrorCode.GUILD_JOIN_REQUEST_NOT_FOUND.throwServiceException());
 
         if (!joinRequest.getGuild().getId().equals(guildId)) {
             throw ErrorCode.GUILD_ID_MISMATCH.throwServiceException();
         }
-
-        Member approver = memberRepository.findById(requestDto.approverId())
-                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
 
         boolean isAuthorized = joinRequest.getGuild().getMembers().stream()
                 .anyMatch(gm -> gm.getMember().equals(approver)
@@ -87,12 +78,9 @@ public class GuildJoinRequestService {
     }
 
     @Transactional(readOnly = true)
-    public List<GuildJoinRequestResponse> getPendingJoinRequests(Long guildId, Long viewerId) {
+    public List<GuildJoinRequestResponse> getPendingJoinRequests(Long guildId, Member viewer) {
         Guild guild = guildRepository.findById(guildId)
                 .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
-
-        Member viewer = memberRepository.findById(viewerId)
-                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
 
         boolean isAuthorized = guild.getMembers().stream()
                 .anyMatch(gm -> gm.getMember().equals(viewer)
@@ -110,4 +98,3 @@ public class GuildJoinRequestService {
                 .toList();
     }
 }
-

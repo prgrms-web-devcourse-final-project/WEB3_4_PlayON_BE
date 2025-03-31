@@ -1,12 +1,12 @@
 package com.ll.playon.domain.guild.guildJoinRequest.controller;
 
-import com.ll.playon.domain.guild.guildJoinRequest.dto.request.GuildJoinApproveRequest;
 import com.ll.playon.domain.guild.guildJoinRequest.dto.response.GuildJoinRequestResponse;
 import com.ll.playon.domain.guild.guildJoinRequest.service.GuildJoinRequestService;
+import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.response.RsData;
+import com.ll.playon.global.security.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,42 +17,39 @@ import java.util.List;
 public class GuildJoinRequestController {
 
     private final GuildJoinRequestService guildJoinRequestService;
+    private final UserContext userContext;
 
-    @PostMapping("/{guildId}/join/{memberId}")
-    public ResponseEntity<Void> joinRequest(
-            @PathVariable Long guildId,
-            @PathVariable Long memberId
-    ) {
-        guildJoinRequestService.requestToJoinGuild(guildId, memberId);
-        return ResponseEntity.ok().build();
+    @PostMapping("/{guildId}/join")
+    public RsData<String> joinRequest(@PathVariable Long guildId) {
+        Member actor = userContext.getActor();
+        guildJoinRequestService.requestToJoinGuild(guildId, actor);
+        return RsData.success(HttpStatus.OK, "가입 요청 완료");
     }
 
     @PostMapping("/{guildId}/join/{requestId}/approve")
-    public ResponseEntity<RsData<String>> approveRequest(
+    public RsData<String> approveRequest(
             @PathVariable Long guildId,
-            @PathVariable Long requestId,
-            @RequestBody GuildJoinApproveRequest request
+            @PathVariable Long requestId
     ) {
-        guildJoinRequestService.approveJoinRequest(guildId, requestId, request);
-        return ResponseEntity.ok(RsData.success(HttpStatus.OK, "가입이 승인되었습니다."));
+        Member actor = userContext.getActor();
+        guildJoinRequestService.approveJoinRequest(guildId, requestId, actor);
+        return RsData.success(HttpStatus.OK, "가입이 승인되었습니다.");
     }
 
     @PostMapping("/{guildId}/join/{requestId}/reject")
-    public ResponseEntity<RsData<String>> rejectRequest(
+    public RsData<String> rejectRequest(
             @PathVariable Long guildId,
-            @PathVariable Long requestId,
-            @RequestBody GuildJoinApproveRequest request
+            @PathVariable Long requestId
     ) {
-        guildJoinRequestService.rejectJoinRequest(guildId, requestId, request);
-        return ResponseEntity.ok(RsData.success(HttpStatus.OK, "가입 요청이 거절되었습니다."));
+        Member actor = userContext.getActor();
+        guildJoinRequestService.rejectJoinRequest(guildId, requestId, actor);
+        return RsData.success(HttpStatus.OK, "가입 요청이 거절되었습니다.");
     }
 
     @GetMapping("/{guildId}/join/requests")
-    public ResponseEntity<RsData<List<GuildJoinRequestResponse>>> getJoinRequests(
-            @PathVariable Long guildId,
-            @RequestParam Long viewerId
-    ) {
-        List<GuildJoinRequestResponse> responses = guildJoinRequestService.getPendingJoinRequests(guildId, viewerId);
-        return ResponseEntity.ok(RsData.success(HttpStatus.OK, responses));
+    public RsData<List<GuildJoinRequestResponse>> getJoinRequests(@PathVariable Long guildId) {
+        Member actor = userContext.getActor();
+        List<GuildJoinRequestResponse> responses = guildJoinRequestService.getPendingJoinRequests(guildId, actor);
+        return RsData.success(HttpStatus.OK, responses);
     }
 }
