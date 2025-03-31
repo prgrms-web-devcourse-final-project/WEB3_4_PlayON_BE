@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum Gender {
+public enum GenderFilter {
     ALL("전체"),
     MALE_ONLY("남자만"),
     FEMALE_ONLY("여자만");
