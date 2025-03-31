@@ -69,4 +69,8 @@ public class Guild extends BaseTime {
     @OneToMany(mappedBy = "guild", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<GuildMember> members = new ArrayList<>();
+
+    public void softDelete() {
+        this.isDeleted = true;
+    }
 }

@@ -29,4 +29,11 @@ public class GuildController {
         PutGuildResponse response = guildService.updateGuild(guildId, request);
         return RsData.success(HttpStatus.OK, response);
     }
+
+    @DeleteMapping("/{guildId}")
+    public RsData<String> deleteGuild(@PathVariable Long guildId) {
+        guildService.deleteGuild(guildId);
+        return RsData.success(HttpStatus.OK, "ok");
+    }
+
 }

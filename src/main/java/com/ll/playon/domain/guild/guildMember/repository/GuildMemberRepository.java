@@ -12,4 +12,6 @@ import java.util.Optional;
 public interface GuildMemberRepository extends JpaRepository<GuildMember, Long> {
 
     Optional<GuildMember> findByGuildAndMember(Guild guild, Member actor);
+
+    long countByGuildId(Long guildId);
 }

@@ -95,4 +95,25 @@ public class GuildService {
     private boolean isManager(GuildRole role) {
         return role == GuildRole.LEADER || role == GuildRole.MANAGER;
     }
+
+    public void deleteGuild(Long guildId) {
+        Member actor = userContext.getActor();
+
+        Guild guild = guildRepository.findById(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
+                .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
+
+        if (guildMember.getGuildRole() != GuildRole.LEADER) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        long memberCount = guildMemberRepository.countByGuildId(guildId);
+        if(memberCount > 1) {
+            throw ErrorCode.GUILD_DELETE_NOT_ALLOWED.throwServiceException();
+        }
+
+        guild.softDelete();
+    }
 }
