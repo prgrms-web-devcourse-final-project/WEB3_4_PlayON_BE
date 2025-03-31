@@ -102,33 +102,28 @@ public class UserContext {
         return accessToken;
     }
 
+    // 요청을 보낸 사용자의 인증 정보를 가져와 해당 사용자를 조회, 시큐리티 내부에 인증된 사용자를 반환
     public Member getActor() {
-        // TODO : 실제 인증된 사용자 조회로 바꾸기
-        return memberService.findById(1L).get();
+        return Optional.ofNullable(
+                        SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                )
+                .map(Authentication::getPrincipal)
+                .filter(principal -> principal instanceof SecurityUser)
+                .map(principal -> (SecurityUser) principal)
+                .map(securityUser -> new Member(securityUser.getId(), securityUser.getUsername()))
+                .orElse(null);
     }
 
-//    // 요청을 보낸 사용자의 인증 정보를 가져와 해당 사용자를 조회, 시큐리티 내부에 인증된 사용자를 반환
-//    public Member getActor() {
-//        return Optional.ofNullable(
-//                        SecurityContextHolder
-//                                .getContext()
-//                                .getAuthentication()
-//                )
-//                .map(Authentication::getPrincipal)
-//                .filter(principal -> principal instanceof SecurityUser)
-//                .map(principal -> (SecurityUser) principal)
-//                .map(securityUser -> new Member(securityUser.getId(), securityUser.getUsername()))
-//                .orElse(null);
-//    }
-//
-//    // 요청을 보낸 사용자의 인증 정보를 가져와 실제 DB에 저장된 user 찾기
-//    public Optional<Member> findActor() {
-//        Member actor = getActor();
-//
-//        if (actor == null) {
-//            return Optional.empty();
-//        }
-//
-//        return memberService.findById(actor.getId());
-//    }
+    // 요청을 보낸 사용자의 인증 정보를 가져와 실제 DB에 저장된 user 찾기
+    public Optional<Member> findActor() {
+        Member actor = getActor();
+
+        if (actor == null) {
+            return Optional.empty();
+        }
+
+        return memberService.findById(actor.getId());
+    }
 }
