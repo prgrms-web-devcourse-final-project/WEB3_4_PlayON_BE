@@ -45,14 +45,6 @@ public class Guild extends BaseTime {
     @Column(name = "guild_img")
     private String guildImg;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private int level = 1;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private int experience = 0;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "party_style", nullable = false)
     private PartyStyle partyStyle;
