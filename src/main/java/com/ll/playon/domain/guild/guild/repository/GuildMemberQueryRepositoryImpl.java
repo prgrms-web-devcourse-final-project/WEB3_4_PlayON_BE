@@ -7,6 +7,9 @@ import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,11 +19,12 @@ import java.util.List;
 public class GuildMemberQueryRepositoryImpl implements GuildMemberQueryRepository {
     private final JPAQueryFactory queryFactory;
 
+
     @Override
-    public List<GuildMember> findTopByGuildOrderByRoleAndCreatedAt(Guild guild, int limit) {
+    public Page<GuildMember> findByGuildOrderByRoleAndCreatedAt(Guild guild, Pageable pageable) {
         QGuildMember gm = QGuildMember.guildMember;
 
-        return queryFactory
+        List<GuildMember> content = queryFactory
                 .selectFrom(gm)
                 .where(gm.guild.eq(guild))
                 .orderBy(
@@ -31,7 +35,16 @@ public class GuildMemberQueryRepositoryImpl implements GuildMemberQueryRepositor
                                 .asc(),
                         gm.createdAt.desc()
                 )
-                .limit(limit)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
+
+        long total = queryFactory
+                .select(gm.count())
+                .from(gm)
+                .where(gm.guild.eq(guild))
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total);
     }
 }

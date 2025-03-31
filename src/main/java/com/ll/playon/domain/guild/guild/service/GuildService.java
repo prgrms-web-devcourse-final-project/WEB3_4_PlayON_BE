@@ -11,11 +11,12 @@ import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
+import com.ll.playon.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -141,8 +142,7 @@ public class GuildService {
         return GuildDetailDto.from(guild, myRole);
     }
 
-
-    public List<GuildMemberDto> getGuildMemberPreview(Long guildId, int limit) {
+    public PageDto<GuildMemberDto> getGuildMembers(Long guildId, Pageable pageable) {
         Member actor = userContext.getActor();
 
         Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
@@ -151,11 +151,9 @@ public class GuildService {
         guildMemberRepository.findByGuildAndMember(guild, actor)
                 .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
 
-        List<GuildMember> members = guildMemberQueryRepository
-                .findTopByGuildOrderByRoleAndCreatedAt(guild, limit);
+        Page<GuildMember> page = guildMemberQueryRepository
+                .findByGuildOrderByRoleAndCreatedAt(guild, pageable);
 
-        return members.stream()
-                .map(GuildMemberDto::from)
-                .toList();
+        return new PageDto<>(page.map(GuildMemberDto::from));
     }
 }
