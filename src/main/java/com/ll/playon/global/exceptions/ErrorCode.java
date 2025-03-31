@@ -42,6 +42,7 @@ public enum ErrorCode {
     GUILD_LEADER_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "길드장은 탈퇴할 수 없습니다."),
     DELEGATE_MUST_BE_MANAGER(HttpStatus.BAD_REQUEST, "권한 위임은 운영진에게만 가능합니다."),
     ALREADY_MANAGER(HttpStatus.BAD_REQUEST, "이미 운영진 권한을 보유하고 있습니다."),
+    NOT_MANAGER(HttpStatus.BAD_REQUEST, "운영진 권한이 없는 유저입니다."),
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 멤버를 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;

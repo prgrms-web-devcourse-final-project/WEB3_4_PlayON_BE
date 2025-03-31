@@ -111,4 +111,32 @@ public class GuildMemberService {
 
         targetMember.setGuildRole(GuildRole.MANAGER);
     }
+
+    @Transactional
+    public void revokeManagerRole(Long guildId, Long memberId, Long requesterId) {
+        Guild guild = guildRepository.findById(guildId)
+                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
+
+        Member requester = memberRepository.findById(requesterId)
+                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+
+        GuildMember requesterMember = guildMemberRepository.findByGuildAndMember(guild, requester)
+                .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
+
+        if (requesterMember.getGuildRole() != GuildRole.LEADER) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException(); // 길드장만 회수 가능
+        }
+
+        Member target = memberRepository.findById(memberId)
+                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+
+        GuildMember targetMember = guildMemberRepository.findByGuildAndMember(guild, target)
+                .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
+
+        if (targetMember.getGuildRole() != GuildRole.MANAGER) {
+            throw ErrorCode.NOT_MANAGER.throwServiceException(); // 운영진이 아닌데 회수 요청
+        }
+
+        targetMember.setGuildRole(GuildRole.MEMBER); // 일반 멤버로 되돌리기
+    }
 }

@@ -45,4 +45,14 @@ public class GuildMemberController {
         guildMemberService.assignManagerRole(guildId, memberId, requesterId);
         return ResponseEntity.ok(RsData.success(HttpStatus.OK, "운영진 권한이 부여되었습니다."));
     }
+
+    @DeleteMapping("/{guildId}/managers/{memberId}")
+    public ResponseEntity<RsData<String>> revokeManager(
+            @PathVariable Long guildId,
+            @PathVariable Long memberId,
+            @RequestParam Long requesterId
+    ) {
+        guildMemberService.revokeManagerRole(guildId, memberId, requesterId);
+        return ResponseEntity.ok(RsData.success(HttpStatus.OK, "운영진 권한이 회수되었습니다."));
+    }
 }
