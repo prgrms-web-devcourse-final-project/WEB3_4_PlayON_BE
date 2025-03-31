@@ -48,7 +48,6 @@ public class GuildService {
                 .partyStyle(request.partyStyle())
                 .gameSkill(request.gameSkill())
                 .genderFilter(request.genderFilter())
-                .friendType(request.friendType())
                 .activeTime(request.activeTime())
                 .build();
 
@@ -92,7 +91,6 @@ public class GuildService {
        guild.setPartyStyle(request.partyStyle());
        guild.setGameSkill(request.gameSkill());
        guild.setGenderFilter(request.genderFilter());
-       guild.setFriendType(request.friendType());
        guild.setActiveTime(request.activeTime());
 
         return new PutGuildResponse(GuildDto.from(guild));

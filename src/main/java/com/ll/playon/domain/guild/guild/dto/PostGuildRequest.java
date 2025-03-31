@@ -13,7 +13,6 @@ public record PostGuildRequest(
         PartyStyle partyStyle,
         GameSkill gameSkill,
         GenderFilter genderFilter,
-        FriendType friendType,
         ActiveTime activeTime
 ) {
 }

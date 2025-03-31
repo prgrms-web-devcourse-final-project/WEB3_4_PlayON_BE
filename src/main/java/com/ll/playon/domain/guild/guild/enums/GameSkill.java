@@ -6,11 +6,11 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum GameSkill {
-    HIGH("고수"),
-    MID("중수"),
-    LOW("하수"),
-    PURE("청정수"),
-    NEWBIE("처음 킴?");
+    ALL("전체"),
+    NEWBIE("뉴비"),
+    PRO("프로"),
+    HACKER("해커"),
+    MASTER("마스터");
 
     private final String label;
 }

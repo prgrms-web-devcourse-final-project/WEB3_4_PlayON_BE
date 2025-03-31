@@ -1,6 +1,5 @@
 package com.ll.playon.domain.guild.guild.dto;
 
-import com.ll.playon.domain.guild.guild.enums.FriendType;
 import com.ll.playon.domain.guild.guild.enums.GameSkill;
 import com.ll.playon.domain.guild.guild.enums.GenderFilter;
 import com.ll.playon.domain.guild.guild.enums.PartyStyle;
@@ -13,7 +12,6 @@ public record GetGuildListRequest(
         PartyStyle partyStyle,
         GameSkill gameSkill,
         GenderFilter genderFilter,
-        FriendType friendType,
         String sort, // latest, activity, members
         int page,
         int size

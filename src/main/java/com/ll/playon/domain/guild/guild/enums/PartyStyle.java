@@ -6,10 +6,13 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum PartyStyle {
-    HARDCORE("빡겜"),
-    CASUAL("즐겜"),
-    SPEEDRUN("스피드런"),
-    COLLECTOR("콜렉터");
+    CASUAL("맛보기"),
+    FUN("캐주얼"),
+    NORMAL("노멀"),
+    HARD("하드"),
+    EXTREME("익스트림"),
+    CHALLENGE("도전 과제"),
+    SPEEDRUN("스피드러너");
 
     private final String label;
 }

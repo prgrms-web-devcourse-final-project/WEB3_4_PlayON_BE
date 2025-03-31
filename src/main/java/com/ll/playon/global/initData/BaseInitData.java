@@ -93,9 +93,8 @@ public class BaseInitData {
                 .maxMembers(10)
                 .game(789L)
                 .partyStyle(PartyStyle.CASUAL)
-                .gameSkill(GameSkill.NEWBIE)
+                .gameSkill(GameSkill.HACKER)
                 .genderFilter(GenderFilter.ALL)
-                .friendType(FriendType.FRIENDLY)
                 .activeTime(ActiveTime.NIGHT)
                 .build();
 

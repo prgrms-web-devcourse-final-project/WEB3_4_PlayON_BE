@@ -12,7 +12,6 @@ public record PutGuildRequest(
         PartyStyle partyStyle,
         GameSkill gameSkill,
         GenderFilter genderFilter,
-        FriendType friendType,
         ActiveTime activeTime
 ) {
 }
