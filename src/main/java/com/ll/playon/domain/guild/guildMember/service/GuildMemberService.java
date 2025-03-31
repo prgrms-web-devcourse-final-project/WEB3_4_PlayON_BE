@@ -139,4 +139,37 @@ public class GuildMemberService {
 
         targetMember.setGuildRole(GuildRole.MEMBER); // 일반 멤버로 되돌리기
     }
+
+    @Transactional
+    public void expelMember(Long guildId, Long memberId, Long requesterId) {
+        Guild guild = guildRepository.findById(guildId)
+                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
+
+        Member requester = memberRepository.findById(requesterId)
+                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+
+        GuildMember requesterMember = guildMemberRepository.findByGuildAndMember(guild, requester)
+                .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
+
+        if (requesterMember.getGuildRole() != GuildRole.LEADER && requesterMember.getGuildRole() != GuildRole.MANAGER) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException(); // 권한 없는 사용자
+        }
+
+        Member target = memberRepository.findById(memberId)
+                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+
+        GuildMember targetMember = guildMemberRepository.findByGuildAndMember(guild, target)
+                .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
+
+        if (targetMember.getGuildRole() == GuildRole.LEADER) {
+            throw ErrorCode.CANNOT_EXPEL_LEADER.throwServiceException(); // 길드장은 퇴출 불가
+        }
+
+        // 운영진이면 일반 멤버로 강등 후 퇴출
+        if (targetMember.getGuildRole() == GuildRole.MANAGER) {
+            targetMember.setGuildRole(GuildRole.MEMBER);
+        }
+
+        guildMemberRepository.delete(targetMember);
+    }
 }
