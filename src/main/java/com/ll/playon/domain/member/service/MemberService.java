@@ -66,7 +66,8 @@ public class MemberService {
         handleSuccessfulLogin(member);
 
         return new SignupMemberDetailResponse(
-                member.getProfile_img(), member.getPlay_style(), member.getSkillLevel(), member.getGender());
+                member.getNickname(), member.getProfile_img(), member.getPlay_style(),
+                member.getSkillLevel(), member.getGender());
     }
 
     private void handleSuccessfulLogin(Member member) {
@@ -86,9 +87,10 @@ public class MemberService {
 
         Member newMember = Member.builder()
                 .steamId(steamId)
-                .username(profile.get("username") + " #" + steamId)
+                .username(String.valueOf(steamId))
                 .profile_img(profile.get("profileImg"))
                 .role(Role.USER)
+                .nickname(profile.get("nickname"))
                 .build();
         memberRepository.save(newMember);
 

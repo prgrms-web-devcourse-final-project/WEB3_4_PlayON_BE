@@ -19,11 +19,15 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Member extends BaseTime {
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private Long steamId;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String username;
+
+    private String nickname;
+
+    private String password;
 
     private String profile_img;
 

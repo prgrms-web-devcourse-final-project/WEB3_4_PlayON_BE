@@ -39,7 +39,7 @@ public class SteamAPI {
             String personaname = playerNode.path("personaname").asText();
             String avatarfull = playerNode.path("avatarfull").asText();
 
-            userProfile.put("username", personaname);
+            userProfile.put("nickname", personaname);
             userProfile.put("profileImg", avatarfull);
 
         } catch (Exception e) {
