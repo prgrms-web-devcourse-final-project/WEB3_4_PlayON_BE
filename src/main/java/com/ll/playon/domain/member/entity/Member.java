@@ -1,9 +1,6 @@
 package com.ll.playon.domain.member.entity;
 
-import com.ll.playon.domain.member.entity.enums.Gender;
-import com.ll.playon.domain.member.entity.enums.PlayStyle;
-import com.ll.playon.domain.member.entity.enums.PreferredGenres;
-import com.ll.playon.domain.member.entity.enums.Role;
+import com.ll.playon.domain.member.entity.enums.*;
 import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.*;
 import lombok.*;
@@ -57,12 +54,17 @@ public class Member extends BaseTime {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @Builder.Default
+    private SkillLevel skillLevel = SkillLevel.NEWBIE;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Gender gender = Gender.MALE;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private PreferredGenres preferred_genres = PreferredGenres.RPG;
+    private PreferredGenres preferred_genres = PreferredGenres.RPG; // TODO : 게임 보유 목록 통해 설정
 
     public Member(long id, String username, Role role) {
         super();
