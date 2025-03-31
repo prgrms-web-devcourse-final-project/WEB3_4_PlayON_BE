@@ -46,22 +46,23 @@ public class SteamAuthController {
 
         Map<String, String> response = new HashMap<>();
         response.put("redirectUrl", authUrl);
+        System.out.println("URL 응답");
 
         return RsData.success(HttpStatus.OK, response);
     }
 
 
     @GetMapping("/callback/login")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "스팀 인증 검증 및 로그인")
-    public void loginHandleSteamCallback(@RequestParam Map<String, String> params) {
+    public RsData<String> loginHandleSteamCallback(@RequestParam Map<String, String> params) {
         handleSteamCallback(params, "login");
+        return RsData.success(HttpStatus.OK, "성공");
     }
-    @GetMapping("/callback/siginup")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @GetMapping("/callback/signup")
     @Operation(summary = "스팀 인증 검증 및 회원가입")
-    public void signupHandleSteamCallback(@RequestParam Map<String, String> params) {
+    public RsData<String> signupHandleSteamCallback(@RequestParam Map<String, String> params) {
         handleSteamCallback(params, "signup");
+        return RsData.success(HttpStatus.OK, "성공");
     }
     public void handleSteamCallback(@RequestParam Map<String, String> params, String method) {
         if (!params.containsKey("openid.mode") || !params.get("openid.mode").equals("id_res")) {

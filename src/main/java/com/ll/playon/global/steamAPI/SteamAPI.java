@@ -2,6 +2,7 @@ package com.ll.playon.global.steamAPI;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -12,7 +13,10 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class SteamAPI {
+    private final RestTemplate restTemplate;
+
     // TODO : 스팀 API 장애 대응
 
     @Value("${custom.steam.apikey}")
@@ -21,8 +25,9 @@ public class SteamAPI {
     public Map<String, String> getUserProfile(Long steamId) {
         String url = String.format("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=%s&steamids=%d", apikey, steamId);
 
-        RestTemplate restTemplate = new RestTemplate();
         String response = restTemplate.getForObject(url, String.class);
+
+        System.out.println(response);
 
         Map<String, String> userProfile = new HashMap<>();
 
@@ -47,7 +52,6 @@ public class SteamAPI {
     public List<Long> getUserGames(Long steamId) {
         String url = String.format("https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=%s&steamid=%d", apikey, steamId);
 
-        RestTemplate restTemplate = new RestTemplate();
         String response = restTemplate.getForObject(url, String.class);
 
         List<Long> gameIds = new ArrayList<>();

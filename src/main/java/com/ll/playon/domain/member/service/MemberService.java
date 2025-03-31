@@ -84,10 +84,11 @@ public class MemberService {
                 .steamId(steamId)
                 .username(profile.get("username") + " #" + steamId)
                 .profile_img(profile.get("profileImg"))
-                .apiKey(UUID.randomUUID().toString())
                 .role(Role.USER)
                 .build();
         memberRepository.save(newMember);
+
+        System.out.println("소유 게임 조회");
 
         List<Long> gameList = steamAPI.getUserGames(steamId);
 

@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -43,7 +44,8 @@ public class Member extends BaseTime {
     private Role role;
 
     @Column(unique = true)
-    private String apiKey;
+    @Builder.Default
+    private String apiKey = UUID.randomUUID().toString();
 
     // TODO : 회원가입 확정 안되서 일단 기본값 처리
     @Column(nullable = false)
