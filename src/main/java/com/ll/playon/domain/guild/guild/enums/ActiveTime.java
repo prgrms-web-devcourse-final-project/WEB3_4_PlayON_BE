@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ActiveTime {
+    ALL("전체"),
     MORNING("아침"),
     NOON("점심"),
     EVENING("저녁"),
