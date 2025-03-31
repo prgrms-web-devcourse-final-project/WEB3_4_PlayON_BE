@@ -3,17 +3,19 @@ package com.ll.playon.domain.guild.guild.service;
 import com.ll.playon.domain.guild.guild.dto.*;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.enums.GuildDetailDto;
+import com.ll.playon.domain.guild.guild.repository.GuildMemberQueryRepository;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
-import com.ll.playon.domain.member.MemberService;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class GuildService {
     private final GuildRepository guildRepository;
     private final UserContext userContext;
     private final GuildMemberRepository guildMemberRepository;
-    private final MemberService memberService;
+    private final GuildMemberQueryRepository guildMemberQueryRepository;
 
     public PostGuildResponse createGuild(PostGuildRequest request) {
         Member owner = userContext.getActor();
@@ -126,7 +128,7 @@ public class GuildService {
         Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
                 .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
 
-        // 해당 길드 멤버인지 확인
+        // 해당 길드 멤버인지 확인 + 권한
         GuildRole myRole = guildMemberRepository.findByGuildAndMember(guild, actor)
                 .map(GuildMember::getGuildRole)
                 .orElse(null);
@@ -137,5 +139,23 @@ public class GuildService {
         }
 
         return GuildDetailDto.from(guild, myRole);
+    }
+
+
+    public List<GuildMemberDto> getGuildMemberPreview(Long guildId, int limit) {
+        Member actor = userContext.getActor();
+
+        Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        guildMemberRepository.findByGuildAndMember(guild, actor)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        List<GuildMember> members = guildMemberQueryRepository
+                .findTopByGuildOrderByRoleAndCreatedAt(guild, limit);
+
+        return members.stream()
+                .map(GuildMemberDto::from)
+                .toList();
     }
 }
