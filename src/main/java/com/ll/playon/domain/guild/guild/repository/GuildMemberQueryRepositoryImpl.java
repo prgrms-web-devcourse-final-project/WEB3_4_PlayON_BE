@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -39,11 +40,12 @@ public class GuildMemberQueryRepositoryImpl implements GuildMemberQueryRepositor
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long total = queryFactory
-                .select(gm.count())
-                .from(gm)
-                .where(gm.guild.eq(guild))
-                .fetchOne();
+        long total = Optional.ofNullable(
+                queryFactory.select(gm.count())
+                        .from(gm)
+                        .where(gm.guild.eq(guild))
+                        .fetchOne()
+        ).orElse(0L);
 
         return new PageImpl<>(content, pageable, total);
     }
