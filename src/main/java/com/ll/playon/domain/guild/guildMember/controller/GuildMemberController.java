@@ -66,4 +66,14 @@ public class GuildMemberController {
         return ResponseEntity.ok(RsData.success(HttpStatus.OK, "길드 멤버를 강제 퇴출했습니다."));
     }
 
+    //닉네임을 기반으로 길드에 멤버 초대
+//    @PostMapping("/{guildId}/invite")
+//    public ResponseEntity<RsData<String>> inviteMember(
+//            @PathVariable Long guildId,
+//            @RequestParam String nickname,
+//            @RequestParam Long requesterId
+//    ) {
+//        guildMemberService.inviteMember(guildId, nickname, requesterId);
+//        return ResponseEntity.ok(RsData.success(HttpStatus.OK, "길드에 멤버를 초대했습니다."));
+//    }
 }

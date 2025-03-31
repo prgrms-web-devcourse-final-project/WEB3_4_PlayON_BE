@@ -172,4 +172,39 @@ public class GuildMemberService {
 
         guildMemberRepository.delete(targetMember);
     }
+
+    //닉네임을 기반으로 길드에 멤버 초대
+//    @Transactional
+//    public void inviteMember(Long guildId, String nickname, Long requesterId) {
+//        Guild guild = guildRepository.findById(guildId)
+//                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
+//
+//        Member requester = memberRepository.findById(requesterId)
+//                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+//
+//        GuildMember requesterMember = guildMemberRepository.findByGuildAndMember(guild, requester)
+//                .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
+//
+//        if (requesterMember.getGuildRole() != GuildRole.LEADER && requesterMember.getGuildRole() != GuildRole.MANAGER) {
+//            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException(); // 권한 없음
+//        }
+//
+//        Member target = memberRepository.findByUsername(nickname)
+//                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+//
+//        boolean alreadyInGuild = guild.getMembers().stream()
+//                .anyMatch(gm -> gm.getMember().equals(target));
+//        if (alreadyInGuild) {
+//            throw ErrorCode.ALREADY_GUILD_MEMBER.throwServiceException();
+//        }
+//
+//        GuildMember newGuildMember = GuildMember.builder()
+//                .guild(guild)
+//                .member(target)
+//                .guildRole(GuildRole.MEMBER)
+//                .build();
+//
+//        guildMemberRepository.save(newGuildMember);
+//    }
+
 }
