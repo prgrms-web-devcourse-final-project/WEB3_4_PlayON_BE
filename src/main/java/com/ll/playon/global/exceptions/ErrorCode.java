@@ -25,6 +25,8 @@ public enum ErrorCode {
 
     // Guild
     DUPLICATE_GUILD_NAME(HttpStatus.CONFLICT, "이미 존재하는 길드 이름입니다."),
+    GUILD_NOT_FOUND(HttpStatus.NOT_FOUND, "길드를 찾을 수 없습니다."),
+    GUILD_NO_PERMISSION(HttpStatus.FORBIDDEN, "길드를 수정할 권한이 없습니다."),
     GAME_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 게임을 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
