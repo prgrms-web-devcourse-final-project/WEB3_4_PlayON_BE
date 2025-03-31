@@ -1,16 +1,15 @@
 package com.ll.playon.domain.guild.guild.controller;
 
-import com.ll.playon.domain.guild.guild.dto.*;
+import com.ll.playon.domain.guild.guild.dto.PostGuildRequest;
+import com.ll.playon.domain.guild.guild.dto.PostGuildResponse;
+import com.ll.playon.domain.guild.guild.dto.PutGuildRequest;
+import com.ll.playon.domain.guild.guild.dto.PutGuildResponse;
 import com.ll.playon.domain.guild.guild.enums.GuildDetailDto;
 import com.ll.playon.domain.guild.guild.service.GuildService;
 import com.ll.playon.global.response.RsData;
-import com.ll.playon.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/guilds")
@@ -44,9 +43,9 @@ public class GuildController {
         return RsData.success(HttpStatus.OK, detail);
     }
 
-    @GetMapping("/{guildId}/members")
-    public RsData<PageDto<GuildMemberDto>> getGuildMembers(@PathVariable Long guildId, Pageable pageable) {
-        PageDto<GuildMemberDto> response = guildService.getGuildMembers(guildId, pageable);
-        return RsData.success(HttpStatus.OK, response);
-    }
+//    @GetMapping("/{guildId}/members")
+//    public RsData<PageDto<GuildMemberDto>> getGuildMembers(@PathVariable Long guildId, Pageable pageable) {
+//        PageDto<GuildMemberDto> response = guildService.getGuildMembers(guildId, pageable);
+//        return RsData.success(HttpStatus.OK, response);
+//    }
 }
