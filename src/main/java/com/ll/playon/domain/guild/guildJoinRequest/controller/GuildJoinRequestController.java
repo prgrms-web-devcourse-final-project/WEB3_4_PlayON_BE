@@ -33,4 +33,14 @@ public class GuildJoinRequestController {
         guildJoinRequestService.approveJoinRequest(guildId, requestId, request);
         return ResponseEntity.ok(RsData.success(HttpStatus.OK, "가입이 승인되었습니다."));
     }
+
+    @PostMapping("/{guildId}/join/{requestId}/reject")
+    public ResponseEntity<RsData<String>> rejectRequest(
+            @PathVariable Long guildId,
+            @PathVariable Long requestId,
+            @RequestBody GuildJoinApproveRequest request
+    ) {
+        guildJoinRequestService.rejectJoinRequest(guildId, requestId, request);
+        return ResponseEntity.ok(RsData.success(HttpStatus.OK, "가입 요청이 거절되었습니다."));
+    }
 }

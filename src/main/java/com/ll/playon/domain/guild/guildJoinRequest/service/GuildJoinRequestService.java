@@ -48,6 +48,15 @@ public class GuildJoinRequestService {
 
     @Transactional
     public void approveJoinRequest(Long guildId, Long requestId, GuildJoinApproveRequest requestDto) {
+        processJoinRequest(guildId, requestId, requestDto, ApprovalState.APPROVED);
+    }
+
+    @Transactional
+    public void rejectJoinRequest(Long guildId, Long requestId, GuildJoinApproveRequest requestDto) {
+        processJoinRequest(guildId, requestId, requestDto, ApprovalState.REJECTED);
+    }
+
+    private void processJoinRequest(Long guildId, Long requestId, GuildJoinApproveRequest requestDto, ApprovalState targetState) {
         GuildJoinRequest joinRequest = guildJoinRequestRepository.findById(requestId)
                 .orElseThrow(() -> ErrorCode.GUILD_JOIN_REQUEST_NOT_FOUND.throwServiceException());
 
@@ -70,7 +79,7 @@ public class GuildJoinRequestService {
             throw ErrorCode.GUILD_REQUEST_ALREADY_PROCESSED.throwServiceException();
         }
 
-        joinRequest.setApprovalState(ApprovalState.APPROVED);
+        joinRequest.setApprovalState(targetState);
         joinRequest.setApprovedBy(approver);
     }
 }
