@@ -65,7 +65,6 @@ public class GuildService {
         Guild guild = guildRepository.findById(guildId)
                 .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
 
-
        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
                 .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
 
@@ -100,7 +99,7 @@ public class GuildService {
     public void deleteGuild(Long guildId) {
         Member actor = userContext.getActor();
 
-        Guild guild = guildRepository.findById(guildId)
+        Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
                 .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
 
         GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
