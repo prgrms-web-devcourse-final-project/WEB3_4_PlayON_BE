@@ -36,4 +36,5 @@ public class GuildJoinRequest extends BaseTime {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by")
     private Member approvedBy;
+
 }
