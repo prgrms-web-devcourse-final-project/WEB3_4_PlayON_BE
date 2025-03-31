@@ -42,3 +42,4 @@ db_dev.trace.db
 .DS_Store
 
 logs/
+src/main/resources/application-secret.yml
