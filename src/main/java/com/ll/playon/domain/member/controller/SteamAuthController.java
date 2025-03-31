@@ -1,5 +1,6 @@
 package com.ll.playon.domain.member.controller;
 
+import com.ll.playon.domain.member.dto.SignupMemberDetailResponse;
 import com.ll.playon.domain.member.service.SteamAuthService;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
@@ -60,15 +61,15 @@ public class SteamAuthController {
     }
     @GetMapping("/callback/signup")
     @Operation(summary = "스팀 인증 검증 및 회원가입")
-    public RsData<String> signupHandleSteamCallback(@RequestParam Map<String, String> params) {
-        handleSteamCallback(params, "signup");
-        return RsData.success(HttpStatus.OK, "성공");
+    public RsData<SignupMemberDetailResponse> signupHandleSteamCallback(@RequestParam Map<String, String> params) {
+        SignupMemberDetailResponse dto = handleSteamCallback(params, "signup");
+        return RsData.success(HttpStatus.OK, dto);
     }
-    public void handleSteamCallback(@RequestParam Map<String, String> params, String method) {
+    public SignupMemberDetailResponse handleSteamCallback(@RequestParam Map<String, String> params, String method) {
         if (!params.containsKey("openid.mode") || !params.get("openid.mode").equals("id_res")) {
             throw ErrorCode.EXTERNAL_API_UNEXPECTED_REQUEST.throwServiceException();
         }
-        steamAuthService.validateSteamId(params, method);
+        return steamAuthService.validateSteamId(params, method);
     }
 
     @PostMapping("/logout")

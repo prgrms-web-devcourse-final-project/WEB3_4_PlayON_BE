@@ -1,5 +1,6 @@
 package com.ll.playon.domain.member.service;
 
+import com.ll.playon.domain.member.dto.SignupMemberDetailResponse;
 import com.ll.playon.global.exceptions.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -17,7 +18,7 @@ public class SteamAuthService {
     private final RestTemplate restTemplate;
     private final MemberService memberService;
 
-    public void validateSteamId(Map<String, String> params, String method) {
+    public SignupMemberDetailResponse validateSteamId(Map<String, String> params, String method) {
         String validationUrl = "https://steamcommunity.com/openid/login";
         String requestBody = buildValidationRequest(params);
 
@@ -33,8 +34,9 @@ public class SteamAuthService {
 
             if(method.equals("login")) {
                 memberService.steamLogin(steamUserId);
+                return null;
             } else {
-                memberService.steamSignup(steamUserId);
+                return memberService.steamSignup(steamUserId);
             }
         } else {
             throw ErrorCode.AUTHORIZATION_FAILED.throwServiceException();

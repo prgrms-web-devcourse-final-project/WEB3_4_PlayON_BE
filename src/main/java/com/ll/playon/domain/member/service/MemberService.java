@@ -1,5 +1,6 @@
 package com.ll.playon.domain.member.service;
 
+import com.ll.playon.domain.member.dto.SignupMemberDetailResponse;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
 import com.ll.playon.domain.member.entity.Member;
@@ -55,7 +56,7 @@ public class MemberService {
         handleSuccessfulLogin(member);
     }
 
-    public void steamSignup(Long steamId) {
+    public SignupMemberDetailResponse steamSignup(Long steamId) {
         if (memberRepository.findBySteamId(steamId).isPresent()) {
             throw ErrorCode.USER_ALREADY_REGISTERED.throwServiceException();
         }
@@ -63,6 +64,9 @@ public class MemberService {
         Member member = signup(steamId);
 
         handleSuccessfulLogin(member);
+
+        return new SignupMemberDetailResponse(
+                member.getProfile_img(), member.getPlay_style(), member.getSkillLevel(), member.getGender());
     }
 
     private void handleSuccessfulLogin(Member member) {

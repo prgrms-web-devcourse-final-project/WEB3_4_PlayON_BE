@@ -101,7 +101,7 @@ public class SteamAuthTest {
             "players": [
               {
                 "personaname": "everydayplayday",
-                "avatarfull": "https://avatars.steamstatic.com/66acac8c7e55dd6a4c70dc5eb1d783c015a1d284_full.jpg",
+                "avatarfull": "https://avatars.steamstatic.com/66acac8c7e55dd6a4c70dc5eb1d783c015a1d284_full.jpg"
               }
             ]
           }
