@@ -36,4 +36,12 @@ public class GuildJoinRequest extends BaseTime {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by")
     private Member approvedBy;
+
+    public void setApprovalState(ApprovalState approvalState) {
+        this.approvalState = approvalState;
+    }
+
+    public void setApprovedBy(Member approvedBy) {
+        this.approvedBy = approvedBy;
+    }
 }
