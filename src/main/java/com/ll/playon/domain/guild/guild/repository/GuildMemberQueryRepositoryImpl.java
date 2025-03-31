@@ -20,7 +20,6 @@ import java.util.Optional;
 public class GuildMemberQueryRepositoryImpl implements GuildMemberQueryRepository {
     private final JPAQueryFactory queryFactory;
 
-
     @Override
     public Page<GuildMember> findByGuildOrderByRoleAndCreatedAt(Guild guild, Pageable pageable) {
         QGuildMember gm = QGuildMember.guildMember;

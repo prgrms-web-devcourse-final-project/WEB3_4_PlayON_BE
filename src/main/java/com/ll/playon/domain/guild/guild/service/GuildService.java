@@ -8,13 +8,13 @@ import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
-import com.ll.playon.domain.member.MemberService;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +27,6 @@ public class GuildService {
     private final UserContext userContext;
     private final GuildMemberRepository guildMemberRepository;
     private final GuildMemberQueryRepository guildMemberQueryRepository;
-    private final MemberService memberService;
 
     public PostGuildResponse createGuild(PostGuildRequest request) {
         Member owner = userContext.getActor();
@@ -146,5 +145,13 @@ public class GuildService {
                 .findByGuildOrderByRoleAndCreatedAt(guild, pageable);
 
         return new PageDto<>(page.map(GuildMemberDto::from));
+    }
+
+    public PageDto<GuildDto> searchGuilds(GetGuildListRequest request) {
+        Pageable pageable = PageRequest.of(request.page(), request.size());
+
+        Page<Guild> page = guildRepository.searchGuilds(request, pageable);
+
+        return new PageDto<>(page.map(GuildDto::from));
     }
 }
