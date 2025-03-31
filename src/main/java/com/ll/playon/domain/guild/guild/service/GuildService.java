@@ -147,11 +147,11 @@ public class GuildService {
         return new PageDto<>(page.map(GuildMemberDto::from));
     }
 
-    public PageDto<GuildDto> searchGuilds(GetGuildListRequest request) {
+    public PageDto<GetGuildListResponse> searchGuilds(GetGuildListRequest request) {
         Pageable pageable = PageRequest.of(request.page(), request.size());
 
         Page<Guild> page = guildRepository.searchGuilds(request, pageable);
 
-        return new PageDto<>(page.map(GuildDto::from));
+        return new PageDto<>(page.map(GetGuildListResponse::from));
     }
 }

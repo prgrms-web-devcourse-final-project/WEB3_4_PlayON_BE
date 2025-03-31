@@ -48,8 +48,8 @@ public class GuildController {
 //    }
 
     @GetMapping("/search")
-    public RsData<PageDto<GuildDto>> searchGuilds(@RequestBody GetGuildListRequest request) {
-        PageDto<GuildDto> result = guildService.searchGuilds(request);
+    public RsData<PageDto<GetGuildListResponse>> searchGuilds(@RequestBody GetGuildListRequest request) {
+        PageDto<GetGuildListResponse> result = guildService.searchGuilds(request);
         return RsData.success(HttpStatus.OK, result);
     }
 }
