@@ -50,4 +50,37 @@ public class GuildMemberService {
                 })
                 .toList();
     }
+
+    @Transactional
+    public void leaveGuild(Long guildId, Long memberId, Long newLeaderId) {
+        Guild guild = guildRepository.findById(guildId)
+                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+
+        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, member)
+                .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
+
+        // 길드장이 탈퇴하는 경우
+        if (guildMember.getGuildRole() == GuildRole.LEADER) {
+            if (newLeaderId == null) {
+                throw ErrorCode.GUILD_LEADER_CANNOT_LEAVE.throwServiceException(); // 위임 대상 없으면 예외
+            }
+
+            Member newLeader = memberRepository.findById(newLeaderId)
+                    .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+
+            GuildMember delegateTarget = guildMemberRepository.findByGuildAndMember(guild, newLeader)
+                    .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
+
+            if (delegateTarget.getGuildRole() != GuildRole.MANAGER) {
+                throw ErrorCode.DELEGATE_MUST_BE_MANAGER.throwServiceException();
+            }
+
+            delegateTarget.setGuildRole(GuildRole.LEADER);
+        }
+
+        guildMemberRepository.delete(guildMember);
+    }
 }

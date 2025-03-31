@@ -24,4 +24,8 @@ public class GuildMember extends BaseTime {
     @Enumerated(EnumType.STRING)
     @Column(name = "guild_role", nullable = false)
     private GuildRole guildRole;
+
+    public void setGuildRole(GuildRole guildRole) {
+        this.guildRole = guildRole;
+    }
 }

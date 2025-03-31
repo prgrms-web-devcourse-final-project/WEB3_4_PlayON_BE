@@ -25,4 +25,14 @@ public class GuildMemberController {
         List<GuildMemberResponse> members = guildMemberService.getAllGuildMembers(guildId, viewerId);
         return ResponseEntity.ok(RsData.success(HttpStatus.OK, members));
     }
+
+    @DeleteMapping("/{guildId}/members/leave/self")
+    public ResponseEntity<RsData<String>> leaveGuild(
+            @PathVariable Long guildId,
+            @RequestParam Long memberId,
+            @RequestParam(required = false) Long newLeaderId
+    ){
+        guildMemberService.leaveGuild(guildId, memberId, newLeaderId);
+        return ResponseEntity.ok(RsData.success(HttpStatus.OK, "길드를 탈퇴했습니다."));
+    }
 }
