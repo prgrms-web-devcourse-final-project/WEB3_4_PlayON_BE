@@ -83,4 +83,32 @@ public class GuildMemberService {
 
         guildMemberRepository.delete(guildMember);
     }
+
+    @Transactional
+    public void assignManagerRole(Long guildId, Long memberId, Long requesterId) {
+        Guild guild = guildRepository.findById(guildId)
+                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
+
+        Member requester = memberRepository.findById(requesterId)
+                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+
+        GuildMember requesterMember = guildMemberRepository.findByGuildAndMember(guild, requester)
+                .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
+
+        if (requesterMember.getGuildRole() != GuildRole.LEADER) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException(); // 길드장만 부여 가능
+        }
+
+        Member target = memberRepository.findById(memberId)
+                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+
+        GuildMember targetMember = guildMemberRepository.findByGuildAndMember(guild, target)
+                .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
+
+        if (targetMember.getGuildRole() == GuildRole.MANAGER) {
+            throw ErrorCode.ALREADY_MANAGER.throwServiceException(); // 이미 운영진
+        }
+
+        targetMember.setGuildRole(GuildRole.MANAGER);
+    }
 }

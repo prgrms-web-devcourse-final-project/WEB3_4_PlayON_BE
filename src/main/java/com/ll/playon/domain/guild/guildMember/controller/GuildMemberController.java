@@ -35,4 +35,14 @@ public class GuildMemberController {
         guildMemberService.leaveGuild(guildId, memberId, newLeaderId);
         return ResponseEntity.ok(RsData.success(HttpStatus.OK, "길드를 탈퇴했습니다."));
     }
+
+    @PutMapping("/{guildId}/managers/{memberId}")
+    public ResponseEntity<RsData<String>> assignManager(
+            @PathVariable Long guildId,
+            @PathVariable Long memberId,
+            @RequestParam Long requesterId
+    ) {
+        guildMemberService.assignManagerRole(guildId, memberId, requesterId);
+        return ResponseEntity.ok(RsData.success(HttpStatus.OK, "운영진 권한이 부여되었습니다."));
+    }
 }
