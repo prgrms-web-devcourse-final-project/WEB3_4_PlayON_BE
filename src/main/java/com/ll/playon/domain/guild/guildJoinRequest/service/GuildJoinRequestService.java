@@ -3,6 +3,7 @@ package com.ll.playon.domain.guild.guildJoinRequest.service;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guildJoinRequest.dto.request.GuildJoinApproveRequest;
+import com.ll.playon.domain.guild.guildJoinRequest.dto.response.GuildJoinRequestResponse;
 import com.ll.playon.domain.guild.guildJoinRequest.entity.GuildJoinRequest;
 import com.ll.playon.domain.guild.guildJoinRequest.enums.ApprovalState;
 import com.ll.playon.domain.guild.guildJoinRequest.repository.GuildJoinRequestRepository;
@@ -10,9 +11,11 @@ import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.member.MemberRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +28,10 @@ public class GuildJoinRequestService {
     @Transactional
     public void requestToJoinGuild(Long guildId, Long memberId) {
         Guild guild = guildRepository.findById(guildId)
-                .orElseThrow(() -> ErrorCode.PAGE_NOT_FOUND.throwServiceException());
+                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> ErrorCode.PAGE_NOT_FOUND.throwServiceException());
+                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
 
         boolean alreadyRequested = guildJoinRequestRepository
                 .existsByGuildAndMemberAndApprovalState(guild, member, ApprovalState.PENDING);
@@ -65,7 +68,7 @@ public class GuildJoinRequestService {
         }
 
         Member approver = memberRepository.findById(requestDto.approverId())
-                .orElseThrow(() -> ErrorCode.PAGE_NOT_FOUND.throwServiceException());
+                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
 
         boolean isAuthorized = joinRequest.getGuild().getMembers().stream()
                 .anyMatch(gm -> gm.getMember().equals(approver)
@@ -81,6 +84,30 @@ public class GuildJoinRequestService {
 
         joinRequest.setApprovalState(targetState);
         joinRequest.setApprovedBy(approver);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GuildJoinRequestResponse> getPendingJoinRequests(Long guildId, Long viewerId) {
+        Guild guild = guildRepository.findById(guildId)
+                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
+
+        Member viewer = memberRepository.findById(viewerId)
+                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+
+        boolean isAuthorized = guild.getMembers().stream()
+                .anyMatch(gm -> gm.getMember().equals(viewer)
+                        && (gm.getGuildRole() == GuildRole.LEADER || gm.getGuildRole() == GuildRole.MANAGER));
+
+        if (!isAuthorized) {
+            throw ErrorCode.GUILD_APPROVAL_UNAUTHORIZED.throwServiceException();
+        }
+
+        List<GuildJoinRequest> pendingRequests = guildJoinRequestRepository
+                .findAllByGuildAndApprovalState(guild, ApprovalState.PENDING);
+
+        return pendingRequests.stream()
+                .map(GuildJoinRequestResponse::from)
+                .toList();
     }
 }
 

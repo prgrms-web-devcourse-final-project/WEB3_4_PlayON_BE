@@ -1,12 +1,15 @@
 package com.ll.playon.domain.guild.guildJoinRequest.controller;
 
 import com.ll.playon.domain.guild.guildJoinRequest.dto.request.GuildJoinApproveRequest;
+import com.ll.playon.domain.guild.guildJoinRequest.dto.response.GuildJoinRequestResponse;
 import com.ll.playon.domain.guild.guildJoinRequest.service.GuildJoinRequestService;
 import com.ll.playon.global.response.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,5 +45,14 @@ public class GuildJoinRequestController {
     ) {
         guildJoinRequestService.rejectJoinRequest(guildId, requestId, request);
         return ResponseEntity.ok(RsData.success(HttpStatus.OK, "가입 요청이 거절되었습니다."));
+    }
+
+    @GetMapping("/{guildId}/join/requests")
+    public ResponseEntity<RsData<List<GuildJoinRequestResponse>>> getJoinRequests(
+            @PathVariable Long guildId,
+            @RequestParam Long viewerId
+    ) {
+        List<GuildJoinRequestResponse> responses = guildJoinRequestService.getPendingJoinRequests(guildId, viewerId);
+        return ResponseEntity.ok(RsData.success(HttpStatus.OK, responses));
     }
 }
