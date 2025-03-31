@@ -11,5 +11,4 @@ public enum ApprovalState {
     REJECTED("거절됨");
 
     private final String label;
-
 }
