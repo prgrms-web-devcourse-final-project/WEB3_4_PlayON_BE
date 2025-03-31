@@ -78,5 +78,6 @@ public class Guild extends BaseTime {
         this.isDeleted = true;
         this.members.clear();
         this.name = "DELETED_" + UUID.randomUUID();
+        this.description = "DELETED";
     }
 }

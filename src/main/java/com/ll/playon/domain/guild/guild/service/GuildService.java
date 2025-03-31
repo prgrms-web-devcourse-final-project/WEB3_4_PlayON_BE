@@ -112,13 +112,9 @@ public class GuildService {
         GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
                 .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
 
+        // 길드장만 삭제가능
         if (guildMember.getGuildRole() != GuildRole.LEADER) {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
-
-        long memberCount = guildMemberRepository.countByGuildId(guildId);
-        if(memberCount > 1) {
-            throw ErrorCode.GUILD_DELETE_NOT_ALLOWED.throwServiceException();
         }
 
         guild.softDelete();
