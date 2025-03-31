@@ -2,6 +2,7 @@ package com.ll.playon.domain.guild.guild.service;
 
 import com.ll.playon.domain.guild.guild.dto.*;
 import com.ll.playon.domain.guild.guild.entity.Guild;
+import com.ll.playon.domain.guild.guild.enums.GuildDetailDto;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
@@ -30,6 +31,7 @@ public class GuildService {
             ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
 
+        // TODO: 게임 생성 후 게임 데이터로 넣기
         Guild guild = Guild.builder()
                 .owner(owner)
                 .name(request.name())
@@ -40,7 +42,7 @@ public class GuildService {
                 .guildImg(request.guildImg())
                 .partyStyle(request.partyStyle())
                 .gameSkill(request.gameSkill())
-                .gender(request.gender())
+                .genderFilter(request.genderFilter())
                 .friendType(request.friendType())
                 .activeTime(request.activeTime())
                 .build();
@@ -59,7 +61,7 @@ public class GuildService {
     }
 
     @Transactional
-    public PutGuildResponse updateGuild(Long guildId, PutGuildRequest request) {
+    public PutGuildResponse modifyGuild(Long guildId, PutGuildRequest request) {
         Member actor = userContext.getActor();
 
         Guild guild = guildRepository.findById(guildId)
@@ -84,7 +86,7 @@ public class GuildService {
        guild.setGuildImg(request.guildImg());
        guild.setPartyStyle(request.partyStyle());
        guild.setGameSkill(request.gameSkill());
-       guild.setGender(request.gender());
+       guild.setGenderFilter(request.genderFilter());
        guild.setFriendType(request.friendType());
        guild.setActiveTime(request.activeTime());
 
@@ -115,5 +117,25 @@ public class GuildService {
         }
 
         guild.softDelete();
+    }
+
+    @Transactional(readOnly = true)
+    public GuildDetailDto getGuildDetail(Long guildId) {
+        Member actor = userContext.getActor();
+
+        Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        // 해당 길드 멤버인지 확인
+        GuildRole myRole = guildMemberRepository.findByGuildAndMember(guild, actor)
+                .map(GuildMember::getGuildRole)
+                .orElse(null);
+
+        // 비공개 + 멤버 아닌데 접근 예외 발생
+        if (!guild.isPublic() && myRole == null) {
+            throw ErrorCode.GUILD_NOT_FOUND.throwServiceException();
+        }
+
+        return GuildDetailDto.from(guild, myRole);
     }
 }

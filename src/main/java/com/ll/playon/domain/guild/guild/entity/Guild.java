@@ -41,6 +41,7 @@ public class Guild extends BaseTime {
     @Builder.Default
     private boolean isPublic = true;
 
+    // TODO: 게임 생성후 연결
     @Column(name = "game_id")
 //    @ManyToOne(fetch = FetchType.LAZY, optional = true)
 //    @JoinColumn(name = "game_id")
@@ -59,7 +60,7 @@ public class Guild extends BaseTime {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "gender_filter", nullable = false)
-    private Gender gender;
+    private GenderFilter genderFilter;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "friend_type", nullable = false)

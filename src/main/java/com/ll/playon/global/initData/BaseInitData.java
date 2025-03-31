@@ -94,7 +94,7 @@ public class BaseInitData {
                 .game(789L)
                 .partyStyle(PartyStyle.CASUAL)
                 .gameSkill(GameSkill.NEWBIE)
-                .gender(Gender.ALL)
+                .genderFilter(GenderFilter.ALL)
                 .friendType(FriendType.FRIENDLY)
                 .activeTime(ActiveTime.NIGHT)
                 .build();

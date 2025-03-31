@@ -4,6 +4,7 @@ import com.ll.playon.domain.guild.guild.dto.PostGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.PostGuildResponse;
 import com.ll.playon.domain.guild.guild.dto.PutGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.PutGuildResponse;
+import com.ll.playon.domain.guild.guild.enums.GuildDetailDto;
 import com.ll.playon.domain.guild.guild.service.GuildService;
 import com.ll.playon.global.response.RsData;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class GuildController {
     @PutMapping("/{guildId}")
     public RsData<PutGuildResponse> updateGuild(@PathVariable Long guildId,
                                                 @RequestBody PutGuildRequest request) {
-        PutGuildResponse response = guildService.updateGuild(guildId, request);
+        PutGuildResponse response = guildService.modifyGuild(guildId, request);
         return RsData.success(HttpStatus.OK, response);
     }
 
@@ -34,6 +35,12 @@ public class GuildController {
     public RsData<String> deleteGuild(@PathVariable Long guildId) {
         guildService.deleteGuild(guildId);
         return RsData.success(HttpStatus.OK, "ok");
+    }
+
+    @GetMapping("/{guildId}")
+    public RsData<GuildDetailDto> getGuildDetail(@PathVariable Long guildId) {
+        GuildDetailDto detail = guildService.getGuildDetail(guildId);
+        return RsData.success(HttpStatus.OK, detail);
     }
 
 }
