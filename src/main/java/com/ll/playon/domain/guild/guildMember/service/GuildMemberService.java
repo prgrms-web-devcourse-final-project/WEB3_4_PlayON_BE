@@ -10,7 +10,6 @@ import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
 import com.ll.playon.domain.member.MemberRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
-import com.ll.playon.global.security.UserContext;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,13 +23,10 @@ public class GuildMemberService {
     private final GuildRepository guildRepository;
     private final MemberRepository memberRepository;
     private final GuildMemberRepository guildMemberRepository;
-    private final UserContext userContext;
 
     @Transactional(readOnly = true)
-    public List<GuildMemberResponse> getAllGuildMembers(Long guildId) {
+    public List<GuildMemberResponse> getAllGuildMembers(Long guildId, Member actor) {
         Guild guild = getGuild(guildId);
-        Member actor = userContext.getActor();
-
         validateManagerAccess(guild, actor);
 
         return guildMemberRepository.findAllByGuild(guild).stream()
@@ -40,10 +36,8 @@ public class GuildMemberService {
     }
 
     @Transactional
-    public void leaveGuild(Long guildId, LeaveGuildRequest request) {
+    public void leaveGuild(Long guildId, Member actor, LeaveGuildRequest request) {
         Guild guild = getGuild(guildId);
-        Member actor = userContext.getActor();
-
         GuildMember actorMember = getGuildMember(guild, actor);
 
         if (actorMember.getGuildRole() == GuildRole.LEADER) {
@@ -51,13 +45,12 @@ public class GuildMemberService {
                 throw ErrorCode.GUILD_LEADER_CANNOT_LEAVE.throwServiceException();
             }
 
-            //운영진 수가 1명 이하인 경우, 위임 금지
             long managerCount = guild.getMembers().stream()
                     .filter(gm -> gm.getGuildRole() == GuildRole.MANAGER)
                     .count();
 
             if (managerCount <= 1) {
-                throw ErrorCode.CANNOT_DELEGATE_TO_SINGLE_MANAGER.throwServiceException(); // 안정성 문제로 차단
+                throw ErrorCode.CANNOT_DELEGATE_TO_SINGLE_MANAGER.throwServiceException();
             }
 
             Member newLeader = memberRepository.findById(request.newLeaderId())
@@ -75,9 +68,8 @@ public class GuildMemberService {
     }
 
     @Transactional
-    public void assignManagerRole(Long guildId, AssignManagerRequest request) {
+    public void assignManagerRole(Long guildId, Member actor, AssignManagerRequest request) {
         Guild guild = getGuild(guildId);
-        Member actor = userContext.getActor();
         Member target = getMember(request.targetMemberId());
 
         GuildMember actorMember = getGuildMember(guild, actor);
@@ -92,9 +84,8 @@ public class GuildMemberService {
     }
 
     @Transactional
-    public void revokeManagerRole(Long guildId, RevokeManagerRequest request) {
+    public void revokeManagerRole(Long guildId, Member actor, RevokeManagerRequest request) {
         Guild guild = getGuild(guildId);
-        Member actor = userContext.getActor();
         Member target = getMember(request.targetMemberId());
 
         GuildMember actorMember = getGuildMember(guild, actor);
@@ -109,9 +100,8 @@ public class GuildMemberService {
     }
 
     @Transactional
-    public void expelMember(Long guildId, ExpelMemberRequest request) {
+    public void expelMember(Long guildId, Member actor, ExpelMemberRequest request) {
         Guild guild = getGuild(guildId);
-        Member actor = userContext.getActor();
         Member target = getMember(request.targetMemberId());
 
         GuildMember actorMember = getGuildMember(guild, actor);
@@ -134,16 +124,14 @@ public class GuildMemberService {
     //닉네임을 기반으로 길드에 멤버 초대
     //memberRepository에 Optional<Member> findByUsername(String username) 추가
 //    @Transactional
-//    public void inviteMember(InviteMemberRequest request) {
-//        Member requester = userContext.getActor();
-//
+//    public void inviteMember(Member actor, InviteMemberRequest request) {
 //        Guild guild = guildRepository.findById(request.guildId())
 //                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
 //
-//        GuildMember requesterMember = guildMemberRepository.findByGuildAndMember(guild, requester)
+//        GuildMember requesterMember = guildMemberRepository.findByGuildAndMember(guild, actor)
 //                .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
 //
-//        if (requesterMember.getGuildRole() != GuildRole.LEADER && requesterMember.getGuildRole() != GuildRole.MANAGER) {
+//        if (!isManager(requesterMember)) {
 //            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
 //        }
 //
