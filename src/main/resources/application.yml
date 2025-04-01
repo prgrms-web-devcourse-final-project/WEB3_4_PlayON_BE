@@ -1,16 +1,14 @@
 spring:
   application:
     name: playOn
+  profiles:
+    active: dev
+    include: secret
 
   data:
     redis:
       host: localhost
       port: 6379
-
-  profiles:
-    include:
-      - dev
-      - secret
 
   # h2
   h2:
@@ -34,7 +32,7 @@ spring:
         highlight_sql: true
         use_sql_comments: true
 
- # 로깅
+  # 로깅
 logging:
   level:
     org.springframework.security: DEBUG
@@ -43,3 +41,9 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
     org.hibernate.orm.jdbc.extract: TRACE
+
+custom:
+  jwt:
+    secretKey: ON_SECRET
+  accessToken:
+    expirationSeconds: "#{60 * 20}"

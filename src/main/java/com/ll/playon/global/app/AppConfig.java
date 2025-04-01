@@ -29,4 +29,9 @@ public class AppConfig {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
+
+    // 프론트엔드 URL 반환
+    public static String getSiteFrontUrl() {
+        return "http://localhost:3000";
+    }
 }

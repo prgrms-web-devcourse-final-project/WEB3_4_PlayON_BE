@@ -20,7 +20,7 @@ public record GuildMemberResponse(
         return new GuildMemberResponse(
                 member.getId(),
                 member.getUsername(),
-                member.getProfile_img(),
+                member.getProfileImg(),
                 guildMember.getGuildRole(),
                 guildMember.getCreatedAt(),
                 member.getLastLoginAt(),
