@@ -1,6 +1,11 @@
 package com.ll.playon.domain.guild.guild.entity;
 
-import com.ll.playon.domain.guild.guild.enums.*;
+import com.ll.playon.domain.guild.guild.dto.PostGuildRequest;
+import com.ll.playon.domain.guild.guild.dto.PutGuildRequest;
+import com.ll.playon.domain.guild.guild.enums.ActiveTime;
+import com.ll.playon.domain.guild.guild.enums.GameSkill;
+import com.ll.playon.domain.guild.guild.enums.GenderFilter;
+import com.ll.playon.domain.guild.guild.enums.PartyStyle;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.jpa.entity.BaseTime;
@@ -73,5 +78,33 @@ public class Guild extends BaseTime {
         this.members.clear();
         this.name = "DELETED_" + UUID.randomUUID();
         this.description = "DELETED";
+    }
+
+    public void updateFromRequest(PutGuildRequest request) {
+        this.name = request.name();
+        this.description = request.description();
+        this.maxMembers = request.maxMembers();
+        this.isPublic = request.isPublic();
+        this.guildImg = request.guildImg();
+        this.partyStyle = request.partyStyle();
+        this.gameSkill = request.gameSkill();
+        this.genderFilter = request.genderFilter();
+        this.activeTime = request.activeTime();
+    }
+
+    public static Guild createFrom(PostGuildRequest request, Member owner) {
+        return Guild.builder()
+                .owner(owner)
+                .name(request.name())
+                .description(request.description())
+                .maxMembers(request.maxMembers())
+                .isPublic(request.isPublic())
+                .game(request.gameId())
+                .guildImg(request.guildImg())
+                .partyStyle(request.partyStyle())
+                .gameSkill(request.gameSkill())
+                .genderFilter(request.genderFilter())
+                .activeTime(request.activeTime())
+                .build();
     }
 }

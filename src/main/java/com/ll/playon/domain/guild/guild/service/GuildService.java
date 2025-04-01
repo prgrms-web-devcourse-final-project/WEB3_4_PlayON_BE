@@ -36,20 +36,7 @@ public class GuildService {
         }
 
         // TODO: 게임 생성 후 게임 데이터로 넣기
-        Guild guild = Guild.builder()
-                .owner(owner)
-                .name(request.name())
-                .description(request.description())
-                .maxMembers(request.maxMembers())
-                .isPublic(request.isPublic())
-                .game(request.gameId())
-                .guildImg(request.guildImg())
-                .partyStyle(request.partyStyle())
-                .gameSkill(request.gameSkill())
-                .genderFilter(request.genderFilter())
-                .activeTime(request.activeTime())
-                .build();
-
+        Guild guild = Guild.createFrom(request, owner);
         guildRepository.save(guild);
 
         GuildMember guildMember = GuildMember.builder()
@@ -66,12 +53,8 @@ public class GuildService {
     @Transactional
     public PutGuildResponse modifyGuild(Long guildId, PutGuildRequest request) {
         Member actor = userContext.getActor();
-
-        Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
-                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
-
-       GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
-                .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
+        Guild guild = getGuildOrThrow(guildId);
+        GuildMember guildMember = getManagerOrThrow(guild, actor);
 
        if(!isManager(guildMember.getGuildRole())) {
            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
@@ -82,15 +65,7 @@ public class GuildService {
             throw ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
 
-       guild.setName(request.name());
-       guild.setDescription(request.description());
-       guild.setMaxMembers(request.maxMembers());
-       guild.setPublic(request.isPublic());
-       guild.setGuildImg(request.guildImg());
-       guild.setPartyStyle(request.partyStyle());
-       guild.setGameSkill(request.gameSkill());
-       guild.setGenderFilter(request.genderFilter());
-       guild.setActiveTime(request.activeTime());
+        guild.updateFromRequest(request);
 
         return new PutGuildResponse(GuildDto.from(guild));
     }
@@ -99,15 +74,25 @@ public class GuildService {
         return role == GuildRole.LEADER || role == GuildRole.MANAGER;
     }
 
+    private Guild getGuildOrThrow(Long guildId) {
+        return guildRepository.findByIdAndIsDeletedFalse(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+    }
+
+    private GuildMember getManagerOrThrow(Guild guild, Member actor) {
+        GuildMember gm = guildMemberRepository.findByGuildAndMember(guild, actor)
+                .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
+        if (!isManager(gm.getGuildRole())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+        return gm;
+    }
+
     @Transactional
     public void deleteGuild(Long guildId) {
         Member actor = userContext.getActor();
-
-        Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
-                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
-
-        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
-                .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
+        Guild guild = getGuildOrThrow(guildId);
+        GuildMember guildMember = getManagerOrThrow(guild, actor);
 
         // 길드장만 삭제가능
         if (guildMember.getGuildRole() != GuildRole.LEADER) {
@@ -127,28 +112,21 @@ public class GuildService {
     @Transactional(readOnly = true)
     public GuildDetailDto getGuildDetail(Long guildId) {
         Member actor = userContext.getActor();
+        Guild guild = getGuildOrThrow(guildId);
+        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor).orElse(null);
 
-        Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
-                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
-
-        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
-                .orElse(null);
-
-        GuildRole myRole = guildMember != null ? guildMember.getGuildRole() : null;
-
-        // 비공개 + 멤버 아님
         if (!guild.isPublic() && guildMember == null) {
             throw ErrorCode.GUILD_NOT_FOUND.throwServiceException();
         }
 
+        GuildRole myRole = guildMember != null ? guildMember.getGuildRole() : null;
         return GuildDetailDto.from(guild, myRole);
     }
 
+    @Transactional(readOnly = true)
     public PageDto<GuildMemberDto> getGuildMembers(Long guildId, Pageable pageable) {
         Member actor = userContext.getActor();
-
-        Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
-                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+        Guild guild = getGuildOrThrow(guildId);
 
         guildMemberRepository.findByGuildAndMember(guild, actor)
                 .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
