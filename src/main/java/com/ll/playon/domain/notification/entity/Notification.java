@@ -4,6 +4,7 @@ import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.validator.constraints.URL;
 
 @Entity
 @Getter
@@ -28,7 +29,13 @@ public class Notification extends BaseEntity {
 
     @Column(nullable = false)
     @Builder.Default
-    private boolean isRead = false;
+    private boolean read = false;
 
+    @URL
     private String redirectUrl;
+
+    // 읽음 상태 변경 메서드
+    public void markAsRead() {
+        this.read = true;
+    }
 }
