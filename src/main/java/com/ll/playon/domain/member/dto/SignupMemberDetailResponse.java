@@ -6,7 +6,7 @@ import com.ll.playon.domain.member.entity.enums.SkillLevel;
 
 public record SignupMemberDetailResponse(
     String nickname,
-    String profile_img,
+    String profileImg,
     PlayStyle play_style,
     SkillLevel skillLevel,
     Gender gender

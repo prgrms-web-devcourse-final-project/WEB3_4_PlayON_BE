@@ -5,6 +5,7 @@ import com.ll.playon.domain.member.entity.enums.Role;
 import com.ll.playon.standard.util.Ut;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Map;
 
@@ -18,26 +19,25 @@ public class AuthTokenService {
     private long accessTokenExpirationSeconds;
 
     String genAccessToken(Member user) {
-        long id = user.getId();
-        String username = user.getUsername();
-        String role = user.getRole().name();
-
         return Ut.jwt.toString(
                 secretKey,
                 accessTokenExpirationSeconds,
-                Map.of("id", id, "username", username, "role", role)
+                Map.of("id", user.getId(), "username", user.getUsername(), "role", user.getRole().name())
         );
     }
 
     public Map<String, Object> payload(String accessToken) {
         Map<String, Object> parsedPayload = Ut.jwt.payload(secretKey, accessToken);
 
-        if (parsedPayload == null) return null;
+        if (ObjectUtils.isEmpty(parsedPayload)) return null;
 
-        long id = (long) (Integer) parsedPayload.get("id");
-        String username = (String) parsedPayload.get("username");
-        Role role = Role.valueOf((String) parsedPayload.get("role"));
+        Role role;
+        try {
+            role = Role.valueOf((String) parsedPayload.get("role"));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
 
-        return Map.of("id", id, "username", username, "role", role);
+        return Map.of("id", parsedPayload.get("id"), "username", parsedPayload.get("username"), "role", role);
     }
 }

@@ -11,6 +11,7 @@ import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -40,13 +41,15 @@ public class MemberService {
     public Member getUserFromAccessToken(String accessToken) {
         Map<String, Object> payload = authTokenService.payload(accessToken);
 
-        if (payload == null) return null;
+        if (ObjectUtils.isEmpty(payload)) return null;
 
-        long id = (long) payload.get("id");
-        String username = (String) payload.get("username");
-        Role role = (Role) payload.get("role");
+        Member parsedMember = Member.builder()
+                .username((String) payload.get("username"))
+                .role((Role) payload.get("role"))
+                .build();
+        parsedMember.changeMemberId((long) payload.get("id"));
 
-        return new Member(id, username, role);
+        return parsedMember;
     }
 
     public void steamLogin(Long steamId) {
@@ -66,7 +69,7 @@ public class MemberService {
         handleSuccessfulLogin(member);
 
         return new SignupMemberDetailResponse(
-                member.getNickname(), member.getProfile_img(), member.getPlay_style(),
+                member.getNickname(), member.getProfileImg(), member.getPlayStyle(),
                 member.getSkillLevel(), member.getGender());
     }
 
@@ -88,30 +91,26 @@ public class MemberService {
         Member newMember = Member.builder()
                 .steamId(steamId)
                 .username(String.valueOf(steamId))
-                .profile_img(profile.get("profileImg"))
+                .profileImg(profile.get("profileImg"))
                 .role(Role.USER)
                 .nickname(profile.get("nickname"))
                 .build();
         memberRepository.save(newMember);
 
-        System.out.println("소유 게임 조회");
-
-        List<Long> gameList = steamAPI.getUserGames(steamId);
-
-        saveUserGameList(gameList, newMember);
+        saveUserGameList(steamAPI.getUserGames(steamId), newMember);
 
         return newMember;
     }
 
     public void saveUserGameList(List<Long> gameList, Member member) {
-        List<MemberSteamData> games = new ArrayList<>();
-        for (Long appId : gameList) {
-            MemberSteamData game = MemberSteamData.builder()
-                    .appId(appId).member(member).build();
-            games.add(game);
-        }
-        member.getGames().addAll(games);
+        List<MemberSteamData> games = gameList.stream()
+                .map(appId -> MemberSteamData.builder()
+                        .appId(appId)
+                        .member(member)
+                        .build())
+                .toList();
 
+        member.getGames().addAll(games);
         memberSteamDataRepository.saveAll(games);
     }
 }

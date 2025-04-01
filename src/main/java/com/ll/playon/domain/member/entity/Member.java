@@ -29,11 +29,11 @@ public class Member extends BaseTime {
 
     private String password;
 
-    private String profile_img;
+    private String profileImg;
 
     @Column(nullable = false)
     @Builder.Default
-    private boolean is_deleted = false;
+    private boolean isDeleted = false;
 
     @Setter
     private LocalDateTime lastLoginAt;
@@ -55,7 +55,7 @@ public class Member extends BaseTime {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private PlayStyle play_style = PlayStyle.CASUAL;
+    private PlayStyle playStyle = PlayStyle.CASUAL;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -70,7 +70,7 @@ public class Member extends BaseTime {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private PreferredGenres preferred_genres = PreferredGenres.RPG; // TODO : 게임 보유 목록 통해 설정
+    private PreferredGenres preferredGenres = PreferredGenres.RPG; // TODO : 게임 보유 목록 통해 설정
 
     public Member(long id, String username, Role role) {
         super();
@@ -102,5 +102,9 @@ public class Member extends BaseTime {
 
     private boolean isAdmin() {
         return this.role == Role.ADMIN;
+    }
+
+    public void changeMemberId(Long newId){
+        setId(newId);
     }
 }

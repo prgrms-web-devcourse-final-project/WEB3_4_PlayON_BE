@@ -38,7 +38,7 @@ public class SteamAuthController {
         return redirectToSteam("/signup");
     }
     private RsData<Map<String, String>> redirectToSteam(String url) {
-        String authUrl = STEAM_OPENID_URL + "?openid.ns=http://specs.openid.net/auth/2.0"
+        final String authUrl = STEAM_OPENID_URL + "?openid.ns=http://specs.openid.net/auth/2.0"
                 + "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
                 + "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
                 + "&openid.return_to=" + RETURN_URL + url
@@ -47,7 +47,6 @@ public class SteamAuthController {
 
         Map<String, String> response = new HashMap<>();
         response.put("redirectUrl", authUrl);
-        System.out.println("URL 응답");
 
         return RsData.success(HttpStatus.OK, response);
     }
@@ -62,11 +61,10 @@ public class SteamAuthController {
     @GetMapping("/callback/signup")
     @Operation(summary = "스팀 인증 검증 및 회원가입")
     public RsData<SignupMemberDetailResponse> signupHandleSteamCallback(@RequestParam Map<String, String> params) {
-        SignupMemberDetailResponse dto = handleSteamCallback(params, "signup");
-        return RsData.success(HttpStatus.OK, dto);
+        return RsData.success(HttpStatus.OK, handleSteamCallback(params, "signup"));
     }
     public SignupMemberDetailResponse handleSteamCallback(@RequestParam Map<String, String> params, String method) {
-        if (!params.containsKey("openid.mode") || !params.get("openid.mode").equals("id_res")) {
+        if (!"id_res".equals(params.get("openid.mode"))) {
             throw ErrorCode.EXTERNAL_API_UNEXPECTED_REQUEST.throwServiceException();
         }
         return steamAuthService.validateSteamId(params, method);

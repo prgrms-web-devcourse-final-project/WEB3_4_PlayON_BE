@@ -3,6 +3,7 @@ package com.ll.playon.global.steamAPI;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class SteamAPI {
     private final RestTemplate restTemplate;
@@ -23,11 +25,9 @@ public class SteamAPI {
     private String apikey;
 
     public Map<String, String> getUserProfile(Long steamId) {
-        String url = String.format("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=%s&steamids=%d", apikey, steamId);
+        final String steamUserInfoUrl = String.format("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=%s&steamids=%d", apikey, steamId);
 
-        String response = restTemplate.getForObject(url, String.class);
-
-        System.out.println(response);
+        String response = restTemplate.getForObject(steamUserInfoUrl, String.class);
 
         Map<String, String> userProfile = new HashMap<>();
 
@@ -43,16 +43,17 @@ public class SteamAPI {
             userProfile.put("profileImg", avatarfull);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            // TODO : 에러 발생시 후행 조치
         }
 
         return userProfile;
     }
 
     public List<Long> getUserGames(Long steamId) {
-        String url = String.format("https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=%s&steamid=%d", apikey, steamId);
+        final String steamOwnedGamesUrl = String.format("https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=%s&steamid=%d", apikey, steamId);
 
-        String response = restTemplate.getForObject(url, String.class);
+        String response = restTemplate.getForObject(steamOwnedGamesUrl, String.class);
 
         List<Long> gameIds = new ArrayList<>();
         try {
@@ -65,7 +66,8 @@ public class SteamAPI {
                 gameIds.add(gameNode.path("appid").asLong());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            // TODO : 에러 발생시 후행 조치
         }
 
         return gameIds;
