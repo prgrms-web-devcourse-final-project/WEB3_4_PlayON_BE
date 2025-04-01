@@ -53,7 +53,7 @@ public class MemberService {
                 .username((String) payload.get("username"))
                 .role((Role) payload.get("role"))
                 .build();
-        parsedMember.changeMemberId((long) payload.get("id"));
+        parsedMember.changeMemberId(((Number)payload.get("id")).longValue());
 
         return parsedMember;
     }
@@ -159,4 +159,12 @@ public class MemberService {
         userContext.setLogin(member);
     }
 
+    public void steamLink(Long steamId, Member actor) {
+        Member targetMember = memberRepository.findById(actor.getId())
+                        .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
+        targetMember.setSteamId(steamId);
+        memberRepository.save(targetMember);
+
+        saveUserGameList(steamAPI.getUserGames(steamId), targetMember);
+    }
 }
