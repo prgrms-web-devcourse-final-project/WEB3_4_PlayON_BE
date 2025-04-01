@@ -40,6 +40,8 @@ out/
 db_dev.mv.db
 db_dev.trace.db
 .DS_Store
-
+src/main/generated
 logs/
+
 src/main/resources/application-secret.yml
+
