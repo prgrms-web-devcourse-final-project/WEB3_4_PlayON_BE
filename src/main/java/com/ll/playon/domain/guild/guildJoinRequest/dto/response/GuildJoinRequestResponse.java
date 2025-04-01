@@ -18,7 +18,7 @@ public record GuildJoinRequestResponse(
                 entity.getId(),
                 entity.getMember().getId(),
                 entity.getMember().getUsername(),
-                entity.getMember().getProfile_img(),
+                entity.getMember().getProfileImg(),
                 entity.getCreatedAt(),
                 entity.getApprovalState()
         );
