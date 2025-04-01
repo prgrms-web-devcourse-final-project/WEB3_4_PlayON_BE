@@ -32,8 +32,7 @@ public enum ErrorCode {
     // Auth
     AUTHORIZATION_FAILED(HttpStatus.UNAUTHORIZED, "인증이 실패하였습니다."),
     USER_NOT_REGISTERED(HttpStatus.NOT_FOUND, "가입되지 않은 사용자입니다."),
-    USER_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 가입된 사용자입니다.");
-    PAGE_SIZE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "pageSize는 1에서 100 사이로 입력해주세요."),
+    USER_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 가입된 사용자입니다."),
 
     // Guild
     DUPLICATE_GUILD_NAME(HttpStatus.CONFLICT, "이미 존재하는 길드 이름입니다."),

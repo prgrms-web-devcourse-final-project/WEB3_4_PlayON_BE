@@ -10,11 +10,6 @@ spring:
       host: localhost
       port: 6379
 
-  profiles:
-    include:
-      - dev
-      - secret
-
   # h2
   h2:
     console:
@@ -37,7 +32,7 @@ spring:
         highlight_sql: true
         use_sql_comments: true
 
- # 로깅
+  # 로깅
 logging:
   level:
     org.springframework.security: DEBUG
