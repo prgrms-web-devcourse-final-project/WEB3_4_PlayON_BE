@@ -25,7 +25,7 @@ jobs:
       - name: application-secret.yml 생성
         env:
           APPLICATION_SECRET: ${{ secrets.APPLICATION_SECRET_YML }}
-        run: echo "$APPLICATION_SECRET" > backend/src/main/resources/application-secret.yml
+        run: echo "$APPLICATION_SECRET" > src/main/resources/application-secret.yml
       
       - name: Build and run tests
         run: |
