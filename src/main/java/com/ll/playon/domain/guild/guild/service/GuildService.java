@@ -67,7 +67,7 @@ public class GuildService {
     public PutGuildResponse modifyGuild(Long guildId, PutGuildRequest request) {
         Member actor = userContext.getActor();
 
-        Guild guild = guildRepository.findById(guildId)
+        Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
                 .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
 
        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
@@ -117,6 +117,13 @@ public class GuildService {
         guild.softDelete();
     }
 
+    /**
+     * 길드 상세정보 조건
+     * 비공개 + 멤버 → 확인가능
+     * 비공개 + 멤버X → 확인불가
+     * 공개 + 멤버 → 확인가능
+     * 공개 + 멤버X → 확인가능
+     */
     @Transactional(readOnly = true)
     public GuildDetailDto getGuildDetail(Long guildId) {
         Member actor = userContext.getActor();
@@ -124,10 +131,15 @@ public class GuildService {
         Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
                 .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
 
-        // 해당 길드 멤버인지 확인 + 권한
-        GuildRole myRole = guildMemberRepository.findByGuildAndMember(guild, actor)
-                .map(GuildMember::getGuildRole)
+        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
                 .orElse(null);
+
+        GuildRole myRole = guildMember != null ? guildMember.getGuildRole() : null;
+
+        // 비공개 + 멤버 아님
+        if (!guild.isPublic() && guildMember == null) {
+            throw ErrorCode.GUILD_NOT_FOUND.throwServiceException();
+        }
 
         return GuildDetailDto.from(guild, myRole);
     }
