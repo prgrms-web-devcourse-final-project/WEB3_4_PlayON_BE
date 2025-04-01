@@ -50,8 +50,19 @@ public class GuildMemberService {
             if (request == null || request.newLeaderId() == null) {
                 throw ErrorCode.GUILD_LEADER_CANNOT_LEAVE.throwServiceException();
             }
+
+            //운영진 수가 1명 이하인 경우, 위임 금지
+            long managerCount = guild.getMembers().stream()
+                    .filter(gm -> gm.getGuildRole() == GuildRole.MANAGER)
+                    .count();
+
+            if (managerCount <= 1) {
+                throw ErrorCode.CANNOT_DELEGATE_TO_SINGLE_MANAGER.throwServiceException(); // 안정성 문제로 차단
+            }
+
             Member newLeader = memberRepository.findById(request.newLeaderId())
                     .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+
             GuildMember delegateTarget = getGuildMember(guild, newLeader);
 
             if (delegateTarget.getGuildRole() != GuildRole.MANAGER) {
