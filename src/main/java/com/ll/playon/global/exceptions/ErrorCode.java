@@ -56,7 +56,11 @@ public enum ErrorCode {
     NOT_MANAGER(HttpStatus.BAD_REQUEST, "운영진 권한이 없는 유저입니다."),
     CANNOT_EXPEL_LEADER(HttpStatus.BAD_REQUEST, "길드장은 강제 퇴출할 수 없습니다."),
     ALREADY_GUILD_MEMBER(HttpStatus.BAD_REQUEST, "이미 해당 길드에 가입한 멤버입니다."),
-    MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 멤버를 찾을 수 없습니다.");
+    MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 멤버를 찾을 수 없습니다."),
+
+    // Tag
+    TAG_TYPE_CONVERT_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "태그 타입 변환에 실패하였습니다."),
+    TAG_VALUE_CONVERT_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "태그 이름 변환에 실패하였습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
