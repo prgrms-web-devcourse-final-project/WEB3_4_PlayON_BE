@@ -1,5 +1,11 @@
 package com.ll.playon.global.initData;
 
+import com.ll.playon.domain.guild.guild.entity.Guild;
+import com.ll.playon.domain.guild.guild.enums.*;
+import com.ll.playon.domain.guild.guild.repository.GuildRepository;
+import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
+import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
+import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
 import com.ll.playon.domain.member.MemberRepository;
 import com.ll.playon.domain.member.MemberSteamDataRepository;
 import com.ll.playon.domain.member.entity.Member;
@@ -23,6 +29,8 @@ public class BaseInitData {
 
     private final MemberRepository memberRepository;
     private final MemberSteamDataRepository memberSteamDataRepository;
+    private final GuildRepository guildRepository;
+    private final GuildMemberRepository guildMemberRepository;
 
     @Autowired
     @Lazy
@@ -32,6 +40,7 @@ public class BaseInitData {
     public ApplicationRunner baseInitDataApplicationRunner() {
         return args -> {
             self.makeSampleUsers();
+            self.makeSampleGuild();
         };
     }
 
@@ -67,5 +76,50 @@ public class BaseInitData {
 
         sampleMember3.getGames().addAll(games);
         memberSteamDataRepository.saveAll(games);
+    }
+
+    @Transactional
+    public void makeSampleGuild() {
+        if(guildRepository.count() != 0) return;
+
+        Member owner = memberRepository.findById(1L).get();
+        Member member1 = memberRepository.findById(2L).get();
+        Member member2 = memberRepository.findById(3L).get();
+
+        Guild guild = Guild.builder()
+                .owner(owner)
+                .name("테스트 길드")
+                .description("샘플 데이터용 길드입니다.")
+                .maxMembers(10)
+                .game(789L)
+                .partyStyle(PartyStyle.CASUAL)
+                .gameSkill(GameSkill.HACKER)
+                .genderFilter(GenderFilter.ALL)
+                .activeTime(ActiveTime.NIGHT)
+                .build();
+
+        guildRepository.save(guild);
+
+        GuildMember guildOwner = GuildMember.builder()
+                .guild(guild)
+                .member(owner)
+                .guildRole(GuildRole.LEADER)
+                .build();
+
+        GuildMember guildMember1 = GuildMember.builder()
+                .guild(guild)
+                .member(member1)
+                .guildRole(GuildRole.MANAGER)
+                .build();
+
+        GuildMember guildMember2 = GuildMember.builder()
+                .guild(guild)
+                .member(member2)
+                .guildRole(GuildRole.MEMBER)
+                .build();
+
+        guildMemberRepository.save(guildOwner);
+        guildMemberRepository.save(guildMember1);
+        guildMemberRepository.save(guildMember2);
     }
 }
