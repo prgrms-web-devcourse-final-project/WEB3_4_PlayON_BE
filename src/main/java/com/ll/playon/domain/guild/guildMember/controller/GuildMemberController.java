@@ -1,16 +1,12 @@
 package com.ll.playon.domain.guild.guildMember.controller;
 
-import com.ll.playon.domain.guild.guildMember.dto.request.AssignManagerRequest;
-import com.ll.playon.domain.guild.guildMember.dto.request.ExpelMemberRequest;
-import com.ll.playon.domain.guild.guildMember.dto.request.LeaveGuildRequest;
-import com.ll.playon.domain.guild.guildMember.dto.request.RevokeManagerRequest;
+import com.ll.playon.domain.guild.guildMember.dto.request.*;
 import com.ll.playon.domain.guild.guildMember.dto.response.GuildMemberResponse;
 import com.ll.playon.domain.guild.guildMember.service.GuildMemberService;
-import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.response.RsData;
-import com.ll.playon.global.security.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -56,13 +52,9 @@ public class GuildMemberController {
     }
 
     //닉네임을 기반으로 길드에 멤버 초대
-//    @PostMapping("/{guildId}/invite")
-//    public ResponseEntity<RsData<String>> inviteMember(
-//            @PathVariable Long guildId,
-//            @RequestParam String nickname,
-//            @RequestParam Long requesterId
-//    ) {
-//        guildMemberService.inviteMember(guildId, nickname, requesterId);
-//        return ResponseEntity.ok(RsData.success(HttpStatus.OK, "길드에 멤버를 초대했습니다."));
+//    @PostMapping("/invite")
+//    public RsData<String> inviteMember(@RequestBody InviteMemberRequest request) {
+//        guildMemberService.inviteMember(request);
+//        return RsData.success(HttpStatus.OK, "길드에 멤버를 초대했습니다.");
 //    }
 }

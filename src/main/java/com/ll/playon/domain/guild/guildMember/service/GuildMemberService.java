@@ -2,10 +2,7 @@ package com.ll.playon.domain.guild.guildMember.service;
 
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
-import com.ll.playon.domain.guild.guildMember.dto.request.AssignManagerRequest;
-import com.ll.playon.domain.guild.guildMember.dto.request.ExpelMemberRequest;
-import com.ll.playon.domain.guild.guildMember.dto.request.LeaveGuildRequest;
-import com.ll.playon.domain.guild.guildMember.dto.request.RevokeManagerRequest;
+import com.ll.playon.domain.guild.guildMember.dto.request.*;
 import com.ll.playon.domain.guild.guildMember.dto.response.GuildMemberResponse;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
@@ -124,22 +121,22 @@ public class GuildMemberService {
     }
 
     //닉네임을 기반으로 길드에 멤버 초대
+    //memberRepository에 Optional<Member> findByUsername(String username) 추가
 //    @Transactional
-//    public void inviteMember(Long guildId, String nickname, Long requesterId) {
-//        Guild guild = guildRepository.findById(guildId)
-//                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
+//    public void inviteMember(InviteMemberRequest request) {
+//        Member requester = userContext.getActor();
 //
-//        Member requester = memberRepository.findById(requesterId)
-//                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+//        Guild guild = guildRepository.findById(request.guildId())
+//                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
 //
 //        GuildMember requesterMember = guildMemberRepository.findByGuildAndMember(guild, requester)
 //                .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
 //
 //        if (requesterMember.getGuildRole() != GuildRole.LEADER && requesterMember.getGuildRole() != GuildRole.MANAGER) {
-//            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException(); // 권한 없음
+//            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
 //        }
 //
-//        Member target = memberRepository.findByUsername(nickname)
+//        Member target = memberRepository.findByUsername(request.nickname())
 //                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
 //
 //        boolean alreadyInGuild = guild.getMembers().stream()
