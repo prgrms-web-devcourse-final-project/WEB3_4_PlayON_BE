@@ -1,6 +1,8 @@
 package com.ll.playon.domain.notification.controller;
 
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.notification.dto.NotificationResponse;
+import com.ll.playon.domain.notification.entity.NotificationType;
 import com.ll.playon.domain.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -8,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -23,8 +27,22 @@ public class NotificationController {
 
     @PostMapping("/send")
     public ResponseEntity<Void> sendNotification(@RequestParam Long receiverId,
-                                                 @RequestParam String message) {
-        notificationService.sendNotification(receiverId, message);
+                                                 @RequestParam String content,
+                                                 @RequestParam NotificationType type,
+                                                 @RequestParam(required = false) String redirectUrl) {
+        notificationService.sendNotification(receiverId, content, type, redirectUrl);
         return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{notificationId}/read")
+    public ResponseEntity<Void> markAsRead(@PathVariable Long notificationId) {
+        notificationService.markAsRead(notificationId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<NotificationResponse>> getNotifications(@AuthenticationPrincipal Member member) {
+        List<NotificationResponse> notifications = notificationService.getNotifications(member.getId());
+        return ResponseEntity.ok(notifications);
     }
 }
