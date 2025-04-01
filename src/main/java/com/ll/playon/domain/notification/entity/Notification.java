@@ -32,3 +32,4 @@ public class Notification extends BaseEntity {
 
     private String redirectUrl;
 }
+// 인텔리제이 git push test_3
