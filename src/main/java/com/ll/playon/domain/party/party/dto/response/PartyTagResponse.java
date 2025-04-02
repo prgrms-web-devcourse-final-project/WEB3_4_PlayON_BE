@@ -4,20 +4,20 @@ import com.ll.playon.domain.party.party.entity.PartyTag;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
-public record PostPartyTagResponse(
+public record PartyTagResponse(
         @NotBlank
         String type,
 
         @NotBlank
         String value
 ) {
-    public PostPartyTagResponse(PartyTag partyTag) {
+    public PartyTagResponse(PartyTag partyTag) {
         this(partyTag.getType().getValue(), partyTag.getValue().getKoreanValue());
     }
 
-    public static List<PostPartyTagResponse> fromList(List<PartyTag> partyTags) {
+    public static List<PartyTagResponse> fromList(List<PartyTag> partyTags) {
         return partyTags.stream()
-                .map(PostPartyTagResponse::new)
+                .map(PartyTagResponse::new)
                 .toList();
     }
 }

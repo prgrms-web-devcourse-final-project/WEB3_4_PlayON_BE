@@ -3,6 +3,7 @@ package com.ll.playon.global.type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.ll.playon.global.exceptions.ErrorCode;
+import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -41,12 +42,9 @@ public enum TagValue {
 
     @JsonCreator
     public static TagValue fromValue(String value) {
-        for (TagValue tagValue : values()) {
-            if (tagValue.getKoreanValue().equals(value)) {
-                return tagValue;
-            }
-        }
-
-        throw ErrorCode.TAG_VALUE_CONVERT_FAILED.throwServiceException();
+        return Arrays.stream(values())
+                .filter(tagValue -> tagValue.getKoreanValue().equals(value))
+                .findFirst()
+                .orElseThrow(ErrorCode.TAG_VALUE_CONVERT_FAILED::throwServiceException);
     }
 }

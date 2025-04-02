@@ -126,4 +126,11 @@ public class UserContext {
 
         return memberService.findById(actor.getId());
     }
+
+    /**
+     * 테스트용, 추후 삭제
+     */
+    public Member findById(long id) {
+        return this.memberService.findById(id).get();
+    }
 }

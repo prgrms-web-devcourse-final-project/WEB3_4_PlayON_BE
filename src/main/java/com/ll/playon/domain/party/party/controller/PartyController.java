@@ -2,14 +2,18 @@ package com.ll.playon.domain.party.party.controller;
 
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
+import com.ll.playon.domain.party.party.dto.request.PutPartyRequest;
 import com.ll.playon.domain.party.party.dto.response.PostPartyResponse;
+import com.ll.playon.domain.party.party.dto.response.PutPartyResponse;
 import com.ll.playon.domain.party.party.service.PartyService;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,9 +29,20 @@ public class PartyController {
 
     @PostMapping
     public RsData<PostPartyResponse> createParty(@RequestBody @Valid PostPartyRequest postPartyRequest) {
-        // TODO : 사용할지 말지 추후에 결정
-        Member actor = this.userContext.getActor();
+        // TODO : 추후 롤백
+//        Member actor = this.userContext.getActor();
+        Member actor = this.userContext.findById(3L);
 
-        return RsData.success(HttpStatus.CREATED, this.partyService.createParty(postPartyRequest));
+        return RsData.success(HttpStatus.CREATED, this.partyService.createParty(actor, postPartyRequest));
+    }
+
+    @PutMapping("/{playId}")
+    public RsData<PutPartyResponse> updateParty(@PathVariable long playId,
+                                                @RequestBody @Valid PutPartyRequest putPartyRequest) {
+        // TODO : 추후 롤백
+//        Member actor = this.userContext.getActor();
+        Member actor = this.userContext.findById(3L);
+
+        return RsData.success(HttpStatus.OK, this.partyService.updateParty(actor, playId, putPartyRequest));
     }
 }
