@@ -1,6 +1,7 @@
 package com.ll.playon.domain.guild.guild.entity;
 
-import com.ll.playon.domain.guild.guild.enums.*;
+import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
+import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.jpa.entity.BaseTime;
@@ -48,21 +49,9 @@ public class Guild extends BaseTime {
     @Column(name = "guild_img")
     private String guildImg;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "party_style", nullable = false)
-    private PartyStyle partyStyle;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "game_skill", nullable = false)
-    private GameSkill gameSkill;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "gender_filter", nullable = false)
-    private GenderFilter genderFilter;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "active_time", nullable = false)
-    private ActiveTime activeTime;
+    @OneToMany(mappedBy = "guild", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<GuildTag> guildTags = new ArrayList<>();
 
     @OneToMany(mappedBy = "guild", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -74,4 +63,25 @@ public class Guild extends BaseTime {
         this.name = "DELETED_" + UUID.randomUUID();
         this.description = "DELETED";
     }
+
+    public void updateFromRequest(PutGuildRequest request) {
+        this.name = request.name();
+        this.description = request.description();
+        this.maxMembers = request.maxMembers();
+        this.isPublic = request.isPublic();
+        this.guildImg = request.guildImg();
+    }
+
+    public static Guild createFrom(PostGuildRequest request, Member owner) {
+        return Guild.builder()
+                .owner(owner)
+                .name(request.name())
+                .description(request.description())
+                .maxMembers(request.maxMembers())
+                .isPublic(request.isPublic())
+                .game(request.gameId())
+                .guildImg(request.guildImg())
+                .build();
+    }
 }
+

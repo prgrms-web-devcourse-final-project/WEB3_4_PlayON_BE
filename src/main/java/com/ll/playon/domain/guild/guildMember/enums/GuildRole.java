@@ -11,4 +11,8 @@ public enum GuildRole {
     MEMBER("멤버");
 
     private final String label;
+
+    public boolean isManagerOrLeader() {
+        return this == LEADER || this == MANAGER;
+    }
 }
