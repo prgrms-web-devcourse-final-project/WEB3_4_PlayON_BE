@@ -1,10 +1,8 @@
-package com.ll.playon.domain.guild.guild.dto;
+package com.ll.playon.domain.guild.guild.dto.request;
 
-import com.ll.playon.domain.guild.guild.enums.ActiveTime;
-import com.ll.playon.domain.guild.guild.enums.GameSkill;
-import com.ll.playon.domain.guild.guild.enums.GenderFilter;
-import com.ll.playon.domain.guild.guild.enums.PartyStyle;
 import jakarta.validation.constraints.*;
+
+import java.util.List;
 
 public record PostGuildRequest(
         @NotBlank(message = "길드 이름은 필수입니다.")
@@ -25,16 +23,7 @@ public record PostGuildRequest(
         @NotBlank(message = "길드 대표 이미지는 필수입니다.")
         String guildImg,
 
-        @NotNull(message = "파티 스타일을 선택해주세요.")
-        PartyStyle partyStyle,
-
-        @NotNull(message = "게임 실력을 선택해주세요.")
-        GameSkill gameSkill,
-
-        @NotNull(message = "성별 조건을 선택해주세요.")
-        GenderFilter genderFilter,
-
-        @NotNull(message = "활동 시간을 선택해주세요.")
-        ActiveTime activeTime
+        @NotNull(message = "태그 정보들을 입력해주세요.")
+        List<GuildTagRequest> tags
 ) {
 }

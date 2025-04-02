@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class GuildMemberQueryRepositoryImpl implements GuildMemberQueryRepository {
+public class GuildMemberRepositoryCustomImpl implements GuildMemberRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override

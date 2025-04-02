@@ -1,11 +1,12 @@
-package com.ll.playon.domain.guild.guild.enums;
+package com.ll.playon.domain.guild.guild.dto.response;
 
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-public record GuildDetailDto(
+public record GetGuildDetailResponse(
         Long id,
         String name,
         String description,
@@ -13,16 +14,13 @@ public record GuildDetailDto(
         int maxMembers,
         boolean isPublic,
         String guildImg,
-        PartyStyle partyStyle,
-        GameSkill gameSkill,
-        GenderFilter genderFilter,
-        ActiveTime activeTime,
         Long gameId,
         LocalDateTime createdAt,
+        List<GuildTagResponse> tags,
         GuildRole myRole
 ) {
-    public static GuildDetailDto from(Guild guild, GuildRole myRole) {
-        return new GuildDetailDto(
+    public static GetGuildDetailResponse from(Guild guild, GuildRole myRole) {
+        return new GetGuildDetailResponse(
                 guild.getId(),
                 guild.getName(),
                 guild.getDescription(),
@@ -30,12 +28,9 @@ public record GuildDetailDto(
                 guild.getMaxMembers(),
                 guild.isPublic(),
                 guild.getGuildImg(),
-                guild.getPartyStyle(),
-                guild.getGameSkill(),
-                guild.getGenderFilter(),
-                guild.getActiveTime(),
                 guild.getGame(),
                 guild.getCreatedAt(),
+                GuildTagResponse.fromList(guild.getGuildTags()),
                 myRole
         );
     }
