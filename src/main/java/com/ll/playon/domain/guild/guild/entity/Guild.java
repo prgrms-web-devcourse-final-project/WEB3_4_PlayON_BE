@@ -1,11 +1,7 @@
 package com.ll.playon.domain.guild.guild.entity;
 
-import com.ll.playon.domain.guild.guild.dto.PostGuildRequest;
-import com.ll.playon.domain.guild.guild.dto.PutGuildRequest;
-import com.ll.playon.domain.guild.guild.enums.ActiveTime;
-import com.ll.playon.domain.guild.guild.enums.GameSkill;
-import com.ll.playon.domain.guild.guild.enums.GenderFilter;
-import com.ll.playon.domain.guild.guild.enums.PartyStyle;
+import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
+import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.jpa.entity.BaseTime;
@@ -53,21 +49,9 @@ public class Guild extends BaseTime {
     @Column(name = "guild_img")
     private String guildImg;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "party_style", nullable = false)
-    private PartyStyle partyStyle;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "game_skill", nullable = false)
-    private GameSkill gameSkill;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "gender_filter", nullable = false)
-    private GenderFilter genderFilter;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "active_time", nullable = false)
-    private ActiveTime activeTime;
+    @OneToMany(mappedBy = "guild", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<GuildTag> guildTags = new ArrayList<>();
 
     @OneToMany(mappedBy = "guild", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -86,10 +70,6 @@ public class Guild extends BaseTime {
         this.maxMembers = request.maxMembers();
         this.isPublic = request.isPublic();
         this.guildImg = request.guildImg();
-        this.partyStyle = request.partyStyle();
-        this.gameSkill = request.gameSkill();
-        this.genderFilter = request.genderFilter();
-        this.activeTime = request.activeTime();
     }
 
     public static Guild createFrom(PostGuildRequest request, Member owner) {
@@ -101,10 +81,6 @@ public class Guild extends BaseTime {
                 .isPublic(request.isPublic())
                 .game(request.gameId())
                 .guildImg(request.guildImg())
-                .partyStyle(request.partyStyle())
-                .gameSkill(request.gameSkill())
-                .genderFilter(request.genderFilter())
-                .activeTime(request.activeTime())
                 .build();
     }
 }
