@@ -87,6 +87,42 @@ public class BaseInitData {
         memberRepository.save(owner);
 
         memberService.saveUserGameList(gameAppIds, owner);
+
+        Member user1 = Member.builder()
+                .steamId(1515L)
+                .username("user1")
+                .nickname("user1")
+                .profileImg("")
+                .lastLoginAt(LocalDateTime.now())
+                .role(Role.USER)
+                .build();
+        memberRepository.save(user1);
+
+        memberService.saveUserGameList(gameAppIds, user1);
+
+        Member user2 = Member.builder()
+                .steamId(2222L)
+                .username("user2")
+                .nickname("user2")
+                .profileImg("")
+                .lastLoginAt(LocalDateTime.now())
+                .role(Role.USER)
+                .build();
+        memberRepository.save(user2);
+
+        memberService.saveUserGameList(gameAppIds, user2);
+
+        Member user3 = Member.builder()
+                .steamId(3333L)
+                .username("user3")
+                .nickname("user3")
+                .profileImg("")
+                .lastLoginAt(LocalDateTime.now())
+                .role(Role.USER)
+                .build();
+        memberRepository.save(user3);
+
+        memberService.saveUserGameList(gameAppIds, user3);
     }
 
     @Transactional

@@ -4,7 +4,7 @@ import com.ll.playon.domain.party.party.entity.PartyMember;
 import lombok.NonNull;
 
 public record PartyDetailMemberDto(
-        long partyMemberId,
+        long memberId,
 
         // TODO: 스팀 아바타로 변경할지 고려
         @NonNull
@@ -12,7 +12,7 @@ public record PartyDetailMemberDto(
 ) {
     public PartyDetailMemberDto(PartyMember partyMember) {
         this(
-                partyMember.getId(),
+                partyMember.getMember().getId(),
                 partyMember.getMember().getProfileImg()
         );
     }
