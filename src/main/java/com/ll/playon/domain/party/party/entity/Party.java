@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -46,7 +47,12 @@ public class Party extends BaseTime {
     private int maximum;
 
     @OneToMany(mappedBy = "party", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PartyTag> partyTags;
+    private List<PartyMember> partyMember = new ArrayList<>();
+
+    @OneToMany(mappedBy = "party", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PartyTag> partyTags = new ArrayList<>();
+
+    // TODO : 파티 룸
 
     @Builder
     public Party(Long game, String name, String description, LocalDateTime partyAt, boolean isPublic, int minimum,

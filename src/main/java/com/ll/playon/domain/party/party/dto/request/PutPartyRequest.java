@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record PostPartyRequest(
+public record PutPartyRequest(
         @NotBlank(message = "파티 룸 이름을 입력해주세요.")
         String name,
 

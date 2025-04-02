@@ -5,9 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import lombok.NonNull;
 
-// TODO : 1. 생성 응답 데이터 확인
-//        2. 게임 HeaderImage 추가
-public record PostPartyResponse(
+public record PutPartyResponse(
         long id,
 
         long gameId,
@@ -27,7 +25,7 @@ public record PostPartyResponse(
         @NonNull
         List<PartyTagResponse> tags
 ) {
-    public PostPartyResponse(Party party) {
+    public PutPartyResponse(Party party) {
         this(
                 party.getId(),
                 party.getGame(),

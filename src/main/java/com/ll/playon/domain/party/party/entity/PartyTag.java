@@ -11,6 +11,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,4 +43,20 @@ public class PartyTag extends BaseTime {
     @Enumerated(EnumType.STRING)
     @Column(name = "tagValue")
     private TagValue value;
+
+    // TODO: 더 좋은 방법이 있나 고민해볼 것
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PartyTag partyTag = (PartyTag) o;
+
+        return this.type == partyTag.type && value == partyTag.value && party.equals(partyTag.party);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(party, type, value);
+    }
+
 }
