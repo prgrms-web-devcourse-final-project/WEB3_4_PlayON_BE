@@ -54,7 +54,7 @@ public class Party extends BaseTime {
     private PartyStatus partyStatus;
 
     @OneToMany(mappedBy = "party", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PartyMember> partyMember = new ArrayList<>();
+    private List<PartyMember> partyMembers = new ArrayList<>();
 
     @OneToMany(mappedBy = "party", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PartyTag> partyTags = new ArrayList<>();

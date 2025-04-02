@@ -64,6 +64,7 @@ public enum ErrorCode {
 
     // PartyMember
     PARTY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티 멤버가 존재하지 않습니다."),
+    PARTY_OWNER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티장이 존재하지 않습니다."),
     INVALID_PARTY_MEMBER(HttpStatus.FORBIDDEN, "해당 파티의 파티장이 아닙니다."),
 
     // Tag

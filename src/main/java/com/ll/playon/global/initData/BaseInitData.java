@@ -50,10 +50,12 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleUsers() {
-        if(memberRepository.count() != 0) return;
+        if (memberRepository.count() != 0) {
+            return;
+        }
 
         Member sampleMember1 = Member.builder()
-                .steamId(123L).username("sampleUser1").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
+                .steamId(123L).username("sampleUser1").nickname("sampleUser1").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember1);
         List<Long> gameAppIds = Arrays.asList(2246340L, 2680010L, 2456740L);
         memberService.saveUserGameList(gameAppIds, sampleMember1);
@@ -66,17 +68,32 @@ public class BaseInitData {
         Member sampleMember3 = Member.builder()
                 .steamId(789L).username("sampleUser3").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember3);
+
         memberService.saveUserGameList(gameAppIds, sampleMember3);
 
         Member noSteamMember = Member.builder()
                 .username("noSteamMember").nickname("noSteamUser").password(passwordEncoder.encode("noSteam123"))
                 .lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(noSteamMember);
+
+        Member owner = Member.builder()
+                .steamId(111L)
+                .username("owner")
+                .nickname("owner")
+                .profileImg("")
+                .lastLoginAt(LocalDateTime.now())
+                .role(Role.USER)
+                .build();
+        memberRepository.save(owner);
+
+        memberService.saveUserGameList(gameAppIds, owner);
     }
 
     @Transactional
     public void makeSampleGuild() {
-        if(guildRepository.count() != 0) return;
+        if (guildRepository.count() != 0) {
+            return;
+        }
 
         Member owner = memberRepository.findById(1L).get();
         Member member1 = memberRepository.findById(2L).get();

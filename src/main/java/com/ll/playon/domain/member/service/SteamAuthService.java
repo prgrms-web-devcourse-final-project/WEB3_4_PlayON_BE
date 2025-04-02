@@ -1,7 +1,7 @@
 package com.ll.playon.domain.member.service;
 
 import com.ll.playon.domain.member.controller.SteamRedirectPaths;
-import com.ll.playon.domain.member.dto.SignupMemberDetailResponse;
+import com.ll.playon.domain.member.dto.MemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class SteamAuthService {
     private final RestTemplate restTemplate;
     private final MemberService memberService;
 
-    public SignupMemberDetailResponse validateSteamId(Map<String, String> params, String path, Member actor) {
+    public MemberDetailDto validateSteamId(Map<String, String> params, String path, Member actor) {
         String validationUrl = "https://steamcommunity.com/openid/login";
         String requestBody = buildValidationRequest(params);
 

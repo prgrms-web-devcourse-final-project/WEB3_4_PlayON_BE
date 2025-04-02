@@ -1,11 +1,11 @@
 package com.ll.playon.domain.member.service;
 
-import com.ll.playon.domain.member.dto.SignupMemberDetailResponse;
-import com.ll.playon.domain.member.repository.MemberRepository;
-import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
+import com.ll.playon.domain.member.dto.MemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
+import com.ll.playon.domain.member.repository.MemberRepository;
+import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
@@ -15,7 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -78,7 +81,7 @@ public class MemberService {
         handleSuccessfulLogin(member);
     }
 
-    public SignupMemberDetailResponse steamSignup(Long steamId) {
+    public MemberDetailDto steamSignup(Long steamId) {
         if (memberRepository.findBySteamId(steamId).isPresent()) {
             throw ErrorCode.USER_ALREADY_REGISTERED.throwServiceException();
         }
@@ -87,12 +90,12 @@ public class MemberService {
 
         handleSuccessfulLogin(member);
 
-        return new SignupMemberDetailResponse(
+        return new MemberDetailDto(
                 member.getNickname(), member.getProfileImg(), member.getPlayStyle(),
                 member.getSkillLevel(), member.getGender());
     }
 
-    public SignupMemberDetailResponse signupNoSteam(String username, String password) {
+    public MemberDetailDto signupNoSteam(String username, String password) {
         Optional<Member> memberOptional = memberRepository.findByUsername(username);
         if(memberOptional.isPresent()) {
             throw ErrorCode.USER_ALREADY_REGISTERED.throwServiceException();
@@ -102,7 +105,7 @@ public class MemberService {
 
         handleSuccessfulLogin(member);
 
-        return new SignupMemberDetailResponse(
+        return new MemberDetailDto(
                 member.getNickname(), member.getProfileImg(), member.getPlayStyle(),
                 member.getSkillLevel(), member.getGender());
     }
@@ -166,5 +169,35 @@ public class MemberService {
                 return targetMember;
             })
             .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
+    }
+
+    public void modifyMember(MemberDetailDto req, Member actor) {
+        Member member = memberRepository.findById(actor.getId())
+                .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
+
+        // 사용자 정보 수정 및 저장 (방어적 복사 적용해봄)
+        memberRepository.save(member.toBuilder()
+                .nickname(req.nickname())
+                .profileImg(req.profileImg())
+                .playStyle(req.playStyle())
+                .skillLevel(req.skillLevel())
+                .gender(req.gender())
+                .build());
+    }
+
+    public void deactivateMember(Member actor) {
+        Member member = memberRepository.findById(actor.getId())
+                .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
+
+        // 사용자가 소유한 게임 목록 삭제
+        memberSteamDataRepository.deleteById(member.getId());
+
+        // 연결된 길드, 파티, 파티로그 등 남기기 위해서 엔티티를 삭제하지는 않음
+        memberRepository.save(member.toBuilder()
+                .steamId(null)  // 스팀 연결 해제
+                .username("DELETED_" + UUID.randomUUID())
+                .nickname("탈퇴한 사용자")
+                .isDeleted(true)
+                .build());
     }
 }

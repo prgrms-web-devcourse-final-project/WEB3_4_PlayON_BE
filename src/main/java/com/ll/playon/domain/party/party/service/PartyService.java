@@ -1,8 +1,11 @@
 package com.ll.playon.domain.party.party.service;
 
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.party.party.dto.PartyDetailMemberDto;
+import com.ll.playon.domain.party.party.dto.PartyDetailTagDto;
 import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
 import com.ll.playon.domain.party.party.dto.request.PutPartyRequest;
+import com.ll.playon.domain.party.party.dto.response.GetPartyDetailResponse;
 import com.ll.playon.domain.party.party.dto.response.PostPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.PutPartyResponse;
 import com.ll.playon.domain.party.party.entity.Party;
@@ -39,7 +42,7 @@ public class PartyService {
         PartyMember partyMember = PartyMemberMapper.of(actor, PartyRole.OWNER);
 
         partyMember.setParty(party);
-        party.getPartyMember().add(partyMember);
+        party.getPartyMembers().add(partyMember);
 
         // TODO: 1. Game 헤더 이미지 응답
         //       2. 파티룸 생성
@@ -47,10 +50,30 @@ public class PartyService {
         return new PostPartyResponse(this.partyRepository.save(party));
     }
 
+    // 파티 상세 정보 조회
+    @Transactional
+    public GetPartyDetailResponse getPartyDetail(long partyId) {
+        Party party = this.getParty(partyId);
+        PartyMember owner = this.getPartyOwner(party);
+
+        List<PartyDetailMemberDto> partyDetailMemberDtos = party.getPartyMembers().stream()
+                .map(PartyDetailMemberDto::new)
+                .toList();
+
+        List<PartyDetailTagDto> partyDetailTagDtos = party.getPartyTags().stream()
+                .map(PartyDetailTagDto::new)
+                .toList();
+
+        // 조회수 증가
+        party.setHit(party.getHit() + 1);
+
+        return new GetPartyDetailResponse(party, owner, partyDetailMemberDtos, partyDetailTagDtos);
+    }
+
     // 파티 수정
     @Transactional
     public PutPartyResponse updateParty(Member actor, long partyId, PutPartyRequest putPartyRequest) {
-        Party party = getParty(partyId);
+        Party party = this.getParty(partyId);
         PartyMember partyMember = this.getPartyMember(actor, party);
 
         if (this.isNotPartyOwner(partyMember)) {
@@ -90,6 +113,14 @@ public class PartyService {
     private PartyMember getPartyMember(Member actor, Party party) {
         return this.partyMemberRepository.findByMemberAndParty(actor, party)
                 .orElseThrow(ErrorCode.PARTY_MEMBER_NOT_FOUND::throwServiceException);
+    }
+
+    // Party에서 파티장 조회
+    private PartyMember getPartyOwner(Party party) {
+        return party.getPartyMembers().stream()
+                .filter(pm -> pm.getPartyRole().equals(PartyRole.OWNER))
+                .findFirst()
+                .orElseThrow(ErrorCode.PARTY_OWNER_NOT_FOUND::throwServiceException);
     }
 
     // 요청으로부터 파티 태그 리스트 생성
