@@ -1,5 +1,7 @@
 package com.ll.playon.global.initData;
 
+import com.ll.playon.domain.game.game.entity.*;
+import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
@@ -21,6 +23,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,6 +37,7 @@ public class BaseInitData {
     private final GuildMemberRepository guildMemberRepository;
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
+    private final GameRepository gameRepository;
 
     @Autowired
     @Lazy
@@ -44,8 +48,96 @@ public class BaseInitData {
         return args -> {
             self.makeSampleUsers();
             self.makeSampleGuilds();
-
+            self.makeSampleSteamGames();
         };
+    }
+
+    @Transactional
+    public void makeSampleSteamGames() {
+        if (gameRepository.count() > 0) return;
+
+        List<SteamGame> games = new ArrayList<>();
+
+        SteamGame game1 = SteamGame.builder()
+                .appid(730L)
+                .name("Counter-Strike 2")
+                .headerImage("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/header.jpg")
+                .requiredAge(0)
+                .price(0L)
+                .detailedDescription("Counter-Strike의 정수를 담은 FPS")
+                .aboutTheGame("20년 넘게 이어진 경쟁 FPS")
+                .shortDescription("정통 FPS 게임")
+                .windows(true)
+                .mac(false)
+                .linux(true)
+                .releaseDate(LocalDate.of(2012, 8, 21))
+                .website("http://counter-strike.net/")
+                .recommendations(4401572L)
+                .developers("Valve")
+                .publishers("Valve")
+                .build();
+
+        game1.setScreenshots(List.of(
+                SteamImage.builder().game(game1).screenshot("https://.../ss_1.jpg").build()
+        ));
+        game1.setMovies(List.of(
+                SteamMovie.builder().game(game1).movie("http://video.akamai.../movie1.mp4").build()
+        ));
+        game1.setSteamCategories(List.of(
+                SteamCategory.builder().game(game1).category("Multi-player").build(),
+                SteamCategory.builder().game(game1).category("Steam Trading Cards").build()
+        ));
+        game1.setSteamGenres(List.of(
+                SteamGenre.builder().game(game1).genre("Action").build(),
+                SteamGenre.builder().game(game1).genre("Free To Play").build()
+        ));
+
+        SteamGame game2 = SteamGame.builder()
+                .appid(570L)
+                .name("Dota 2")
+                .headerImage("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/header.jpg")
+                .requiredAge(0)
+                .price(0L)
+                .detailedDescription("MOBA 장르의 대표작")
+                .aboutTheGame("수백만의 유저가 매일 플레이")
+                .shortDescription("팀 기반 전략 게임")
+                .windows(true)
+                .mac(true)
+                .linux(true)
+                .releaseDate(LocalDate.of(2013, 7, 9))
+                .website("http://www.dota2.com/")
+                .recommendations(14337L)
+                .developers("Valve")
+                .publishers("Valve")
+                .build();
+
+        game2.setScreenshots(List.of(
+                SteamImage.builder().game(game2).screenshot("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/ss_ad8eee787704745ccdecdfded2ac57e9d2211e9.jpg").build(),
+                SteamImage.builder().game(game2).screenshot("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/ss_02b0c95702c2e8e91c183e6402d39112c48abf70.jpg").build()
+        ));
+
+        game2.setMovies(List.of(
+                SteamMovie.builder().game(game2).movie("http://video.akamai.steamstatic.com/store_trailers/256692021/movie_max.mp4?t=1739210452").build(),
+                SteamMovie.builder().game(game2).movie("http://video.akamai.steamstatic.com/store_trailers/256692021/movie_480p.mp4?t=1739210452").build()
+        ));
+
+        game2.setSteamCategories(List.of(
+                SteamCategory.builder().game(game2).category("Multi-player").build(),
+                SteamCategory.builder().game(game2).category("Co-op").build(),
+                SteamCategory.builder().game(game2).category("Steam Trading Cards").build(),
+                SteamCategory.builder().game(game2).category("Steam Workshop").build()
+        ));
+
+        game2.setSteamGenres(List.of(
+                SteamGenre.builder().game(game2).genre("Action").build(),
+                SteamGenre.builder().game(game2).genre("Strategy").build(),
+                SteamGenre.builder().game(game2).genre("Free To Play").build()
+        ));
+
+        games.add(game1);
+        games.add(game2);
+
+        gameRepository.saveAll(games);
     }
 
     @Transactional
@@ -200,4 +292,6 @@ public class BaseInitData {
 
         return guildTags;
     }
+
+
 }
