@@ -33,6 +33,7 @@ public enum ErrorCode {
     AUTHORIZATION_FAILED(HttpStatus.UNAUTHORIZED, "인증이 실패하였습니다."),
     USER_NOT_REGISTERED(HttpStatus.NOT_FOUND, "가입되지 않은 사용자입니다."),
     USER_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 가입된 사용자입니다."),
+    PASSWORD_INCORRECT(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
 
     // Guild
     DUPLICATE_GUILD_NAME(HttpStatus.CONFLICT, "이미 존재하는 길드 이름입니다."),
