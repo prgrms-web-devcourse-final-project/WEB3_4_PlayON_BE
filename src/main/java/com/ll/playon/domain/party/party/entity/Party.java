@@ -1,9 +1,12 @@
 package com.ll.playon.domain.party.party.entity;
 
+import com.ll.playon.domain.party.party.type.PartyStatus;
 import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -46,6 +49,10 @@ public class Party extends BaseTime {
     @Column(nullable = false)
     private int maximum;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PartyStatus partyStatus;
+
     @OneToMany(mappedBy = "party", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PartyMember> partyMember = new ArrayList<>();
 
@@ -65,5 +72,6 @@ public class Party extends BaseTime {
         this.hit = 0;
         this.minimum = minimum;
         this.maximum = maximum;
+        this.partyStatus = PartyStatus.PENDING;
     }
 }

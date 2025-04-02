@@ -10,12 +10,12 @@ import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
 import com.ll.playon.domain.party.party.mapper.PartyMapper;
 import com.ll.playon.domain.party.party.mapper.PartyMemberMapper;
+import com.ll.playon.domain.party.party.mapper.PartyTagMapper;
 import com.ll.playon.domain.party.party.repository.PartyMemberRepository;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.party.type.PartyRole;
+import com.ll.playon.domain.party.party.type.PartyStatus;
 import com.ll.playon.global.exceptions.ErrorCode;
-import com.ll.playon.global.type.TagType;
-import com.ll.playon.global.type.TagValue;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -49,11 +49,11 @@ public class PartyService {
 
     // 파티 수정
     @Transactional
-    public PutPartyResponse updateParty(Member actor, long playId, PutPartyRequest putPartyRequest) {
-        Party party = getParty(playId);
+    public PutPartyResponse updateParty(Member actor, long partyId, PutPartyRequest putPartyRequest) {
+        Party party = getParty(partyId);
         PartyMember partyMember = this.getPartyMember(actor, party);
 
-        if (!this.isPartyOwner(partyMember)) {
+        if (this.isNotPartyOwner(partyMember)) {
             ErrorCode.INVALID_PARTY_MEMBER.throwServiceException();
         }
 
@@ -66,9 +66,23 @@ public class PartyService {
         return new PutPartyResponse(party);
     }
 
+    // 파티 삭제
+    // TODO: 추후 스케쥴링 처리
+    @Transactional
+    public void deleteParty(Member actor, long partyId) {
+        Party party = this.getParty(partyId);
+        PartyMember partyMember = this.getPartyMember(actor, party);
+
+        if (this.isNotPartyOwner(partyMember)) {
+            ErrorCode.INVALID_PARTY_MEMBER.throwServiceException();
+        }
+
+        party.setPartyStatus(PartyStatus.COMPLETED);
+    }
+
     // 파티 ID로 파티 조회
-    private Party getParty(long playId) {
-        return this.partyRepository.findById(playId)
+    private Party getParty(long partyId) {
+        return this.partyRepository.findById(partyId)
                 .orElseThrow(ErrorCode.PARTY_NOT_FOUND::throwServiceException);
     }
 
@@ -81,17 +95,13 @@ public class PartyService {
     // 요청으로부터 파티 태그 리스트 생성
     private List<PartyTag> createPartyTag(PostPartyRequest request, Party party) {
         return request.tags().stream()
-                .map(tag -> PartyTag.builder()
-                        .party(party)
-                        .type(TagType.fromValue(tag.type()))
-                        .value(TagValue.fromValue(tag.value()))
-                        .build())
+                .map(tag -> PartyTagMapper.build(party, tag.type(), tag.value()))
                 .toList();
     }
 
     // 파티 생성자 확인
-    private boolean isPartyOwner(PartyMember partyMember) {
-        return partyMember.getPartyRole().equals(PartyRole.OWNER);
+    private boolean isNotPartyOwner(PartyMember partyMember) {
+        return !partyMember.getPartyRole().equals(PartyRole.OWNER);
     }
 
     // 파티 정보 수정
