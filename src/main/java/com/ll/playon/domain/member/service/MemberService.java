@@ -1,7 +1,6 @@
 package com.ll.playon.domain.member.service;
 
 import com.ll.playon.domain.member.dto.*;
-import com.ll.playon.domain.member.dto.MemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
@@ -16,14 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -220,11 +212,8 @@ public class MemberService {
         // 보유한 게임 목록 조회
         List<MemberSteamData> gamesList = memberSteamDataRepository.findAllByMemberId(actor.getId());
 
-        // 게임 상세 (이름, 장르, 이미지) 조회 후 Dto 에 담기
-        List<GameDetailDto> memberOwnedGamesDto = getMemberOwnedGamesDto(gamesList);
-
         // 모든 정보 MemberProfileResponse 에 담기
-        return new MemberProfileResponse(profileMemberDetailDto, memberOwnedGamesDto);
+        return new MemberProfileResponse(profileMemberDetailDto, getMemberOwnedGamesDto(gamesList));
     }
 
     private static List<GameDetailDto> getMemberOwnedGamesDto(List<MemberSteamData> gamesList) {

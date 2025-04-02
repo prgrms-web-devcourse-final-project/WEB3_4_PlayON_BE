@@ -240,4 +240,20 @@ public class MemberControllerTest {
                 .andExpect(jsonPath("$.data.memberDetail.username").value(actor.getUsername()))
                 .andExpect(jsonPath("$.data.ownedGames", hasSize(actor.getGames().size())));
     }
+
+    @Test
+    @DisplayName("닉네임으로 사용자 조회")
+    void getMembersWithNickname() throws Exception {
+        String nickname = "sampleUser";
+        ResultActions resultActions = mvc.perform(
+                get("/api/members/nickname?nickname=" + nickname)
+        );
+
+        int memberWithSameNicknameCount = memberService.findByNickname(nickname).size();
+
+        resultActions
+                .andExpect(handler().handlerType(MemberController.class))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data", hasSize(memberWithSameNicknameCount)));
+    }
 }
