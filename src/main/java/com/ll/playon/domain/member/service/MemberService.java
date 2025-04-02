@@ -1,5 +1,6 @@
 package com.ll.playon.domain.member.service;
 
+import com.ll.playon.domain.member.dto.*;
 import com.ll.playon.domain.member.dto.MemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
@@ -15,6 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -200,4 +205,39 @@ public class MemberService {
                 .isDeleted(true)
                 .build());
     }
+
+    public MemberProfileResponse me(Member actor) {
+        Member member = memberRepository.findById(actor.getId())
+                .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
+
+        // 사용자 정보 조회 후 Dto 에 담기
+        ProfileMemberDetailDto profileMemberDetailDto = new ProfileMemberDetailDto(
+                member.getSteamId(), member.getUsername(), member.getProfileImg(),
+                member.getLastLoginAt(), member.getPlayStyle(), member.getSkillLevel(),
+                member.getGender(), member.getPreferredGenres()
+        );
+
+        // 보유한 게임 목록 조회
+        List<MemberSteamData> gamesList = memberSteamDataRepository.findAllByMemberId(actor.getId());
+
+        // 게임 상세 (이름, 장르, 이미지) 조회 후 Dto 에 담기
+        MemberOwnedGamesDto memberOwnedGamesDto = getMemberOwnedGamesDto(gamesList);
+
+        // 모든 정보 MemberProfileResponse 에 담기
+        return new MemberProfileResponse(profileMemberDetailDto, memberOwnedGamesDto);
+    }
+
+    private static MemberOwnedGamesDto getMemberOwnedGamesDto(List<MemberSteamData> gamesList) {
+        List<GameDetailDto> gameDetailDtoList = new ArrayList<>();
+        for(MemberSteamData game : gamesList) {
+            // TODO : 게임 데이터 작업 후 수정
+            String gameName = "gameName";
+            String gameImg = "gameImg";
+            List<String> gameGenres = List.of("genre1","genre2");
+            GameDetailDto gameDetail = new GameDetailDto(game.getAppId(), gameName, gameImg, gameGenres);
+            gameDetailDtoList.add(gameDetail);
+        }
+        return new MemberOwnedGamesDto(gameDetailDtoList);
+    }
+
 }

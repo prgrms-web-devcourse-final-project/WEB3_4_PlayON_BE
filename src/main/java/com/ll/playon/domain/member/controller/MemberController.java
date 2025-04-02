@@ -2,6 +2,8 @@ package com.ll.playon.domain.member.controller;
 
 import com.ll.playon.domain.member.dto.MemberAuthRequest;
 import com.ll.playon.domain.member.dto.MemberDetailDto;
+import com.ll.playon.domain.member.dto.MemberProfileResponse;
+import com.ll.playon.domain.member.dto.SignupMemberDetailResponse;
 import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
@@ -52,4 +54,11 @@ public class MemberController {
         memberService.deactivateMember(userContext.getActor());
         return RsData.success(HttpStatus.OK, "성공적으로 탈퇴되었습니다.");
     }
+
+    @GetMapping("/me")
+    @Operation(summary = "내 정보")
+    public RsData<MemberProfileResponse> getMyProfile() {
+        return RsData.success(HttpStatus.OK, memberService.me(userContext.getActor()));
+    }
+
 }
