@@ -37,11 +37,19 @@ public class MemberController {
         return RsData.success(HttpStatus.OK, memberService.signupNoSteam(req.username(), req.password()));
     }
 
-    @PutMapping("/modify")
+    @PutMapping("/me")
     @Transactional
     @Operation(summary = "사용자 정보 수정")
     public RsData<String> modifyMember(@Valid @RequestBody MemberDetailDto req) {
         memberService.modifyMember(req, userContext.getActor());
         return RsData.success(HttpStatus.OK, "성공적으로 수정되었습니다.");
+    }
+
+    @DeleteMapping("/me")
+    @Transactional
+    @Operation(summary = "회원 탈퇴")
+    public RsData<String> deactivateMember() {
+        memberService.deactivateMember(userContext.getActor());
+        return RsData.success(HttpStatus.OK, "성공적으로 탈퇴되었습니다.");
     }
 }

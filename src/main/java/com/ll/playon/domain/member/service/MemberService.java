@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -181,6 +182,22 @@ public class MemberService {
                 .playStyle(req.playStyle())
                 .skillLevel(req.skillLevel())
                 .gender(req.gender())
+                .build());
+    }
+
+    public void deactivateMember(Member actor) {
+        Member member = memberRepository.findById(actor.getId())
+                .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
+
+        // 사용자가 소유한 게임 목록 삭제
+        memberSteamDataRepository.deleteById(member.getId());
+
+        // 연결된 길드, 파티, 파티로그 등 남기기 위해서 엔티티를 삭제하지는 않음
+        memberRepository.save(member.toBuilder()
+                .steamId(null)  // 스팀 연결 해제
+                .username("DELETED_" + UUID.randomUUID())
+                .nickname("탈퇴한 사용자")
+                .isDeleted(true)
                 .build());
     }
 }
