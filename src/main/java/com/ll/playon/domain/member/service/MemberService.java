@@ -240,4 +240,10 @@ public class MemberService {
         return new MemberOwnedGamesDto(gameDetailDtoList);
     }
 
+    public List<GetMembersResponse> findByNickname(String nickname) {
+        return memberRepository.findByNickname(nickname).stream()
+                .map(member ->
+                        new GetMembersResponse(member.getSteamId(), member.getUsername(), member.getProfileImg()))
+                .toList();
+    }
 }
