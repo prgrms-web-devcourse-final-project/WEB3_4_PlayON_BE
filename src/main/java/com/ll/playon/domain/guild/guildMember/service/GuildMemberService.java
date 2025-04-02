@@ -2,17 +2,20 @@ package com.ll.playon.domain.guild.guildMember.service;
 
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
-import com.ll.playon.domain.guild.guildMember.dto.request.*;
+import com.ll.playon.domain.guild.guildMember.dto.request.AssignManagerRequest;
+import com.ll.playon.domain.guild.guildMember.dto.request.ExpelMemberRequest;
+import com.ll.playon.domain.guild.guildMember.dto.request.LeaveGuildRequest;
+import com.ll.playon.domain.guild.guildMember.dto.request.RevokeManagerRequest;
 import com.ll.playon.domain.guild.guildMember.dto.response.GuildMemberResponse;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
-import com.ll.playon.domain.member.MemberRepository;
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.global.exceptions.ErrorCode;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

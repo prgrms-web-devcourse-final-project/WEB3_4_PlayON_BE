@@ -7,13 +7,11 @@ import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
 import com.ll.playon.domain.member.entity.Member;
-import com.ll.playon.domain.member.entity.MemberSteamData;
-import com.ll.playon.global.type.TagType;
-import com.ll.playon.global.type.TagValue;
-import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.enums.Role;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.service.MemberService;
+import com.ll.playon.global.type.TagType;
+import com.ll.playon.global.type.TagValue;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,85 +87,6 @@ public class BaseInitData {
         memberRepository.save(owner);
 
         memberService.saveUserGameList(gameAppIds, owner);
-    }
-
-    @Transactional
-    public void makeSampleGuild() {
-        if (guildRepository.count() != 0) {
-            return;
-        }
-
-        Member owner = memberRepository.findById(1L).get();
-        Member member1 = memberRepository.findById(2L).get();
-        Member member2 = memberRepository.findById(3L).get();
-
-        Guild guild = Guild.builder()
-                .owner(owner)
-                .name("테스트 길드")
-                .description("샘플 데이터용 길드입니다.")
-                .maxMembers(10)
-                .game(789L)
-                .partyStyle(PartyStyle.CASUAL)
-                .gameSkill(GameSkill.HACKER)
-                .genderFilter(GenderFilter.ALL)
-                .activeTime(ActiveTime.NIGHT)
-                .build();
-
-        guildRepository.save(guild);
-
-        GuildMember guildOwner = GuildMember.builder()
-                .guild(guild)
-                .member(owner)
-                .guildRole(GuildRole.LEADER)
-                .build();
-
-        GuildMember guildMember1 = GuildMember.builder()
-                .guild(guild)
-                .member(member1)
-                .guildRole(GuildRole.MANAGER)
-                .build();
-
-        GuildMember guildMember2 = GuildMember.builder()
-                .guild(guild)
-                .member(member2)
-                .guildRole(GuildRole.MEMBER)
-                .build();
-
-        guildMemberRepository.save(guildOwner);
-        guildMemberRepository.save(guildMember1);
-        guildMemberRepository.save(guildMember2);
-    }
-
-    private List<GuildTag> createSampleGuildTags(Guild guild) {
-        List<GuildTag> guildTags = new ArrayList<>();
-        Random random = new Random();
-
-        Map<TagType, List<TagValue>> tagTypeToValues = Map.of(
-                TagType.PARTY_STYLE, List.of(TagValue.HARDCORE, TagValue.CASUAL, TagValue.SPEEDRUN, TagValue.COMPLETIONIST),
-                TagType.GAME_SKILL, List.of(TagValue.ROTTEN_WATER, TagValue.STAGNANT_WATER, TagValue.MUD_WATER, TagValue.CLEAN_WATER, TagValue.NEWBIE),
-                TagType.GENDER, List.of(TagValue.MALE, TagValue.FEMALE),
-                TagType.SOCIALIZING, List.of(TagValue.SOCIAL_FRIENDLY, TagValue.GAME_ONLY, TagValue.NOC_CHAT)
-        );
-
-        for (TagType tagType : tagTypeToValues.keySet()) {
-            List<TagValue> possibleValues = new ArrayList<>(tagTypeToValues.get(tagType));
-            Collections.shuffle(possibleValues); // 랜덤화
-
-            int tagCount = 1 + random.nextInt(Math.min(3, possibleValues.size())); // 1~3개
-            for (int i = 0; i < tagCount; i++) {
-                TagValue tagValue = possibleValues.get(i); // 중복 없이 선택
-
-                GuildTag guildTag = GuildTag.builder()
-                        .guild(guild)
-                        .type(tagType)
-                        .value(tagValue)
-                        .build();
-
-                guildTags.add(guildTag);
-            }
-        }
-
-        return guildTags;
     }
 
     @Transactional
@@ -248,5 +167,37 @@ public class BaseInitData {
                 added++;
             }
         }
+    }
+
+    private List<GuildTag> createSampleGuildTags(Guild guild) {
+        List<GuildTag> guildTags = new ArrayList<>();
+        Random random = new Random();
+
+        Map<TagType, List<TagValue>> tagTypeToValues = Map.of(
+                TagType.PARTY_STYLE, List.of(TagValue.HARDCORE, TagValue.CASUAL, TagValue.SPEEDRUN, TagValue.COMPLETIONIST),
+                TagType.GAME_SKILL, List.of(TagValue.ROTTEN_WATER, TagValue.STAGNANT_WATER, TagValue.MUD_WATER, TagValue.CLEAN_WATER, TagValue.NEWBIE),
+                TagType.GENDER, List.of(TagValue.MALE, TagValue.FEMALE),
+                TagType.SOCIALIZING, List.of(TagValue.SOCIAL_FRIENDLY, TagValue.GAME_ONLY, TagValue.NOC_CHAT)
+        );
+
+        for (TagType tagType : tagTypeToValues.keySet()) {
+            List<TagValue> possibleValues = new ArrayList<>(tagTypeToValues.get(tagType));
+            Collections.shuffle(possibleValues); // 랜덤화
+
+            int tagCount = 1 + random.nextInt(Math.min(3, possibleValues.size())); // 1~3개
+            for (int i = 0; i < tagCount; i++) {
+                TagValue tagValue = possibleValues.get(i); // 중복 없이 선택
+
+                GuildTag guildTag = GuildTag.builder()
+                        .guild(guild)
+                        .type(tagType)
+                        .value(tagValue)
+                        .build();
+
+                guildTags.add(guildTag);
+            }
+        }
+
+        return guildTags;
     }
 }
