@@ -45,14 +45,6 @@ public class GuildMemberService {
                 throw ErrorCode.GUILD_LEADER_CANNOT_LEAVE.throwServiceException();
             }
 
-            long managerCount = guild.getMembers().stream()
-                    .filter(gm -> gm.getGuildRole() == GuildRole.MANAGER)
-                    .count();
-
-            if (managerCount <= 1) {
-                throw ErrorCode.CANNOT_DELEGATE_TO_SINGLE_MANAGER.throwServiceException();
-            }
-
             Member newLeader = memberRepository.findById(request.newLeaderId())
                     .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
 
@@ -61,11 +53,21 @@ public class GuildMemberService {
             if (delegateTarget.getGuildRole() != GuildRole.MANAGER) {
                 throw ErrorCode.DELEGATE_MUST_BE_MANAGER.throwServiceException();
             }
+
+            long managerCount = guildMemberRepository.findAllByGuild(guild).stream()
+                    .filter(gm -> gm.getGuildRole() == GuildRole.MANAGER)
+                    .count();
+
+            if (managerCount <= 1) {
+                throw ErrorCode.CANNOT_DELEGATE_TO_SINGLE_MANAGER.throwServiceException();
+            }
+
             delegateTarget.setGuildRole(GuildRole.LEADER);
         }
 
         guildMemberRepository.delete(actorMember);
     }
+
 
     @Transactional
     public void assignManagerRole(Long guildId, Member actor, AssignManagerRequest request) {
@@ -175,7 +177,9 @@ public class GuildMemberService {
     }
 
     private void validateManagerAccess(Guild guild, Member member) {
-        boolean authorized = guild.getMembers().stream()
+        List<GuildMember> guildMembers = guildMemberRepository.findAllByGuild(guild);
+
+        boolean authorized = guildMembers.stream()
                 .anyMatch(gm -> gm.getMember().equals(member)
                         && (gm.getGuildRole() == GuildRole.LEADER || gm.getGuildRole() == GuildRole.MANAGER));
 
