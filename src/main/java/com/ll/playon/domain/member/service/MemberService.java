@@ -1,11 +1,11 @@
 package com.ll.playon.domain.member.service;
 
-import com.ll.playon.domain.member.dto.SignupMemberDetailResponse;
-import com.ll.playon.domain.member.repository.MemberRepository;
-import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
+import com.ll.playon.domain.member.dto.MemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
+import com.ll.playon.domain.member.repository.MemberRepository;
+import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -78,7 +80,7 @@ public class MemberService {
         handleSuccessfulLogin(member);
     }
 
-    public SignupMemberDetailResponse steamSignup(Long steamId) {
+    public MemberDetailDto steamSignup(Long steamId) {
         if (memberRepository.findBySteamId(steamId).isPresent()) {
             throw ErrorCode.USER_ALREADY_REGISTERED.throwServiceException();
         }
@@ -87,12 +89,12 @@ public class MemberService {
 
         handleSuccessfulLogin(member);
 
-        return new SignupMemberDetailResponse(
+        return new MemberDetailDto(
                 member.getNickname(), member.getProfileImg(), member.getPlayStyle(),
                 member.getSkillLevel(), member.getGender());
     }
 
-    public SignupMemberDetailResponse signupNoSteam(String username, String password) {
+    public MemberDetailDto signupNoSteam(String username, String password) {
         Optional<Member> memberOptional = memberRepository.findByUsername(username);
         if(memberOptional.isPresent()) {
             throw ErrorCode.USER_ALREADY_REGISTERED.throwServiceException();
@@ -102,7 +104,7 @@ public class MemberService {
 
         handleSuccessfulLogin(member);
 
-        return new SignupMemberDetailResponse(
+        return new MemberDetailDto(
                 member.getNickname(), member.getProfileImg(), member.getPlayStyle(),
                 member.getSkillLevel(), member.getGender());
     }
@@ -166,5 +168,19 @@ public class MemberService {
                 return targetMember;
             })
             .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
+    }
+
+    public void modifyMember(MemberDetailDto req, Member actor) {
+        Member member = memberRepository.findById(actor.getId())
+                .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
+
+        // 사용자 정보 수정 및 저장 (방어적 복사 적용해봄)
+        memberRepository.save(member.toBuilder()
+                .nickname(req.nickname())
+                .profileImg(req.profileImg())
+                .playStyle(req.playStyle())
+                .skillLevel(req.skillLevel())
+                .gender(req.gender())
+                .build());
     }
 }
