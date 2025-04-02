@@ -3,6 +3,7 @@ package com.ll.playon.domain.party.party.controller;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
 import com.ll.playon.domain.party.party.dto.request.PutPartyRequest;
+import com.ll.playon.domain.party.party.dto.response.GetAllPendingMemberResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyDetailResponse;
 import com.ll.playon.domain.party.party.dto.response.PostPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.PutPartyResponse;
@@ -67,5 +68,44 @@ public class PartyController {
         Member actor = this.userContext.findById(5L);
 
         this.partyService.deleteParty(actor, partyId);
+    }
+
+    @PostMapping("/{partyId}/members")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void requestParticipation(@PathVariable long partyId) {
+        // TODO : 추후 롤백
+//        Member actor = this.userContext.getActor();
+        Member actor = this.userContext.findById(7L);
+
+        this.partyService.requestParticipation(actor, partyId);
+    }
+
+    @PutMapping("/{partyId}/members/{memberId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void approveParticipation(@PathVariable long partyId, @PathVariable long memberId) {
+        // TODO : 추후 롤백
+//        Member actor = this.userContext.getActor();
+        Member actor = this.userContext.findById(5L);
+
+        this.partyService.approveParticipation(actor, partyId, memberId);
+    }
+
+    @DeleteMapping("/{partyId}/members/{memberId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void rejectParticipation(@PathVariable long partyId, @PathVariable long memberId) {
+        // TODO : 추후 롤백
+//        Member actor = this.userContext.getActor();
+        Member actor = this.userContext.findById(5L);
+
+        this.partyService.rejectParticipation(actor, partyId, memberId);
+    }
+
+    @GetMapping("/{partyId}/pending")
+    public RsData<GetAllPendingMemberResponse> getPartyPendingMembers(@PathVariable long partyId) {
+        // TODO : 추후 롤백
+//        Member actor = this.userContext.getActor();
+        Member actor = this.userContext.findById(5L);
+
+        return RsData.success(HttpStatus.OK, this.partyService.getPartyPendingMembers(actor, partyId));
     }
 }

@@ -74,4 +74,9 @@ public class Party extends BaseTime {
         this.maximum = maximum;
         this.partyStatus = PartyStatus.PENDING;
     }
+
+    public void addPartyMember(PartyMember partyMember) {
+        this.partyMembers.add(partyMember);
+        partyMember.setParty(this);
+    }
 }
