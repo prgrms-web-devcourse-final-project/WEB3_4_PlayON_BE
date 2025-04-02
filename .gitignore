@@ -41,7 +41,6 @@ db_dev.mv.db
 db_dev.trace.db
 .DS_Store
 src/main/generated
+application-secret.yml
+
 logs/
-
-src/main/resources/application-secret.yml
-

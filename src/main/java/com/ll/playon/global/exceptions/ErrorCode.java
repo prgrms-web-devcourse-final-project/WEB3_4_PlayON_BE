@@ -18,6 +18,7 @@ public enum ErrorCode {
 
     // api
     EXTERNAL_API_UNEXPECTED_RESPONSE(HttpStatus.INTERNAL_SERVER_ERROR, "API 응답이 올바르지 않습니다"),
+    EXTERNAL_API_UNEXPECTED_REQUEST(HttpStatus.BAD_REQUEST, "API 요청이 올바르지 않습니다"),
     EXTERNAL_API_COMMUNICATION_ERROR(HttpStatus.BAD_GATEWAY, "API 요청 중 오류가 발생했습니다."),
 
     // S3
@@ -27,6 +28,12 @@ public enum ErrorCode {
 
     // Filtering
     PAGE_SIZE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "pageSize는 1에서 100 사이로 입력해주세요."),
+
+    // Auth
+    AUTHORIZATION_FAILED(HttpStatus.UNAUTHORIZED, "인증이 실패하였습니다."),
+    USER_NOT_REGISTERED(HttpStatus.NOT_FOUND, "가입되지 않은 사용자입니다."),
+    USER_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 가입된 사용자입니다."),
+    PASSWORD_INCORRECT(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
 
     // Guild
     DUPLICATE_GUILD_NAME(HttpStatus.CONFLICT, "이미 존재하는 길드 이름입니다."),
@@ -52,6 +59,14 @@ public enum ErrorCode {
     ALREADY_GUILD_MEMBER(HttpStatus.BAD_REQUEST, "이미 해당 길드에 가입한 멤버입니다."),
     CANNOT_DELEGATE_TO_SINGLE_MANAGER(HttpStatus.BAD_REQUEST, "운영진이 2명 이상일 때만 권한 위임이 가능합니다."),
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 멤버를 찾을 수 없습니다."),
+
+    // Party
+    PARTY_NOT_FOUND(HttpStatus.NOT_FOUND, "파티가 존재하지 않습니다."),
+
+    // PartyMember
+    PARTY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티 멤버가 존재하지 않습니다."),
+    PARTY_OWNER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티장이 존재하지 않습니다."),
+    INVALID_PARTY_MEMBER(HttpStatus.FORBIDDEN, "해당 파티의 파티장이 아닙니다."),
 
     // Tag
     TAG_TYPE_CONVERT_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "태그 타입 변환에 실패하였습니다."),
