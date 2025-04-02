@@ -1,10 +1,7 @@
 package com.ll.playon.domain.game.game.entity;
 
 import com.ll.playon.global.jpa.entity.BaseTime;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -12,6 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "steam_game", indexes = {
+        @Index(name = "idx_game_appid", columnList = "appid"),
+        @Index(name = "idx_game_name", columnList = "name")
+})
 @Getter
 @Setter
 @Builder
@@ -43,11 +44,20 @@ public class SteamGame extends BaseTime {
     @Column(name = "short_description", columnDefinition = "TEXT")
     private String shortDescription;
 
-    @Column(name = "price_overview")
-    private String priceOverview;
+    @Column
+    private Long price;
+
+//    @Column
+//    private String platforms;
+//    mac, windows, linux boolean으로 넘어온거 처리 필요
+    @Column
+    private boolean windows;
 
     @Column
-    private String platforms; //mac, windows, linux boolean으로 넘어온거 처리 필요
+    private boolean linux;
+
+    @Column
+    private boolean mac;
 
     @Column(name = "release_date")
     private LocalDate releaseDate;
