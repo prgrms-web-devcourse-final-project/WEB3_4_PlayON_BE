@@ -212,7 +212,7 @@ public class MemberService {
 
         // 사용자 정보 조회 후 Dto 에 담기
         ProfileMemberDetailDto profileMemberDetailDto = new ProfileMemberDetailDto(
-                member.getSteamId(), member.getUsername(), member.getProfileImg(),
+                member.getSteamId(), member.getUsername(), member.getNickname(), member.getProfileImg(),
                 member.getLastLoginAt(), member.getPlayStyle(), member.getSkillLevel(),
                 member.getGender(), member.getPreferredGenres()
         );
@@ -221,13 +221,13 @@ public class MemberService {
         List<MemberSteamData> gamesList = memberSteamDataRepository.findAllByMemberId(actor.getId());
 
         // 게임 상세 (이름, 장르, 이미지) 조회 후 Dto 에 담기
-        MemberOwnedGamesDto memberOwnedGamesDto = getMemberOwnedGamesDto(gamesList);
+        List<GameDetailDto> memberOwnedGamesDto = getMemberOwnedGamesDto(gamesList);
 
         // 모든 정보 MemberProfileResponse 에 담기
         return new MemberProfileResponse(profileMemberDetailDto, memberOwnedGamesDto);
     }
 
-    private static MemberOwnedGamesDto getMemberOwnedGamesDto(List<MemberSteamData> gamesList) {
+    private static List<GameDetailDto> getMemberOwnedGamesDto(List<MemberSteamData> gamesList) {
         List<GameDetailDto> gameDetailDtoList = new ArrayList<>();
         for(MemberSteamData game : gamesList) {
             // TODO : 게임 데이터 작업 후 수정
@@ -237,7 +237,7 @@ public class MemberService {
             GameDetailDto gameDetail = new GameDetailDto(game.getAppId(), gameName, gameImg, gameGenres);
             gameDetailDtoList.add(gameDetail);
         }
-        return new MemberOwnedGamesDto(gameDetailDtoList);
+        return gameDetailDtoList;
     }
 
     public List<GetMembersResponse> findByNickname(String nickname) {

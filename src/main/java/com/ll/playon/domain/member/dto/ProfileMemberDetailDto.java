@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public record ProfileMemberDetailDto(
         Long steamId,
         String username,
+        String nickname,
         String profileImg,
         LocalDateTime lastLoginAt,
         PlayStyle playStyle,

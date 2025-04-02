@@ -1,6 +1,8 @@
 package com.ll.playon.domain.member.dto;
 
+import java.util.List;
+
 public record MemberProfileResponse(
         ProfileMemberDetailDto memberDetail,
-        MemberOwnedGamesDto ownedGames
+        List<GameDetailDto> ownedGames
 ) {}
