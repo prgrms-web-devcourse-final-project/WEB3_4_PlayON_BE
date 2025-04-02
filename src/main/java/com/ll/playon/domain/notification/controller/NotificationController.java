@@ -33,12 +33,15 @@ public class NotificationController {
         notificationService.sendNotification(receiverId, content, type, redirectUrl);
         return ResponseEntity.ok().build();
     }
-
-    @PatchMapping("/{notificationId}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable Long notificationId) {
-        notificationService.markAsRead(notificationId);
-        return ResponseEntity.noContent().build();
-    }
+// TODO: 알림 읽음 처리 API 구현
+//    @PatchMapping("/{notificationId}/read")
+//    public ResponseEntity<Void> markAsRead(
+//            @PathVariable Long notificationId,
+//            @AuthenticationPrincipal CustomUserDetails userDetails // 현재 로그인한 사용자 정보 가져오기
+//    ) {
+//        notificationService.markAsRead(userDetails.getId(), notificationId);
+//        return ResponseEntity.noContent().build();
+//    }
 
     @GetMapping
     public ResponseEntity<List<NotificationResponse>> getNotifications(@AuthenticationPrincipal Member member) {
