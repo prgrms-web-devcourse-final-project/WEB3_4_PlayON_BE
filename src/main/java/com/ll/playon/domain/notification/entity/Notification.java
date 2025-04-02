@@ -1,7 +1,7 @@
 package com.ll.playon.domain.notification.entity;
 
 import com.ll.playon.domain.member.entity.Member;
-import com.ll.playon.global.jpa.entity.BaseEntity;
+import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.validator.constraints.URL;
@@ -11,7 +11,7 @@ import org.hibernate.validator.constraints.URL;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class Notification extends BaseEntity {
+public class Notification extends BaseTime {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_id", nullable = false)
     private Member receiver;
