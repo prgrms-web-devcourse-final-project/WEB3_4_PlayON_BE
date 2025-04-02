@@ -1,9 +1,11 @@
 package com.ll.playon.domain.member.entity;
 
 import com.ll.playon.domain.member.entity.enums.*;
-import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -13,12 +15,29 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import static jakarta.persistence.GenerationType.IDENTITY;
+
 @Entity
 @Getter
 @Builder(toBuilder = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class Member extends BaseTime {
+@EntityListeners(AuditingEntityListener.class)
+public class Member {
+    @CreatedDate
+    @Setter(AccessLevel.PRIVATE)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Setter(AccessLevel.PRIVATE)
+    private LocalDateTime modifiedAt;
+
+    @Id
+    @GeneratedValue(strategy = IDENTITY)
+    @Setter(AccessLevel.PROTECTED)
+    @EqualsAndHashCode.Include
+    private Long id;
+
     @Setter
     @Column(unique = true)
     private Long steamId;
@@ -52,7 +71,6 @@ public class Member extends BaseTime {
     @Builder.Default
     private String apiKey = UUID.randomUUID().toString();
 
-    // TODO : 회원가입 확정 안되서 일단 기본값 처리
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @Builder.Default

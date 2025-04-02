@@ -1,6 +1,10 @@
 package com.ll.playon.domain.member.controller;
 
+import com.ll.playon.domain.member.TestMemberHelper;
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.member.entity.enums.Gender;
+import com.ll.playon.domain.member.entity.enums.PlayStyle;
+import com.ll.playon.domain.member.entity.enums.SkillLevel;
 import com.ll.playon.domain.member.service.MemberService;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
@@ -12,12 +16,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -32,6 +39,9 @@ public class MemberControllerTest {
 
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    private TestMemberHelper testMemberHelper;
 
     @Test
     @DisplayName("일반 회원 회원가입")
@@ -163,5 +173,41 @@ public class MemberControllerTest {
         resultActions
                 .andExpect(handler().handlerType(MemberController.class))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("회원 정보 수정")
+    void modifyMember() throws Exception {
+        String authMember = "sampleUser1";
+
+        MockHttpServletRequestBuilder request = put("/api/members/me")
+                .content("""
+                        {
+                            "nickname": "changedNickname",
+                            "profileImg": "123",
+                            "playStyle": "NORMAL",
+                            "skillLevel": "HACKER",
+                            "gender": "FEMALE"
+                        }
+                        """)
+                .contentType(new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8));
+        ResultActions resultActions = testMemberHelper.requestWithUserAuth(authMember, request);
+
+        resultActions
+                .andExpect(handler().handlerType(MemberController.class))
+                .andExpect(status().isOk());
+
+        Member memberCheck = memberService.findByUsername(authMember).get();
+
+        assertEquals("changedNickname", memberCheck.getNickname());
+        assertEquals(PlayStyle.NORMAL, memberCheck.getPlayStyle());
+        assertEquals(SkillLevel.HACKER, memberCheck.getSkillLevel());
+        assertEquals(Gender.FEMALE, memberCheck.getGender());
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴")
+    void deactivateMember() {
+
     }
 }
