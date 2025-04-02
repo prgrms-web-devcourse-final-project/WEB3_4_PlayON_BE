@@ -125,15 +125,12 @@ public class MemberService {
     }
 
     private Member signup(String username, String password) {
-        Member newMember = Member.builder()
+        return memberRepository.save(Member.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))
                 .role(Role.USER)
                 .nickname(username)
-                .build();
-        memberRepository.save(newMember);
-
-        return newMember;
+                .build());
     }
 
     public void saveUserGameList(List<Long> gameList, Member member) {
@@ -160,11 +157,14 @@ public class MemberService {
     }
 
     public void steamLink(Long steamId, Member actor) {
-        Member targetMember = memberRepository.findById(actor.getId())
-                        .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
-        targetMember.setSteamId(steamId);
-        memberRepository.save(targetMember);
+        memberRepository.findById(actor.getId())
+            .map(targetMember -> {
+                targetMember.setSteamId(steamId);
+                memberRepository.save(targetMember);
 
-        saveUserGameList(steamAPI.getUserGames(steamId), targetMember);
+                saveUserGameList(steamAPI.getUserGames(steamId), targetMember);
+                return targetMember;
+            })
+            .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
     }
 }

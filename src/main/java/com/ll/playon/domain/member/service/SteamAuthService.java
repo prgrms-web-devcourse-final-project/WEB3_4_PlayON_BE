@@ -1,5 +1,6 @@
 package com.ll.playon.domain.member.service;
 
+import com.ll.playon.domain.member.controller.SteamRedirectPaths;
 import com.ll.playon.domain.member.dto.SignupMemberDetailResponse;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
@@ -19,7 +20,7 @@ public class SteamAuthService {
     private final RestTemplate restTemplate;
     private final MemberService memberService;
 
-    public SignupMemberDetailResponse validateSteamId(Map<String, String> params, String method, Member actor) {
+    public SignupMemberDetailResponse validateSteamId(Map<String, String> params, String path, Member actor) {
         String validationUrl = "https://steamcommunity.com/openid/login";
         String requestBody = buildValidationRequest(params);
 
@@ -33,14 +34,18 @@ public class SteamAuthService {
             String steamId = extractSteamId(params.get("openid.claimed_id"));
             Long steamUserId = Long.valueOf(steamId);
 
-            if(method.equals("login")) {
-                memberService.steamLogin(steamUserId);
-                return null;
-            } else if(method.equals("signup")) {
-                return memberService.steamSignup(steamUserId);
-            } else {
-                memberService.steamLink(steamUserId, actor);
-                return null;
+            switch (path) {
+                case SteamRedirectPaths.LOGIN -> {
+                    memberService.steamLogin(steamUserId);
+                    return null;
+                }
+                case SteamRedirectPaths.SIGNUP -> {
+                    return memberService.steamSignup(steamUserId);
+                }
+                default -> {
+                    memberService.steamLink(steamUserId, actor);
+                    return null;
+                }
             }
         } else {
             throw ErrorCode.AUTHORIZATION_FAILED.throwServiceException();

@@ -6,6 +6,7 @@ import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.global.response.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,7 @@ public class MemberController {
     @PostMapping("/login")
     @Transactional
     @Operation(summary = "일반 회원 로그인")
-    public RsData<String> loginNoSteam(@RequestBody MemberAuthRequest req) {
+    public RsData<String> loginNoSteam(@Valid @RequestBody MemberAuthRequest req) {
         memberService.loginNoSteam(req.username(), req.password());
         return RsData.success(HttpStatus.OK, "성공");
     }
@@ -33,7 +34,7 @@ public class MemberController {
     @PostMapping("/signup")
     @Transactional
     @Operation(summary = "일반 회원 회원가입")
-    public RsData<SignupMemberDetailResponse> signupNoSteam(@RequestBody MemberAuthRequest req) {
+    public RsData<SignupMemberDetailResponse> signupNoSteam(@Valid @RequestBody MemberAuthRequest req) {
         return RsData.success(HttpStatus.OK, memberService.signupNoSteam(req.username(), req.password()));
     }
 }
