@@ -48,7 +48,7 @@ public class MemberControllerTest {
     void noSteamSignup() throws Exception {
         ResultActions resultActions = mvc
                 .perform(
-                        post("/api/auth/signup")
+                        post("/api/members/signup")
                                 .content("""
                                         {
                                             "username": "noSteamTestUser",
@@ -91,7 +91,7 @@ public class MemberControllerTest {
     void noSteamLogin() throws Exception {
         ResultActions resultActions = mvc
                 .perform(
-                        post("/api/auth/login")
+                        post("/api/members/login")
                                 .content("""
                                     {
                                         "username": "noSteamMember",
@@ -132,7 +132,7 @@ public class MemberControllerTest {
     void noSteamSignupFail() throws Exception {
         ResultActions resultActions = mvc
                 .perform(
-                        post("/api/auth/signup")
+                        post("/api/members/signup")
                                 .content("""
                                     {
                                         "username": "noSteamMember",
@@ -156,7 +156,7 @@ public class MemberControllerTest {
     void noSteamLoginFail() throws Exception {
         ResultActions resultActions = mvc
                 .perform(
-                        post("/api/auth/login")
+                        post("/api/members/login")
                                 .content("""
                                     {
                                         "username": "noSteamTestUser",
