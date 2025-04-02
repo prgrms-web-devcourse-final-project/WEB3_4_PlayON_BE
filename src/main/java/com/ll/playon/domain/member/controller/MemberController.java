@@ -4,7 +4,6 @@ import com.ll.playon.domain.member.dto.GetMembersResponse;
 import com.ll.playon.domain.member.dto.MemberAuthRequest;
 import com.ll.playon.domain.member.dto.MemberDetailDto;
 import com.ll.playon.domain.member.dto.MemberProfileResponse;
-import com.ll.playon.domain.member.dto.SignupMemberDetailResponse;
 import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;

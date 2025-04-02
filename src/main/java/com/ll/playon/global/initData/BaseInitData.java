@@ -55,18 +55,18 @@ public class BaseInitData {
         }
 
         Member sampleMember1 = Member.builder()
-                .steamId(123L).username("sampleUser1").nickname("sampleUser1").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
+                .steamId(123L).username("sampleUser1").nickname("sampleUser").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember1);
         List<Long> gameAppIds = Arrays.asList(2246340L, 2680010L, 2456740L);
         memberService.saveUserGameList(gameAppIds, sampleMember1);
 
         Member sampleMember2 = Member.builder()
-                .steamId(456L).username("sampleUser2").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
+                .steamId(456L).username("sampleUser2").nickname("sampleUser").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember2);
         memberService.saveUserGameList(gameAppIds, sampleMember2);
 
         Member sampleMember3 = Member.builder()
-                .steamId(789L).username("sampleUser3").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
+                .steamId(789L).username("sampleUser3").nickname("sampleUser").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember3);
 
         memberService.saveUserGameList(gameAppIds, sampleMember3);

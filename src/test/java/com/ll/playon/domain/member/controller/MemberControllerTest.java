@@ -2,6 +2,9 @@ package com.ll.playon.domain.member.controller;
 
 import com.ll.playon.domain.member.TestMemberHelper;
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.member.entity.enums.Gender;
+import com.ll.playon.domain.member.entity.enums.PlayStyle;
+import com.ll.playon.domain.member.entity.enums.SkillLevel;
 import com.ll.playon.domain.member.service.MemberService;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
@@ -13,12 +16,17 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -220,7 +228,7 @@ public class MemberControllerTest {
     @DisplayName("사용자 상세 조회")
     void getMyProfile() throws Exception {
         String authMember = "sampleUser1";
-        MockHttpServletRequestBuilder request = get("/api/auth/me");
+        MockHttpServletRequestBuilder request = get("/api/members/me");
         ResultActions resultActions = testMemberHelper.requestWithUserAuth(authMember, request);
 
         Member actor = memberService.findByUsername(authMember).get();
