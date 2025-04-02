@@ -13,4 +13,12 @@ public class PartyTagMapper {
                 .value(tagValue)
                 .build();
     }
+
+    public static PartyTag build(Party party, String tagType, String tagValue) {
+        return PartyTag.builder()
+                .party(party)
+                .type(TagType.fromValue(tagType))
+                .value(TagValue.fromValue(tagValue))
+                .build();
+    }
 }
