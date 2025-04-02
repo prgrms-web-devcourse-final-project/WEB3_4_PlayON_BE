@@ -20,11 +20,12 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -207,7 +208,18 @@ public class MemberControllerTest {
 
     @Test
     @DisplayName("회원 탈퇴")
-    void deactivateMember() {
+    void deactivateMember() throws Exception {
+        String authMember = "sampleUser1";
 
+        MockHttpServletRequestBuilder request = delete("/api/members/me");
+        ResultActions resultActions = testMemberHelper.requestWithUserAuth(authMember, request);
+
+        resultActions
+                .andExpect(handler().handlerType(MemberController.class))
+                .andExpect(status().isOk());
+
+        Optional<Member> memberCheck = memberService.findByUsername(authMember);
+
+        assertTrue(memberCheck.isEmpty());
     }
 }
