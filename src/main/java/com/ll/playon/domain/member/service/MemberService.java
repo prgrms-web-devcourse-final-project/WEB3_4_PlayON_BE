@@ -10,6 +10,7 @@ import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -25,6 +26,7 @@ public class MemberService {
     private final UserContext userContext;
     private final SteamAPI steamAPI;
     private final MemberSteamDataRepository memberSteamDataRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public Optional<Member> findById(Long id){
         return memberRepository.findById(id);
@@ -32,6 +34,10 @@ public class MemberService {
 
     public Optional<Member> findByApiKey(String apiKey) {
         return memberRepository.findByApiKey(apiKey);
+    }
+
+    public Optional<Member> findByUsername(String username) {
+        return memberRepository.findByUsername(username);
     }
 
     public String genAccessToken(Member user) {
@@ -47,7 +53,7 @@ public class MemberService {
                 .username((String) payload.get("username"))
                 .role((Role) payload.get("role"))
                 .build();
-        parsedMember.changeMemberId((long) payload.get("id"));
+        parsedMember.changeMemberId(((Number)payload.get("id")).longValue());
 
         return parsedMember;
     }
@@ -56,6 +62,19 @@ public class MemberService {
         Member member = memberRepository.findBySteamId(steamId)
                 .orElseThrow(ErrorCode.USER_NOT_REGISTERED::throwServiceException);
 
+        handleSuccessfulLogin(member);
+    }
+
+    public void loginNoSteam(String username, String password) {
+        Member member = memberRepository.findByUsername(username)
+                .orElseThrow(ErrorCode.USER_NOT_REGISTERED::throwServiceException);
+
+        // 비밀번호 확인
+        if (!passwordEncoder.matches(password, member.getPassword())) {
+            throw ErrorCode.PASSWORD_INCORRECT.throwServiceException();
+        }
+
+        // 성공
         handleSuccessfulLogin(member);
     }
 
@@ -73,17 +92,20 @@ public class MemberService {
                 member.getSkillLevel(), member.getGender());
     }
 
-    private void handleSuccessfulLogin(Member member) {
-        member.setLastLoginAt(LocalDateTime.now());
-        memberRepository.save(member);
+    public SignupMemberDetailResponse signupNoSteam(String username, String password) {
+        Optional<Member> memberOptional = memberRepository.findByUsername(username);
+        if(memberOptional.isPresent()) {
+            throw ErrorCode.USER_ALREADY_REGISTERED.throwServiceException();
+        }
 
-        // 쿠키 세팅
-        userContext.makeAuthCookies(member);
+        Member member = signup(username, password);
 
-        // 시큐리티 로그인
-        userContext.setLogin(member);
+        handleSuccessfulLogin(member);
+
+        return new SignupMemberDetailResponse(
+                member.getNickname(), member.getProfileImg(), member.getPlayStyle(),
+                member.getSkillLevel(), member.getGender());
     }
-
 
     private Member signup(Long steamId) {
         Map<String, String> profile = steamAPI.getUserProfile(steamId);
@@ -102,6 +124,15 @@ public class MemberService {
         return newMember;
     }
 
+    private Member signup(String username, String password) {
+        return memberRepository.save(Member.builder()
+                .username(username)
+                .password(passwordEncoder.encode(password))
+                .role(Role.USER)
+                .nickname(username)
+                .build());
+    }
+
     public void saveUserGameList(List<Long> gameList, Member member) {
         List<MemberSteamData> games = gameList.stream()
                 .map(appId -> MemberSteamData.builder()
@@ -112,5 +143,28 @@ public class MemberService {
 
         member.getGames().addAll(games);
         memberSteamDataRepository.saveAll(games);
+    }
+
+    private void handleSuccessfulLogin(Member member) {
+        member.setLastLoginAt(LocalDateTime.now());
+        memberRepository.save(member);
+
+        // 쿠키 세팅
+        userContext.makeAuthCookies(member);
+
+        // 시큐리티 로그인
+        userContext.setLogin(member);
+    }
+
+    public void steamLink(Long steamId, Member actor) {
+        memberRepository.findById(actor.getId())
+            .map(targetMember -> {
+                targetMember.setSteamId(steamId);
+                memberRepository.save(targetMember);
+
+                saveUserGameList(steamAPI.getUserGames(steamId), targetMember);
+                return targetMember;
+            })
+            .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
     }
 }
