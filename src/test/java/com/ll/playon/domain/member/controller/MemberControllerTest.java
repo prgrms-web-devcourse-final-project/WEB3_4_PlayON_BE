@@ -1,6 +1,10 @@
 package com.ll.playon.domain.member.controller;
 
+import com.ll.playon.domain.member.TestMemberHelper;
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.member.entity.enums.Gender;
+import com.ll.playon.domain.member.entity.enums.PlayStyle;
+import com.ll.playon.domain.member.entity.enums.SkillLevel;
 import com.ll.playon.domain.member.service.MemberService;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
@@ -12,12 +16,16 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -33,12 +41,15 @@ public class MemberControllerTest {
     @Autowired
     private MemberService memberService;
 
+    @Autowired
+    private TestMemberHelper testMemberHelper;
+
     @Test
     @DisplayName("일반 회원 회원가입")
     void noSteamSignup() throws Exception {
         ResultActions resultActions = mvc
                 .perform(
-                        post("/api/auth/signup")
+                        post("/api/members/signup")
                                 .content("""
                                         {
                                             "username": "noSteamTestUser",
@@ -81,7 +92,7 @@ public class MemberControllerTest {
     void noSteamLogin() throws Exception {
         ResultActions resultActions = mvc
                 .perform(
-                        post("/api/auth/login")
+                        post("/api/members/login")
                                 .content("""
                                     {
                                         "username": "noSteamMember",
@@ -122,7 +133,7 @@ public class MemberControllerTest {
     void noSteamSignupFail() throws Exception {
         ResultActions resultActions = mvc
                 .perform(
-                        post("/api/auth/signup")
+                        post("/api/members/signup")
                                 .content("""
                                     {
                                         "username": "noSteamMember",
@@ -146,7 +157,7 @@ public class MemberControllerTest {
     void noSteamLoginFail() throws Exception {
         ResultActions resultActions = mvc
                 .perform(
-                        post("/api/auth/login")
+                        post("/api/members/login")
                                 .content("""
                                     {
                                         "username": "noSteamTestUser",
@@ -163,5 +174,52 @@ public class MemberControllerTest {
         resultActions
                 .andExpect(handler().handlerType(MemberController.class))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("회원 정보 수정")
+    void modifyMember() throws Exception {
+        String authMember = "sampleUser1";
+
+        MockHttpServletRequestBuilder request = put("/api/members/me")
+                .content("""
+                        {
+                            "nickname": "changedNickname",
+                            "profileImg": "123",
+                            "playStyle": "NORMAL",
+                            "skillLevel": "HACKER",
+                            "gender": "FEMALE"
+                        }
+                        """)
+                .contentType(new MediaType(MediaType.APPLICATION_JSON, StandardCharsets.UTF_8));
+        ResultActions resultActions = testMemberHelper.requestWithUserAuth(authMember, request);
+
+        resultActions
+                .andExpect(handler().handlerType(MemberController.class))
+                .andExpect(status().isOk());
+
+        Member memberCheck = memberService.findByUsername(authMember).get();
+
+        assertEquals("changedNickname", memberCheck.getNickname());
+        assertEquals(PlayStyle.NORMAL, memberCheck.getPlayStyle());
+        assertEquals(SkillLevel.HACKER, memberCheck.getSkillLevel());
+        assertEquals(Gender.FEMALE, memberCheck.getGender());
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴")
+    void deactivateMember() throws Exception {
+        String authMember = "sampleUser1";
+
+        MockHttpServletRequestBuilder request = delete("/api/members/me");
+        ResultActions resultActions = testMemberHelper.requestWithUserAuth(authMember, request);
+
+        resultActions
+                .andExpect(handler().handlerType(MemberController.class))
+                .andExpect(status().isOk());
+
+        Optional<Member> memberCheck = memberService.findByUsername(authMember);
+
+        assertTrue(memberCheck.isEmpty());
     }
 }

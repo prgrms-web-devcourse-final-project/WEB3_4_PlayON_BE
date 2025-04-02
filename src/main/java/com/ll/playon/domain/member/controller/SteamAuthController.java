@@ -1,6 +1,6 @@
 package com.ll.playon.domain.member.controller;
 
-import com.ll.playon.domain.member.dto.SignupMemberDetailResponse;
+import com.ll.playon.domain.member.dto.MemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.service.SteamAuthService;
 import com.ll.playon.global.exceptions.ErrorCode;
@@ -66,7 +66,7 @@ public class SteamAuthController {
     }
     @GetMapping("/callback/signup")
     @Operation(summary = "스팀 인증 검증 및 회원가입")
-    public RsData<SignupMemberDetailResponse> signupHandleSteamCallback(@RequestParam Map<String, String> params) {
+    public RsData<MemberDetailDto> signupHandleSteamCallback(@RequestParam Map<String, String> params) {
         return RsData.success(HttpStatus.OK, handleSteamCallbackWithoutActor(params, SteamRedirectPaths.SIGNUP));
     }
     @GetMapping("/callback/link")
@@ -76,14 +76,14 @@ public class SteamAuthController {
         return RsData.success(HttpStatus.OK, "성공");
     }
 
-    public SignupMemberDetailResponse handleSteamCallbackWithoutActor(Map<String, String> params, String path) {
+    public MemberDetailDto handleSteamCallbackWithoutActor(Map<String, String> params, String path) {
         return handleSteamCallback(params, path, null);
     }
     public void handleSteamCallbackWithActor(Map<String, String> params, String path) {
         handleSteamCallback(params, path, userContext.getActor());
     }
 
-    public SignupMemberDetailResponse handleSteamCallback(@RequestParam Map<String, String> params, String path, Member actor) {
+    public MemberDetailDto handleSteamCallback(@RequestParam Map<String, String> params, String path, Member actor) {
         if (!"id_res".equals(params.get("openid.mode"))) {
             throw ErrorCode.EXTERNAL_API_UNEXPECTED_REQUEST.throwServiceException();
         }
