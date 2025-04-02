@@ -29,9 +29,6 @@ public class SteamGame extends BaseTime {
     @Column(name = "header_image")
     private String headerImage;
 
-    @Column
-    private String genres; // JSON타입
-
     @Column(name = "required_age")
     private Integer requiredAge;
 
@@ -68,6 +65,12 @@ public class SteamGame extends BaseTime {
     @Column
     private Long recommendations;
 
+    @Column
+    private String developers;
+
+    @Column
+    private String publishers;
+
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<SteamImage> screenshots = new ArrayList<>();
@@ -78,9 +81,9 @@ public class SteamGame extends BaseTime {
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<GameCategory> gameCategories = new ArrayList<>();
+    private List<SteamCategory> steamCategories = new ArrayList<>();
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<GameTag> gameTags = new ArrayList<>();
+    private List<SteamGenre> steamGenres = new ArrayList<>();
 }

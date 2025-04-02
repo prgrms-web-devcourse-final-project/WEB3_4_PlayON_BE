@@ -13,10 +13,9 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class GameTag extends BaseTime {
+public class SteamCategory extends BaseTime {
 
-    private String tagName;
-    private Long tagId;
+    private String category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "game_id")
