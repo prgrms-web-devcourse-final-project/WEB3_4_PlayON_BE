@@ -37,7 +37,7 @@ spring:
     jdbc:
       initialize-schema: always  # Batch가 사용하는 테이블 자동 생성
     job:
-      enabled: true
+      enabled: false
 
   # 로깅
 logging:
