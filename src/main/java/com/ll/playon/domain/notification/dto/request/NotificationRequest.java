@@ -9,4 +9,7 @@ public record NotificationRequest(
         NotificationType type,
         String redirectUrl
 ) {
+    public NotificationRequest withSenderId(Long senderId) {
+        return new NotificationRequest(senderId, receiverId, content, type, redirectUrl);
+    }
 }

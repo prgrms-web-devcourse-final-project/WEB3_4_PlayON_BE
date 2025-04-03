@@ -1,8 +1,8 @@
 package com.ll.playon.domain.notification.controller;
 
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.notification.dto.request.NotificationRequest;
 import com.ll.playon.domain.notification.dto.response.NotificationResponse;
-import com.ll.playon.domain.notification.entity.NotificationType;
 import com.ll.playon.domain.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -20,29 +20,41 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
+    /**
+     * SSE 구독 (알림 실시간 수신)
+     */
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@AuthenticationPrincipal Member member) {
         return notificationService.subscribe(member.getId());
     }
 
+    /**
+     * 알림 전송
+     */
     @PostMapping("/send")
-    public ResponseEntity<Void> sendNotification(@RequestParam Long receiverId,
-                                                 @RequestParam String content,
-                                                 @RequestParam NotificationType type,
-                                                 @RequestParam(required = false) String redirectUrl) {
-        notificationService.sendNotification(receiverId, content, type, redirectUrl);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<NotificationResponse> sendNotification(
+            @RequestBody NotificationRequest request,
+            @AuthenticationPrincipal Member sender
+    ) {
+        NotificationResponse response = notificationService.sendNotification(request.withSenderId(sender.getId()));
+        return ResponseEntity.ok(response);
     }
-// TODO: 알림 읽음 처리 API 구현
-//    @PatchMapping("/{notificationId}/read")
-//    public ResponseEntity<Void> markAsRead(
-//            @PathVariable Long notificationId,
-//            @AuthenticationPrincipal CustomUserDetails userDetails // 현재 로그인한 사용자 정보 가져오기
-//    ) {
-//        notificationService.markAsRead(userDetails.getId(), notificationId);
-//        return ResponseEntity.noContent().build();
-//    }
 
+    /**
+     * 특정 알림 읽음 처리
+     */
+    @PatchMapping("/{notificationId}/read")
+    public ResponseEntity<Void> markAsRead(
+            @PathVariable Long notificationId,
+            @AuthenticationPrincipal Member member
+    ) {
+        notificationService.markAsRead(member.getId(), notificationId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 사용자의 알림 목록 조회
+     */
     @GetMapping
     public ResponseEntity<List<NotificationResponse>> getNotifications(@AuthenticationPrincipal Member member) {
         List<NotificationResponse> notifications = notificationService.getNotifications(member.getId());
