@@ -4,6 +4,7 @@ import com.ll.playon.domain.member.TestMemberHelper;
 import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
 import com.ll.playon.global.openFeign.SteamApiClient;
 import com.ll.playon.global.openFeign.SteamOpenIdClient;
+import com.ll.playon.global.openFeign.SteamStoreClient;
 import com.ll.playon.global.openFeign.dto.*;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +25,7 @@ import org.springframework.util.LinkedMultiValueMap;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,6 +53,9 @@ public class SteamAuthTest {
 
     @MockitoBean
     private SteamApiClient mockSteamApiClient;
+
+    @MockitoBean
+    private SteamStoreClient mockSteamStoreClient;
 
     @Value("${custom.steam.apikey}")
     private String apikey;
@@ -134,6 +139,22 @@ public class SteamAuthTest {
 
         Mockito.when(mockSteamApiClient.getPlayerOwnedGames(eq(apikey),Mockito.any()))
                 .thenReturn(fakeSteamGameResponse);
+
+        // 가짜 게임 장르 응답 설정
+        SteamGameDetailResponse fakeSteamGameDetailResponse = new SteamGameDetailResponse();
+        GameDetailWrapper gameDetailWrapper = new GameDetailWrapper();
+        GameDetail gameDetail = new GameDetail();
+        Genre genre = new Genre();
+
+        genre.setId("1");
+        genre.setDescription("Action");
+
+        gameDetail.setGenres(List.of(genre));
+        gameDetailWrapper.setGameData(gameDetail);
+        fakeSteamGameDetailResponse.setGames(Map.of("123", gameDetailWrapper));
+
+        Mockito.when(mockSteamStoreClient.getGameDetail(Mockito.any(),Mockito.any(),Mockito.any()))
+                .thenReturn(fakeSteamGameDetailResponse);
 
         // 컨트롤러 호출
         ResultActions resultActions = mvc.perform(
@@ -240,6 +261,22 @@ public class SteamAuthTest {
 
         Mockito.when(mockSteamApiClient.getPlayerOwnedGames(eq(apikey),Mockito.any()))
                 .thenReturn(fakeSteamGameResponse);
+
+        // 가짜 게임 장르 응답 설정
+        SteamGameDetailResponse fakeSteamGameDetailResponse = new SteamGameDetailResponse();
+        GameDetailWrapper gameDetailWrapper = new GameDetailWrapper();
+        GameDetail gameDetail = new GameDetail();
+        Genre genre = new Genre();
+
+        genre.setId("1");
+        genre.setDescription("Action");
+
+        gameDetail.setGenres(List.of(genre));
+        gameDetailWrapper.setGameData(gameDetail);
+        fakeSteamGameDetailResponse.setGames(Map.of("123", gameDetailWrapper));
+
+        Mockito.when(mockSteamStoreClient.getGameDetail(Mockito.any(),Mockito.any(),Mockito.any()))
+                .thenReturn(fakeSteamGameDetailResponse);
 
         // 컨트롤러 호출
         MockHttpServletRequestBuilder request = get("/api/auth/steam/callback/link")

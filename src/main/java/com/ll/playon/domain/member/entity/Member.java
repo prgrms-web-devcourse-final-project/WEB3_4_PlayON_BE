@@ -1,8 +1,14 @@
 package com.ll.playon.domain.member.entity;
 
-import com.ll.playon.domain.member.entity.enums.*;
+import com.ll.playon.domain.game.game.entity.SteamGenre;
+import com.ll.playon.domain.member.entity.enums.Gender;
+import com.ll.playon.domain.member.entity.enums.PlayStyle;
+import com.ll.playon.domain.member.entity.enums.Role;
+import com.ll.playon.domain.member.entity.enums.SkillLevel;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -86,10 +92,8 @@ public class Member {
     @Builder.Default
     private Gender gender = Gender.MALE;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private PreferredGenres preferredGenres = PreferredGenres.RPG; // TODO : 게임 보유 목록 통해 설정
+    @JdbcTypeCode(SqlTypes.JSON)
+    private SteamGenre preferredGenre; // TODO : 선호 장르 여러개 넣고 싶은데 일단 1개만
 
     public Member(long id, String username, Role role) {
         super();
