@@ -1,5 +1,6 @@
 package com.ll.playon.domain.member.service;
 
+import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.member.dto.*;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
@@ -119,7 +120,10 @@ public class MemberService {
                 .build();
         memberRepository.save(newMember);
 
-        saveUserGameList(steamAPI.getUserGames(steamId), newMember);
+        List<Long> userGames = steamAPI.getUserGames(steamId);
+        SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
+        memberRepository.save(newMember.toBuilder().preferredGenre(preferredGenre).build());
+        saveUserGameList(userGames, newMember);
 
         return newMember;
     }
@@ -162,7 +166,10 @@ public class MemberService {
                 targetMember.setSteamId(steamId);
                 memberRepository.save(targetMember);
 
-                saveUserGameList(steamAPI.getUserGames(steamId), targetMember);
+                List<Long> userGames = steamAPI.getUserGames(steamId);
+                SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
+                memberRepository.save(targetMember.toBuilder().preferredGenre(preferredGenre).build());
+                saveUserGameList(userGames, targetMember);
                 return targetMember;
             })
             .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
@@ -206,7 +213,7 @@ public class MemberService {
         ProfileMemberDetailDto profileMemberDetailDto = new ProfileMemberDetailDto(
                 member.getSteamId(), member.getUsername(), member.getNickname(), member.getProfileImg(),
                 member.getLastLoginAt(), member.getPlayStyle(), member.getSkillLevel(),
-                member.getGender(), member.getPreferredGenres()
+                member.getGender(), member.getPreferredGenre()
         );
 
         // 보유한 게임 목록 조회
