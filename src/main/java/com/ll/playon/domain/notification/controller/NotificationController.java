@@ -4,6 +4,7 @@ import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.notification.dto.request.NotificationRequest;
 import com.ll.playon.domain.notification.dto.response.NotificationResponse;
 import com.ll.playon.domain.notification.service.NotificationService;
+import com.ll.playon.domain.notification.service.NotificationSseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +20,14 @@ import java.util.List;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final NotificationSseService notificationSseService;
 
     /**
      * SSE 구독 (알림 실시간 수신)
      */
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@AuthenticationPrincipal Member member) {
-        return notificationService.subscribe(member.getId());
+        return notificationSseService.subscribe(member.getId());
     }
 
     /**
