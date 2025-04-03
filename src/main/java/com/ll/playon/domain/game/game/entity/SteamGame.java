@@ -43,6 +43,7 @@ public class SteamGame extends BaseTime {
     private boolean isMacSupported;
     private boolean isLinuxSupported;
 
+
     private boolean isSinglePlayer;
     private boolean isMultiPlayer;
 
@@ -50,7 +51,8 @@ public class SteamGame extends BaseTime {
     private String developers;
 
     @Column(columnDefinition = "TEXT")
-    private String publishers;
+
+    private String developers;
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -66,4 +68,5 @@ public class SteamGame extends BaseTime {
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
     @Builder.Default
     private List<SteamGenre> genres = new ArrayList<>();
+
 }

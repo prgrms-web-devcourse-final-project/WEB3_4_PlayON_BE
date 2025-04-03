@@ -16,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class SteamGenre extends BaseTime {
+
     @Column(unique = true)
     private String genre;
 
