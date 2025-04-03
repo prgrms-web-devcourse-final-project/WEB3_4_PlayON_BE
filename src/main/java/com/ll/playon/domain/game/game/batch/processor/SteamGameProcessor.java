@@ -131,6 +131,8 @@ public class SteamGameProcessor implements ItemProcessor<SteamCsvDto, SteamGame>
                 .developers(developers)
                 .publishers(publishers)
                 .genres(genreEntities)
+                .percentPositiveTotal(dto.getPercentPositiveTotal())
+                .totalReviewCount(dto.getTotalReviewCount())
                 .build();
 
         screenshotEntities.forEach(img -> img.setGame(game));

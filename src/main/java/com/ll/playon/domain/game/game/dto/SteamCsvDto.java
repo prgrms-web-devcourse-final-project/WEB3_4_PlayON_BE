@@ -21,4 +21,6 @@ public class SteamCsvDto {
     private String screenshots;
     private String movies;
     private String genres;
+    private Integer percentPositiveTotal;
+    private Long totalReviewCount;
 }

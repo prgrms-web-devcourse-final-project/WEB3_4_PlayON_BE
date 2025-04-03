@@ -52,6 +52,8 @@ public class SteamCsvReaderConfig {
             dto.setGenres(fieldSet.readString("genres"));
             dto.setScreenshots(fieldSet.readString("screenshots"));
             dto.setMovies(fieldSet.readString("movies"));
+            dto.setPercentPositiveTotal(fieldSet.readInt("pct_pos_recent"));
+            dto.setTotalReviewCount(fieldSet.readLong("num_reviews_total"));
             return dto;
         });
 

@@ -25,16 +25,19 @@ public class SteamGame extends BaseTime {
 
     private String name;
 
+    @Column(name = "release_date")
     private LocalDate releaseDate;
 
+    @Column(name = "header_image")
     private String headerImage;
 
+    @Column(name = "required_age")
     private Integer requiredAge;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "about_the_game", columnDefinition = "TEXT")
     private String aboutTheGame;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "short_description", columnDefinition = "TEXT")
     private String shortDescription;
 
     private String website;
@@ -42,7 +45,6 @@ public class SteamGame extends BaseTime {
     private boolean isWindowsSupported;
     private boolean isMacSupported;
     private boolean isLinuxSupported;
-
 
     private boolean isSinglePlayer;
     private boolean isMultiPlayer;
@@ -52,6 +54,12 @@ public class SteamGame extends BaseTime {
 
     @Column(columnDefinition = "TEXT")
     private String publishers;
+
+    @Column(name = "pct_pos_total")
+    private Integer percentPositiveTotal;
+
+    @Column(name = "num_reviews_total")
+    private Long totalReviewCount;
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
