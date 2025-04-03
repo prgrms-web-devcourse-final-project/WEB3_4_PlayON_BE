@@ -32,6 +32,8 @@ public class Notification extends BaseTime {
 
     // 읽음 상태 변경 메서드
     public void markAsRead() {
-        this.read = true;
+        if (!this.read) {
+            this.read = true;
+        }
     }
 }
