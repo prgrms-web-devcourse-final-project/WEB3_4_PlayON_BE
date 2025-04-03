@@ -2,9 +2,9 @@ package com.ll.playon.domain.notification.service;
 
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.repository.MemberRepository;
+import com.ll.playon.domain.notification.dto.request.NotificationRequest;
 import com.ll.playon.domain.notification.dto.response.NotificationResponse;
 import com.ll.playon.domain.notification.entity.Notification;
-import com.ll.playon.domain.notification.entity.NotificationType;
 import com.ll.playon.domain.notification.repository.NotificationRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -23,69 +23,105 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
-    private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
 
+    // 여러 개의 SSE 구독을 허용하는 구조
+    private final Map<Long, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
+
+    /**
+     * SSE 구독 메서드 (알림 수신을 위한 연결)
+     */
     public SseEmitter subscribe(Long memberId) {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-        emitters.put(memberId, emitter);
+        emitters.computeIfAbsent(memberId, key -> new java.util.concurrent.CopyOnWriteArrayList<>()).add(emitter);
 
-        emitter.onCompletion(() -> emitters.remove(memberId));
-        emitter.onTimeout(() -> emitters.remove(memberId));
+        emitter.onCompletion(() -> removeEmitter(memberId, emitter));
+        emitter.onTimeout(() -> removeEmitter(memberId, emitter));
 
         // 구독 직후 더미 이벤트 전송 (연결 유지)
         try {
             emitter.send(SseEmitter.event().name("connect").data("Connected!"));
         } catch (IOException e) {
-            emitters.remove(memberId);
+            removeEmitter(memberId, emitter);
         }
 
         return emitter;
     }
 
-    @Transactional
-    public void sendNotification(Long receiverId, String content, NotificationType type, String redirectUrl) {
-        // 1. receiverId를 기반으로 Member 조회
-        Member receiver = memberRepository.findById(receiverId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다: " + receiverId));
+    private void removeEmitter(Long memberId, SseEmitter emitter) {
+        List<SseEmitter> userEmitters = emitters.get(memberId);
+        if (userEmitters != null) {
+            userEmitters.remove(emitter);
+            if (userEmitters.isEmpty()) {
+                emitters.remove(memberId);
+            }
+        }
+    }
 
-        // 2. 알림 DB에 저장
+    /**
+     * 알림 전송 (DB 저장 + SSE 실시간 전송)
+     */
+    @Transactional
+    public NotificationResponse sendNotification(NotificationRequest request) {
+        Member sender = memberRepository.findById(request.senderId())
+                .orElseThrow(() -> new EntityNotFoundException("발신자를 찾을 수 없습니다: " + request.senderId()));
+
+        Member receiver = memberRepository.findById(request.receiverId())
+                .orElseThrow(() -> new EntityNotFoundException("수신자를 찾을 수 없습니다: " + request.receiverId()));
+
         Notification notification = Notification.builder()
                 .receiver(receiver)
-                .content(content)
-                .type(type)
-                .redirectUrl(redirectUrl)
+                .content(request.content())
+                .type(request.type())
+                .redirectUrl(request.redirectUrl())
                 .build();
         notificationRepository.save(notification);
 
-        // 3. SSE로 실시간 전송
-        SseEmitter emitter = emitters.get(receiverId);
-        if (emitter != null) {
-            try {
-                emitter.send(SseEmitter.event().name("notification").data(content));
-            } catch (IOException e) {
+        sendSseNotification(receiver.getId(), NotificationResponse.fromEntity(notification));
+
+        return NotificationResponse.fromEntity(notification);
+    }
+
+    private void sendSseNotification(Long receiverId, NotificationResponse response) {
+        List<SseEmitter> userEmitters = emitters.get(receiverId);
+        if (userEmitters != null) {
+            userEmitters.removeIf(emitter -> {
+                try {
+                    emitter.send(SseEmitter.event().name("notification").data(response));
+                    return false;
+                } catch (IOException e) {
+                    return true;
+                }
+            });
+            if (userEmitters.isEmpty()) {
                 emitters.remove(receiverId);
             }
         }
     }
 
+    /**
+     * 알림 읽음 처리
+     */
     @Transactional
     public void markAsRead(Long memberId, Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new EntityNotFoundException("알림을 찾을 수 없습니다."));
 
-        // 읽기 요청자가 실제 수신자인지 검증
         if (!notification.getReceiver().getId().equals(memberId)) {
-            throw new IllegalArgumentException("잘못된 요청: 해당 알림을 읽을 권한이 없습니다.");
+            throw new IllegalArgumentException("잘못된 요청: 본인의 알림만 읽음 처리할 수 있습니다.");
         }
 
         notification.markAsRead();
     }
 
+    /**
+     * 사용자의 알림 목록 조회
+     */
     @Transactional(readOnly = true)
     public List<NotificationResponse> getNotifications(Long memberId) {
-        List<Notification> notifications = notificationRepository.findByReceiverIdOrderByCreatedAtDesc(memberId);
-        return notifications.stream()
+        return notificationRepository.findByReceiverIdOrderByCreatedAtDesc(memberId)
+                .stream()
                 .map(NotificationResponse::fromEntity)
                 .toList();
     }
+
 }
