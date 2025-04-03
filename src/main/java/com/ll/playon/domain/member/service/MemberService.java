@@ -166,7 +166,10 @@ public class MemberService {
                 targetMember.setSteamId(steamId);
                 memberRepository.save(targetMember);
 
-                saveUserGameList(steamAPI.getUserGames(steamId), targetMember);
+                List<Long> userGames = steamAPI.getUserGames(steamId);
+                SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
+                memberRepository.save(targetMember.toBuilder().preferredGenre(preferredGenre).build());
+                saveUserGameList(userGames, targetMember);
                 return targetMember;
             })
             .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
