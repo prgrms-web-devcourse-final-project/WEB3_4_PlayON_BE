@@ -4,10 +4,12 @@ import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.party.party.context.PartyContext;
 import com.ll.playon.domain.party.party.dto.PartyDetailMemberDto;
 import com.ll.playon.domain.party.party.dto.PartyDetailTagDto;
+import com.ll.playon.domain.party.party.dto.request.GetAllPartiesRequest;
 import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
 import com.ll.playon.domain.party.party.dto.request.PutPartyRequest;
 import com.ll.playon.domain.party.party.dto.response.GetAllPendingMemberResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyDetailResponse;
+import com.ll.playon.domain.party.party.dto.response.GetPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.PostPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.PutPartyResponse;
 import com.ll.playon.domain.party.party.entity.Party;
@@ -19,13 +21,23 @@ import com.ll.playon.domain.party.party.mapper.PartyTagMapper;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.party.party.type.PartyStatus;
+import com.ll.playon.domain.party.party.util.PartySortUtils;
 import com.ll.playon.domain.party.party.validation.PartyMemberValidation;
 import com.ll.playon.global.annotation.PartyOwnerOnly;
 import com.ll.playon.global.exceptions.ErrorCode;
+import com.ll.playon.global.type.TagValue;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +64,47 @@ public class PartyService {
         //       2. 파티룸 생성
 
         return new PostPartyResponse(this.partyRepository.save(party));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<GetPartyResponse> getAllParties(int page, int pageSize, String orderBy, LocalDateTime partyAt,
+                                                GetAllPartiesRequest request) {
+        Pageable pageable = PageRequest.of(page - 1, pageSize, PartySortUtils.getSort(orderBy));
+
+        partyAt = partyAt == null ? LocalDateTime.now() : partyAt;
+
+        List<String> tagValues = request.tags().stream()
+                .map(tag -> TagValue.fromValue(tag.value()).name())
+                .toList();
+
+        Page<Long> partyIds = tagValues.isEmpty()
+                ? this.partyRepository.findPartyIdsWithoutFilter(partyAt, pageable)
+                : this.partyRepository.findPartyIdsWithFilter(partyAt, tagValues, tagValues.size(), pageable);
+
+        if (partyIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        List<Party> parties = this.partyRepository.findPartiesByIds(partyIds.getContent());
+        List<PartyTag> partyTags = this.partyRepository.findPartyTagsByPartyIds(partyIds.getContent());
+        List<PartyMember> partyMembers = this.partyRepository.findPartyMembersByPartyIds(partyIds.getContent());
+
+        Map<Long, List<PartyTag>> partyTagsMap = partyTags.stream()
+                .collect(Collectors.groupingBy(pt -> pt.getParty().getId()));
+
+        Map<Long, List<PartyMember>> partyMembersMap = partyMembers.stream()
+                .collect(Collectors.groupingBy(pm -> pm.getParty().getId()));
+
+        return new PageImpl<>(
+                parties.stream()
+                        .map(party -> new GetPartyResponse(
+                                party,
+                                partyTagsMap.getOrDefault(party.getId(), Collections.emptyList()),
+                                partyMembersMap.getOrDefault(party.getId(), Collections.emptyList())
+                        )).toList(),
+                pageable,
+                partyIds.getTotalElements()
+        );
     }
 
     // 파티 상세 정보 조회
