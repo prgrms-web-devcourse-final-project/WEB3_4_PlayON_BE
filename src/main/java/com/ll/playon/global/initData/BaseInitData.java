@@ -4,8 +4,6 @@ import com.ll.playon.domain.game.game.entity.*;
 import com.ll.playon.domain.game.game.repository.GameGenreRepository;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.GenreRepository;
-import com.ll.playon.domain.game.game.entity.*;
-import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
@@ -137,7 +135,7 @@ public class BaseInitData {
         Member sampleMember1 = Member.builder()
                 .steamId(123L).username("sampleUser1").nickname("sampleUser").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember1);
-        List<Long> gameAppIds = Arrays.asList(2246340L, 2680010L, 2456740L);
+        List<Long> gameAppIds = Arrays.asList(730L, 570L);
         memberService.saveUserGameList(gameAppIds, sampleMember1);
 
         Member sampleMember2 = Member.builder()
