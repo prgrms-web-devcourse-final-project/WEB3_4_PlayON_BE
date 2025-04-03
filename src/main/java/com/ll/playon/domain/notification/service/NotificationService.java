@@ -5,17 +5,15 @@ import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.notification.dto.request.NotificationRequest;
 import com.ll.playon.domain.notification.dto.response.NotificationResponse;
 import com.ll.playon.domain.notification.entity.Notification;
+import com.ll.playon.domain.notification.event.NotificationEvent;
 import com.ll.playon.domain.notification.repository.NotificationRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -23,48 +21,13 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
-
-    // 여러 개의 SSE 구독을 허용하는 구조
-    private final Map<Long, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
-     * SSE 구독 메서드 (알림 수신을 위한 연결)
-     */
-    public SseEmitter subscribe(Long memberId) {
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-        emitters.computeIfAbsent(memberId, key -> new java.util.concurrent.CopyOnWriteArrayList<>()).add(emitter);
-
-        emitter.onCompletion(() -> removeEmitter(memberId, emitter));
-        emitter.onTimeout(() -> removeEmitter(memberId, emitter));
-
-        // 구독 직후 더미 이벤트 전송 (연결 유지)
-        try {
-            emitter.send(SseEmitter.event().name("connect").data("Connected!"));
-        } catch (IOException e) {
-            removeEmitter(memberId, emitter);
-        }
-
-        return emitter;
-    }
-
-    private void removeEmitter(Long memberId, SseEmitter emitter) {
-        List<SseEmitter> userEmitters = emitters.get(memberId);
-        if (userEmitters != null) {
-            userEmitters.remove(emitter);
-            if (userEmitters.isEmpty()) {
-                emitters.remove(memberId);
-            }
-        }
-    }
-
-    /**
-     * 알림 전송 (DB 저장 + SSE 실시간 전송)
+     * 알림 전송 (DB 저장 후 이벤트 발행)
      */
     @Transactional
     public NotificationResponse sendNotification(NotificationRequest request) {
-        Member sender = memberRepository.findById(request.senderId())
-                .orElseThrow(() -> new EntityNotFoundException("발신자를 찾을 수 없습니다: " + request.senderId()));
-
         Member receiver = memberRepository.findById(request.receiverId())
                 .orElseThrow(() -> new EntityNotFoundException("수신자를 찾을 수 없습니다: " + request.receiverId()));
 
@@ -76,26 +39,10 @@ public class NotificationService {
                 .build();
         notificationRepository.save(notification);
 
-        sendSseNotification(receiver.getId(), NotificationResponse.fromEntity(notification));
+        // SSE 전송을 위한 이벤트 발행
+        eventPublisher.publishEvent(new NotificationEvent(this, receiver.getId(), NotificationResponse.fromEntity(notification)));
 
         return NotificationResponse.fromEntity(notification);
-    }
-
-    private void sendSseNotification(Long receiverId, NotificationResponse response) {
-        List<SseEmitter> userEmitters = emitters.get(receiverId);
-        if (userEmitters != null) {
-            userEmitters.removeIf(emitter -> {
-                try {
-                    emitter.send(SseEmitter.event().name("notification").data(response));
-                    return false;
-                } catch (IOException e) {
-                    return true;
-                }
-            });
-            if (userEmitters.isEmpty()) {
-                emitters.remove(receiverId);
-            }
-        }
     }
 
     /**
@@ -123,5 +70,4 @@ public class NotificationService {
                 .map(NotificationResponse::fromEntity)
                 .toList();
     }
-
 }
