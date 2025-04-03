@@ -57,5 +57,5 @@ public class SteamGame extends BaseTime {
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<SteamGenre> steamGenres = new ArrayList<>();
+    private List<GameGenre> gameGenres = new ArrayList<>();
 }

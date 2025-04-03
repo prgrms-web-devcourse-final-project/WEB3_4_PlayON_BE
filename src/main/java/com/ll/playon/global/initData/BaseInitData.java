@@ -1,7 +1,9 @@
 package com.ll.playon.global.initData;
 
 import com.ll.playon.domain.game.game.entity.*;
+import com.ll.playon.domain.game.game.repository.GameGenreRepository;
 import com.ll.playon.domain.game.game.repository.GameRepository;
+import com.ll.playon.domain.game.game.repository.GenreRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
@@ -38,6 +40,8 @@ public class BaseInitData {
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final GameRepository gameRepository;
+    private final GenreRepository genreRepository;
+    private final GameGenreRepository gameGenreRepository;
 
     @Autowired
     @Lazy
@@ -55,6 +59,10 @@ public class BaseInitData {
     @Transactional
     public void makeSampleSteamGames() {
         if (gameRepository.count() > 0) return;
+
+        SteamGenre genre1 = SteamGenre.builder().name("Action").build();
+        SteamGenre genre2 = SteamGenre.builder().name("Free To Play").build();
+        genreRepository.saveAll(List.of(genre1, genre2));
 
         List<SteamGame> games = new ArrayList<>();
 
@@ -79,10 +87,6 @@ public class BaseInitData {
         ));
         game1.setMovies(List.of(
                 SteamMovie.builder().game(game1).movie("http://video.akamai.../movie1.mp4").build()
-        ));
-        game1.setSteamGenres(List.of(
-                SteamGenre.builder().game(game1).genre("Action").build(),
-                SteamGenre.builder().game(game1).genre("Free To Play").build()
         ));
 
         SteamGame game2 = SteamGame.builder()
@@ -111,16 +115,15 @@ public class BaseInitData {
                 SteamMovie.builder().game(game2).movie("http://video.akamai.steamstatic.com/store_trailers/256692021/movie_480p.mp4?t=1739210452").build()
         ));
 
-        game2.setSteamGenres(List.of(
-                SteamGenre.builder().game(game2).genre("Action").build(),
-                SteamGenre.builder().game(game2).genre("Strategy").build(),
-                SteamGenre.builder().game(game2).genre("Free To Play").build()
-        ));
-
         games.add(game1);
         games.add(game2);
 
         gameRepository.saveAll(games);
+
+        GameGenre gameGenre1 = GameGenre.builder().game(game1).genre(genre1).build();
+        GameGenre gameGenre2 = GameGenre.builder().game(game1).genre(genre2).build();
+        GameGenre gameGenre3 = GameGenre.builder().game(game2).genre(genre1).build();
+        gameGenreRepository.saveAll(List.of(gameGenre1, gameGenre2, gameGenre3));
     }
 
     @Transactional
