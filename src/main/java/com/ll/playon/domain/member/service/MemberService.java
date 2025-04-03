@@ -1,6 +1,8 @@
 package com.ll.playon.domain.member.service;
 
 import com.ll.playon.domain.game.game.entity.SteamGenre;
+import com.ll.playon.domain.game.game.dto.GameListResponse;
+import com.ll.playon.domain.game.game.service.GameService;
 import com.ll.playon.domain.member.dto.*;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
@@ -28,6 +30,7 @@ public class MemberService {
     private final SteamAPI steamAPI;
     private final MemberSteamDataRepository memberSteamDataRepository;
     private final PasswordEncoder passwordEncoder;
+    private final GameService gameService;
 
     public Optional<Member> findById(Long id){
         return memberRepository.findById(id);
@@ -223,17 +226,11 @@ public class MemberService {
         return new MemberProfileResponse(profileMemberDetailDto, getMemberOwnedGamesDto(gamesList));
     }
 
-    private static List<GameDetailDto> getMemberOwnedGamesDto(List<MemberSteamData> gamesList) {
-        List<GameDetailDto> gameDetailDtoList = new ArrayList<>();
-        for(MemberSteamData game : gamesList) {
-            // TODO : 게임 데이터 작업 후 수정
-            String gameName = "gameName";
-            String gameImg = "gameImg";
-            List<String> gameGenres = List.of("genre1","genre2");
-            GameDetailDto gameDetail = new GameDetailDto(game.getAppId(), gameName, gameImg, gameGenres);
-            gameDetailDtoList.add(gameDetail);
-        }
-        return gameDetailDtoList;
+    private List<GameListResponse> getMemberOwnedGamesDto(List<MemberSteamData> gamesList) {
+        List<Long> idsList = gamesList.stream()
+                .map(MemberSteamData::getAppId).toList();
+
+        return gameService.getGameList(idsList);
     }
 
     public List<GetMembersResponse> findByNickname(String nickname) {
