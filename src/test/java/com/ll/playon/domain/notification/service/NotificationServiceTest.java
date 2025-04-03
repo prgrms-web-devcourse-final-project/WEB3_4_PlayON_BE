@@ -15,14 +15,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
@@ -45,6 +46,65 @@ class NotificationServiceTest {
         receiver = new Member(2L, "receiver@example.com", Role.USER);
     }
 
+    /**
+     * SSE 구독 테스트
+     */
+    @Test
+    void SSE_구독_테스트() {
+        // When
+        SseEmitter emitter = notificationService.subscribe(receiver.getId());
+
+        // Then
+        assertThat(emitter).isNotNull();
+    }
+
+    /**
+     * SSE 알림 전송 테스트
+     */
+    @Test
+    void SSE_알림_전송_테스트() throws IOException {
+        // Given
+        SseEmitter emitter = notificationService.subscribe(receiver.getId());
+        Notification notification = Notification.builder()
+                .receiver(receiver)
+                .content("SSE 알림 테스트")
+                .type(NotificationType.PARTY_INVITE)
+                .redirectUrl("https://example.com")
+                .build();
+
+        when(memberRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
+        when(memberRepository.findById(receiver.getId())).thenReturn(Optional.of(receiver));
+        when(notificationRepository.save(any(Notification.class))).thenReturn(notification);
+
+        // When
+        notificationService.sendNotification(new NotificationRequest(
+                sender.getId(), receiver.getId(), "SSE 알림 테스트",
+                NotificationType.PARTY_INVITE, "https://example.com"
+        ));
+
+        // Then
+        verify(notificationRepository, times(1)).save(any(Notification.class));
+    }
+
+    /**
+     * SSE 구독 해제 테스트
+     */
+    @Test
+    void SSE_구독_해제_테스트() {
+        // Given
+        SseEmitter emitter = notificationService.subscribe(receiver.getId());
+
+        // When
+        emitter.complete(); // 구독 해제
+
+        // Then
+        // -> emitters 맵에서 해당 receiver의 리스트가 존재하지 않아야 함
+        assertThat(notificationService.subscribe(receiver.getId())).isNotSameAs(emitter);
+    }
+
+    /**
+     * 알림 저장 및 전송 테스트
+     */
     @Test
     void 알림_저장_및_전송_테스트() {
         // Given
@@ -75,6 +135,9 @@ class NotificationServiceTest {
         assertThat(response.content()).isEqualTo("새로운 파티 초대");
     }
 
+    /**
+     * 알림 조회 테스트
+     */
     @Test
     void 알림_조회_테스트() {
         // Given
@@ -96,6 +159,9 @@ class NotificationServiceTest {
         assertThat(notifications.get(0).content()).isEqualTo("테스트 알림");
     }
 
+    /**
+     * 알림 읽음 처리 테스트
+     */
     @Test
     void 알림_읽음_처리_테스트() {
         Notification notification = Notification.builder()
@@ -116,5 +182,4 @@ class NotificationServiceTest {
         Notification updatedNotification = notificationRepository.findById(1L).orElseThrow();
         assertThat(updatedNotification.isRead()).isTrue();
     }
-
 }
