@@ -1,7 +1,7 @@
 package com.ll.playon.domain.notification.controller;
 
 import com.ll.playon.domain.member.entity.Member;
-import com.ll.playon.domain.notification.dto.NotificationResponse;
+import com.ll.playon.domain.notification.dto.response.NotificationResponse;
 import com.ll.playon.domain.notification.entity.NotificationType;
 import com.ll.playon.domain.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;

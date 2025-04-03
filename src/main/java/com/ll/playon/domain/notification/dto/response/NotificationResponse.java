@@ -1,4 +1,4 @@
-package com.ll.playon.domain.notification.dto;
+package com.ll.playon.domain.notification.dto.response;
 
 import com.ll.playon.domain.notification.entity.Notification;
 import com.ll.playon.domain.notification.entity.NotificationType;

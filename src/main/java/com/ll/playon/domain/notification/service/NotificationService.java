@@ -2,7 +2,7 @@ package com.ll.playon.domain.notification.service;
 
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.repository.MemberRepository;
-import com.ll.playon.domain.notification.dto.NotificationResponse;
+import com.ll.playon.domain.notification.dto.response.NotificationResponse;
 import com.ll.playon.domain.notification.entity.Notification;
 import com.ll.playon.domain.notification.entity.NotificationType;
 import com.ll.playon.domain.notification.repository.NotificationRepository;
