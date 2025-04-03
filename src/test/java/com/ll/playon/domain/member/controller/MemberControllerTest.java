@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -221,5 +222,38 @@ public class MemberControllerTest {
         Optional<Member> memberCheck = memberService.findByUsername(authMember);
 
         assertTrue(memberCheck.isEmpty());
+    }
+
+    @Test
+    @DisplayName("사용자 상세 조회")
+    void getMyProfile() throws Exception {
+        String authMember = "sampleUser1";
+        MockHttpServletRequestBuilder request = get("/api/members/me");
+        ResultActions resultActions = testMemberHelper.requestWithUserAuth(authMember, request);
+
+        Member actor = memberService.findByUsername(authMember).get();
+
+        resultActions
+                .andExpect(handler().handlerType(MemberController.class))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.memberDetail.steamId").value(actor.getSteamId()))
+                .andExpect(jsonPath("$.data.memberDetail.username").value(actor.getUsername()))
+                .andExpect(jsonPath("$.data.ownedGames", hasSize(actor.getGames().size())));
+    }
+
+    @Test
+    @DisplayName("닉네임으로 사용자 조회")
+    void getMembersWithNickname() throws Exception {
+        String nickname = "sampleUser";
+        ResultActions resultActions = mvc.perform(
+                get("/api/members/nickname?nickname=" + nickname)
+        );
+
+        int memberWithSameNicknameCount = memberService.findByNickname(nickname).size();
+
+        resultActions
+                .andExpect(handler().handlerType(MemberController.class))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data", hasSize(memberWithSameNicknameCount)));
     }
 }

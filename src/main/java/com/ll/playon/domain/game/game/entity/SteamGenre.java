@@ -2,6 +2,7 @@ package com.ll.playon.domain.game.game.entity;
 
 import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.*;
+import jakarta.persistence.Entity;
 import lombok.*;
 
 import java.util.ArrayList;

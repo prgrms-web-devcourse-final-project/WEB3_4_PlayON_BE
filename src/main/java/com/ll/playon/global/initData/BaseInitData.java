@@ -4,6 +4,8 @@ import com.ll.playon.domain.game.game.entity.*;
 import com.ll.playon.domain.game.game.repository.GameGenreRepository;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.GenreRepository;
+import com.ll.playon.domain.game.game.entity.*;
+import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
@@ -133,18 +135,18 @@ public class BaseInitData {
         }
 
         Member sampleMember1 = Member.builder()
-                .steamId(123L).username("sampleUser1").nickname("sampleUser1").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
+                .steamId(123L).username("sampleUser1").nickname("sampleUser").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember1);
         List<Long> gameAppIds = Arrays.asList(2246340L, 2680010L, 2456740L);
         memberService.saveUserGameList(gameAppIds, sampleMember1);
 
         Member sampleMember2 = Member.builder()
-                .steamId(456L).username("sampleUser2").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
+                .steamId(456L).username("sampleUser2").nickname("sampleUser").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember2);
         memberService.saveUserGameList(gameAppIds, sampleMember2);
 
         Member sampleMember3 = Member.builder()
-                .steamId(789L).username("sampleUser3").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
+                .steamId(789L).username("sampleUser3").nickname("sampleUser").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember3);
 
         memberService.saveUserGameList(gameAppIds, sampleMember3);
@@ -165,6 +167,42 @@ public class BaseInitData {
         memberRepository.save(owner);
 
         memberService.saveUserGameList(gameAppIds, owner);
+
+        Member user1 = Member.builder()
+                .steamId(1515L)
+                .username("user1")
+                .nickname("user1")
+                .profileImg("")
+                .lastLoginAt(LocalDateTime.now())
+                .role(Role.USER)
+                .build();
+        memberRepository.save(user1);
+
+        memberService.saveUserGameList(gameAppIds, user1);
+
+        Member user2 = Member.builder()
+                .steamId(2222L)
+                .username("user2")
+                .nickname("user2")
+                .profileImg("")
+                .lastLoginAt(LocalDateTime.now())
+                .role(Role.USER)
+                .build();
+        memberRepository.save(user2);
+
+        memberService.saveUserGameList(gameAppIds, user2);
+
+        Member user3 = Member.builder()
+                .steamId(3333L)
+                .username("user3")
+                .nickname("user3")
+                .profileImg("")
+                .lastLoginAt(LocalDateTime.now())
+                .role(Role.USER)
+                .build();
+        memberRepository.save(user3);
+
+        memberService.saveUserGameList(gameAppIds, user3);
     }
 
     @Transactional

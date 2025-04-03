@@ -38,4 +38,11 @@ public class PartyMember extends BaseTime {
         this.member = member;
         this.partyRole = partyRole;
     }
+
+    public void delete() {
+        if (this.party != null) {
+            this.party.getPartyMembers().remove(this);
+            this.party = null;
+        }
+    }
 }
