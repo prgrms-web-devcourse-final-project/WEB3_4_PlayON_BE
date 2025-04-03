@@ -18,14 +18,16 @@ public class GameService {
     private final GameGenreRepository gameGenreRepository;
 
     public List<GameListResponse> getGameList(List<Long> appIds) {
-        List<GameListResponse> responses = new ArrayList<>();
+        final List<GameListResponse> responses = new ArrayList<>();
 
-        List<SteamGame> gameList = gameRepository.findAllByAppidIn(appIds);
+        final List<SteamGame> gameList = gameRepository.findAllByAppidIn(appIds);
         for (SteamGame game : gameList) {
             List<String> genres = gameGenreRepository.findByGame(game).stream()
                     .map(gameGenre -> gameGenre.getGenre().getName()).toList();
 
-            responses.add(new GameListResponse(game.getAppid(), game.getName(), game.getHeaderImage(), genres));
+            responses.add(GameListResponse.builder()
+                    .appid(game.getAppid()).name(game.getName())
+                    .headerImage(game.getHeaderImage()).gameGenres(genres).build());
         }
 
         return responses;

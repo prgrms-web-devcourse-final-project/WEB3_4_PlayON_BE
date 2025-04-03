@@ -1,11 +1,15 @@
 package com.ll.playon.domain.game.game.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+
 import java.util.List;
 
-public record GameListResponse(
-        Long appid,
-        String name,
-        String headerImage,
-        List<String> gameGenres
-) {
+@Getter
+@Builder
+public class GameListResponse{
+    private final Long appid;
+    private final String name;
+    private final String headerImage;
+    private final List<String> gameGenres;
 }

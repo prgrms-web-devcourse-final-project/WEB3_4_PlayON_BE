@@ -227,10 +227,7 @@ public class MemberService {
     }
 
     private List<GameListResponse> getMemberOwnedGamesDto(List<MemberSteamData> gamesList) {
-        List<Long> idsList = gamesList.stream()
-                .map(MemberSteamData::getAppId).toList();
-
-        return gameService.getGameList(idsList);
+        return gameService.getGameList(gamesList.stream().map(MemberSteamData::getAppId).toList());
     }
 
     public List<GetMembersResponse> findByNickname(String nickname) {
