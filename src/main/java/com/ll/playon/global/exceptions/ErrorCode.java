@@ -57,15 +57,20 @@ public enum ErrorCode {
     NOT_MANAGER(HttpStatus.BAD_REQUEST, "운영진 권한이 없는 유저입니다."),
     CANNOT_EXPEL_LEADER(HttpStatus.BAD_REQUEST, "길드장은 강제 퇴출할 수 없습니다."),
     ALREADY_GUILD_MEMBER(HttpStatus.BAD_REQUEST, "이미 해당 길드에 가입한 멤버입니다."),
+    CANNOT_DELEGATE_TO_SINGLE_MANAGER(HttpStatus.BAD_REQUEST, "운영진이 2명 이상일 때만 권한 위임이 가능합니다."),
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 멤버를 찾을 수 없습니다."),
 
     // Party
+    IS_ALREADY_REQUEST_PARTY(HttpStatus.FORBIDDEN, "파티 신청이 진행 중입니다."),
     PARTY_NOT_FOUND(HttpStatus.NOT_FOUND, "파티가 존재하지 않습니다."),
 
     // PartyMember
+    IS_NOT_PARTY_OWNER(HttpStatus.FORBIDDEN, "해당 파티의 파티장이 아닙니다."),
+    IS_ALREADY_PARTY_MEMBER(HttpStatus.FORBIDDEN, "이미 해당 파티의 파티원입니다."),
+    PARTY_OWNER_CANNOT_APPLY(HttpStatus.FORBIDDEN, "파티장은 파티에 신청할 수 없습니다."),
     PARTY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티 멤버가 존재하지 않습니다."),
     PARTY_OWNER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티장이 존재하지 않습니다."),
-    INVALID_PARTY_MEMBER(HttpStatus.FORBIDDEN, "해당 파티의 파티장이 아닙니다."),
+    PENDING_PARTY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티 참가를 신청한 사용자가 아닙니다."),
 
     // Tag
     TAG_TYPE_CONVERT_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "태그 타입 변환에 실패하였습니다."),

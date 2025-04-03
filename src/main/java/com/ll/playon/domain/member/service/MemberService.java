@@ -1,6 +1,6 @@
 package com.ll.playon.domain.member.service;
 
-import com.ll.playon.domain.member.dto.MemberDetailDto;
+import com.ll.playon.domain.member.dto.*;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
@@ -15,10 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -199,5 +196,43 @@ public class MemberService {
                 .nickname("탈퇴한 사용자")
                 .isDeleted(true)
                 .build());
+    }
+
+    public MemberProfileResponse me(Member actor) {
+        Member member = memberRepository.findById(actor.getId())
+                .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
+
+        // 사용자 정보 조회 후 Dto 에 담기
+        ProfileMemberDetailDto profileMemberDetailDto = new ProfileMemberDetailDto(
+                member.getSteamId(), member.getUsername(), member.getNickname(), member.getProfileImg(),
+                member.getLastLoginAt(), member.getPlayStyle(), member.getSkillLevel(),
+                member.getGender(), member.getPreferredGenres()
+        );
+
+        // 보유한 게임 목록 조회
+        List<MemberSteamData> gamesList = memberSteamDataRepository.findAllByMemberId(actor.getId());
+
+        // 모든 정보 MemberProfileResponse 에 담기
+        return new MemberProfileResponse(profileMemberDetailDto, getMemberOwnedGamesDto(gamesList));
+    }
+
+    private static List<GameDetailDto> getMemberOwnedGamesDto(List<MemberSteamData> gamesList) {
+        List<GameDetailDto> gameDetailDtoList = new ArrayList<>();
+        for(MemberSteamData game : gamesList) {
+            // TODO : 게임 데이터 작업 후 수정
+            String gameName = "gameName";
+            String gameImg = "gameImg";
+            List<String> gameGenres = List.of("genre1","genre2");
+            GameDetailDto gameDetail = new GameDetailDto(game.getAppId(), gameName, gameImg, gameGenres);
+            gameDetailDtoList.add(gameDetail);
+        }
+        return gameDetailDtoList;
+    }
+
+    public List<GetMembersResponse> findByNickname(String nickname) {
+        return memberRepository.findByNickname(nickname).stream()
+                .map(member ->
+                        new GetMembersResponse(member.getSteamId(), member.getUsername(), member.getProfileImg()))
+                .toList();
     }
 }

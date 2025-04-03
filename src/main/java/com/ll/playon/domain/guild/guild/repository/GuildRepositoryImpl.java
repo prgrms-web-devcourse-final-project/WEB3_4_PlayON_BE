@@ -1,11 +1,11 @@
 package com.ll.playon.domain.guild.guild.repository;
 
-import com.ll.playon.domain.guild.guild.dto.GetGuildListRequest;
+import com.ll.playon.domain.guild.guild.dto.request.GetGuildListRequest;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.QGuild;
-import com.ll.playon.domain.guild.guild.enums.ActiveTime;
-import com.ll.playon.domain.guild.guild.enums.GameSkill;
-import com.ll.playon.domain.guild.guild.enums.GenderFilter;
+import com.ll.playon.domain.guild.guild.entity.QGuildTag;
+import com.ll.playon.global.type.TagType;
+import com.ll.playon.global.type.TagValue;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -26,43 +27,50 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
     @Override
     public Page<Guild> searchGuilds(GetGuildListRequest req, Pageable pageable) {
         QGuild guild = QGuild.guild;
+        QGuildTag guildTag = QGuildTag.guildTag;
 
         BooleanBuilder builder = new BooleanBuilder()
-                .and(guild.isDeleted.isFalse())
-                .and(guild.isPublic.isTrue());
+                .and(guild.isDeleted.isFalse())  // 삭제된 길드 제외
+                .and(guild.isPublic.isTrue());   // 비공개 길드 제외
 
+        // 이름 검색
         if (req.name() != null && !req.name().isBlank()) {
             builder.and(guild.name.containsIgnoreCase(req.name()));
         }
 
+        // 게임 필터
         if (req.gameIds() != null && !req.gameIds().isEmpty()) {
             builder.and(guild.game.in(req.gameIds()));
         }
 
-        if (req.partyStyles() != null && !req.partyStyles().isEmpty()) {
-            builder.and(guild.partyStyle.in(req.partyStyles()));
-        }
+        // 태그 필터
+        if (req.tagFilters() != null && !req.tagFilters().isEmpty()) {
+            for (Map.Entry<String, List<String>> entry : req.tagFilters().entrySet()) {
+                String typeKey = entry.getKey();
+                List<String> values = entry.getValue();
 
-        if (req.gameSkills() != null && !req.gameSkills().isEmpty()) {
-            if (!req.gameSkills().contains(GameSkill.ALL)) {
-                builder.and(guild.gameSkill.in(req.gameSkills()));
-            }
-        }
+                // ALL 해당 태그 무시
+                if (values.contains("ALL")) continue;
 
-        if (req.genderFilters() != null && !req.genderFilters().isEmpty()) {
-            if (!req.genderFilters().contains(GenderFilter.ALL)) {
-                builder.and(guild.genderFilter.in(req.genderFilters()));
-            }
-        }
+                TagType tagType = TagType.valueOf(typeKey);
 
-        if (req.activeTimes() != null && !req.activeTimes().isEmpty()) {
-            if (!req.activeTimes().contains(ActiveTime.ALL)) {
-                builder.and(guild.activeTime.in(req.activeTimes()));
+                List<TagValue> tagValues = values.stream()
+                        .map(TagValue::valueOf)
+                        .toList();
+
+                BooleanBuilder tagCondition = new BooleanBuilder();
+                for (TagValue tagValue : tagValues) {
+                    tagCondition.or(guildTag.type.eq(tagType).and(guildTag.value.eq(tagValue)));
+                }
+
+                builder.and(tagCondition);
             }
         }
 
         List<Guild> content = queryFactory
-                .selectFrom(guild)
+                .selectDistinct(guild)
+                .from(guild)
+                .leftJoin(guild.guildTags, guildTag)
                 .where(builder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -71,10 +79,11 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
 
         long total = Optional.ofNullable(
                 queryFactory
-                .select(guild.count())
-                .from(guild)
-                .where(builder)
-                .fetchOne()
+                    .select(guild.id.countDistinct())
+                    .from(guild)
+                    .leftJoin(guild.guildTags, guildTag)
+                    .where(builder)
+                    .fetchOne()
         ).orElse(0L);
 
         return new PageImpl<>(content, pageable, total);
