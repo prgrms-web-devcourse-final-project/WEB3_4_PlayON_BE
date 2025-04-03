@@ -37,6 +37,7 @@ public class Notification extends BaseTime {
         }
     }
 
+    // 팩토리 메서드
     public static Notification create(Member receiver, String content, NotificationType type, String redirectUrl) {
         return Notification.builder()
                 .receiver(receiver)
