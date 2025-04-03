@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @ConfigurationProperties(prefix= "app")
@@ -23,11 +21,6 @@ public class AppConfig {
     @Autowired
     public void setObjectMapper(ObjectMapper objectMapper) {
         AppConfig.objectMapper = objectMapper;
-    }
-
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
     }
 
     // 프론트엔드 URL 반환
