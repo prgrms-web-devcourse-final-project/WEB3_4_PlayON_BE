@@ -4,10 +4,9 @@ import com.ll.playon.domain.member.controller.SteamRedirectPaths;
 import com.ll.playon.domain.member.dto.MemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
+import com.ll.playon.global.openFeign.SteamOpenIdClient;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -17,20 +16,14 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SteamAuthService {
-    private final RestTemplate restTemplate;
     private final MemberService memberService;
+    private final SteamOpenIdClient steamOpenIdClient;
 
     public MemberDetailDto validateSteamId(Map<String, String> params, String path, Member actor) {
-        String validationUrl = "https://steamcommunity.com/openid/login";
         String requestBody = buildValidationRequest(params);
+        String response = steamOpenIdClient.validateSteamId(requestBody);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        HttpEntity<String> request = new HttpEntity<>(requestBody, headers);
-        ResponseEntity<String> response = restTemplate.exchange(validationUrl, HttpMethod.POST, request, String.class);
-
-        if (response.getBody() != null && response.getBody().contains("is_valid:true")) {
+        if (response != null && response.contains("is_valid:true")) {
             String steamId = extractSteamId(params.get("openid.claimed_id"));
             Long steamUserId = Long.valueOf(steamId);
 

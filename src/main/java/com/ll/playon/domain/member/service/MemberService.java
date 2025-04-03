@@ -119,7 +119,8 @@ public class MemberService {
                 .build();
         memberRepository.save(newMember);
 
-        saveUserGameList(steamAPI.getUserGames(steamId), newMember);
+        List<Long> userGames = steamAPI.getUserGames(steamId);
+        saveUserGameList(userGames, newMember);
 
         return newMember;
     }
