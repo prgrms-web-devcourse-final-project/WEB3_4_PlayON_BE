@@ -7,7 +7,6 @@ import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.entity.SteamImage;
 import com.ll.playon.domain.game.game.entity.SteamMovie;
-import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.GenreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +26,6 @@ public class SteamGameProcessor implements ItemProcessor<SteamCsvDto, SteamGame>
 
     private final ObjectMapper objectMapper;
     private final GenreRepository genreRepository;
-    private final GameRepository steamGameRepository;
 
     @Override
     public SteamGame process(SteamCsvDto dto) throws Exception {
@@ -92,6 +90,30 @@ public class SteamGameProcessor implements ItemProcessor<SteamCsvDto, SteamGame>
             log.warn("카테고리 파싱 실패: {}", dto.getCategories());
         }
 
+        String developers = dto.getDevelopers();
+        if (StringUtils.hasText(developers)) {
+            try {
+                developers = developers.replace("'", "\"");
+                List<String> developerList = objectMapper.readValue(developers, new TypeReference<>() {});
+                developers = developerList.isEmpty() ? null : developerList.get(0);
+            } catch (Exception e) {
+                log.warn("developers 파싱 실패 → {}", developers);
+                developers = null;
+            }
+        }
+
+        String publishers = dto.getPublishers();
+        if (StringUtils.hasText(publishers)) {
+            try {
+                publishers = publishers.replace("'", "\"");
+                List<String> publisherList = objectMapper.readValue(publishers, new TypeReference<>() {});
+                publishers = publisherList.isEmpty() ? null : publisherList.get(0);
+            } catch (Exception e) {
+                log.warn("publishers 파싱 실패 → {}", publishers);
+                publishers = null;
+            }
+        }
+
         SteamGame game = SteamGame.builder()
                 .appid(dto.getAppid())
                 .name(dto.getName())
@@ -106,8 +128,8 @@ public class SteamGameProcessor implements ItemProcessor<SteamCsvDto, SteamGame>
                 .isLinuxSupported(isLinux)
                 .isSinglePlayer(isSinglePlayer)
                 .isMultiPlayer(isMultiPlayer)
-                .developers(dto.getDevelopers())
-                .publishers(dto.getPublishers())
+                .developers(developers)
+                .publishers(publishers)
                 .genres(genreEntities)
                 .build();
 
