@@ -23,52 +23,28 @@ public class SteamGame extends BaseTime {
     @Column(unique = true)
     private Long appid;
 
-    @Column
     private String name;
 
-    @Column(name = "header_image")
-    private String headerImage;
-
-    @Column(name = "required_age")
-    private Integer requiredAge;
-
-    @Column(name = "detailed_description", columnDefinition = "TEXT")
-    private String detailedDescription;
-
-    @Column(name = "about_the_game", columnDefinition = "TEXT")
-    private String aboutTheGame;
-
-    @Column(name = "short_description", columnDefinition = "TEXT")
-    private String shortDescription;
-
-    @Column
-    private Long price;
-
-//    @Column
-//    private String platforms;
-//    mac, windows, linux boolean으로 넘어온거 처리 필요
-    @Column
-    private boolean windows;
-
-    @Column
-    private boolean linux;
-
-    @Column
-    private boolean mac;
-
-    @Column(name = "release_date")
     private LocalDate releaseDate;
 
-    @Column
+    private String headerImage;
+
+    private Integer requiredAge;
+
+    @Column(columnDefinition = "TEXT")
+    private String aboutTheGame;
+
+    @Column(columnDefinition = "TEXT")
+    private String shortDescription;
+
     private String website;
 
-    @Column
-    private Long recommendations;
+    private boolean isWindowsSupported;
+    private boolean isMacSupported;
+    private boolean isLinuxSupported;
 
-    @Column
     private String developers;
 
-    @Column
     private String publishers;
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -78,10 +54,6 @@ public class SteamGame extends BaseTime {
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<SteamMovie> movies = new ArrayList<>();
-
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<SteamCategory> steamCategories = new ArrayList<>();
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

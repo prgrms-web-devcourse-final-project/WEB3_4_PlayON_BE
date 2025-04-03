@@ -63,16 +63,13 @@ public class BaseInitData {
                 .name("Counter-Strike 2")
                 .headerImage("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/header.jpg")
                 .requiredAge(0)
-                .price(0L)
-                .detailedDescription("Counter-Strike의 정수를 담은 FPS")
                 .aboutTheGame("20년 넘게 이어진 경쟁 FPS")
                 .shortDescription("정통 FPS 게임")
-                .windows(true)
-                .mac(false)
-                .linux(true)
+                .isWindowsSupported(true)
+                .isMacSupported(false)
+                .isLinuxSupported(true)
                 .releaseDate(LocalDate.of(2012, 8, 21))
                 .website("http://counter-strike.net/")
-                .recommendations(4401572L)
                 .developers("Valve")
                 .publishers("Valve")
                 .build();
@@ -82,10 +79,6 @@ public class BaseInitData {
         ));
         game1.setMovies(List.of(
                 SteamMovie.builder().game(game1).movie("http://video.akamai.../movie1.mp4").build()
-        ));
-        game1.setSteamCategories(List.of(
-                SteamCategory.builder().game(game1).category("Multi-player").build(),
-                SteamCategory.builder().game(game1).category("Steam Trading Cards").build()
         ));
         game1.setSteamGenres(List.of(
                 SteamGenre.builder().game(game1).genre("Action").build(),
@@ -97,16 +90,13 @@ public class BaseInitData {
                 .name("Dota 2")
                 .headerImage("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/header.jpg")
                 .requiredAge(0)
-                .price(0L)
-                .detailedDescription("MOBA 장르의 대표작")
                 .aboutTheGame("수백만의 유저가 매일 플레이")
                 .shortDescription("팀 기반 전략 게임")
-                .windows(true)
-                .mac(true)
-                .linux(true)
+                .isWindowsSupported(true)
+                .isMacSupported(true)
+                .isLinuxSupported(true)
                 .releaseDate(LocalDate.of(2013, 7, 9))
                 .website("http://www.dota2.com/")
-                .recommendations(14337L)
                 .developers("Valve")
                 .publishers("Valve")
                 .build();
@@ -119,13 +109,6 @@ public class BaseInitData {
         game2.setMovies(List.of(
                 SteamMovie.builder().game(game2).movie("http://video.akamai.steamstatic.com/store_trailers/256692021/movie_max.mp4?t=1739210452").build(),
                 SteamMovie.builder().game(game2).movie("http://video.akamai.steamstatic.com/store_trailers/256692021/movie_480p.mp4?t=1739210452").build()
-        ));
-
-        game2.setSteamCategories(List.of(
-                SteamCategory.builder().game(game2).category("Multi-player").build(),
-                SteamCategory.builder().game(game2).category("Co-op").build(),
-                SteamCategory.builder().game(game2).category("Steam Trading Cards").build(),
-                SteamCategory.builder().game(game2).category("Steam Workshop").build()
         ));
 
         game2.setSteamGenres(List.of(
