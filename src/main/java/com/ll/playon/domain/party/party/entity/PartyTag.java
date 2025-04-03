@@ -21,10 +21,9 @@ import lombok.Setter;
 
 @Entity
 @Table(
-        name = "partyTags",
+        name = "party_tags",
         indexes = {
-                @Index(name = "idx_party_tag_type_value", columnList = "tagType, tagValue"),
-                @Index(name = "idx_party_tag_party_id", columnList = "party_id")
+                @Index(name = "idx_party_tag_party_id_value", columnList = "party_id, tag_value"),
         }
 )
 @Getter
@@ -37,18 +36,22 @@ public class PartyTag extends BaseTime {
     private Party party;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tagType")
+    @Column(name = "tag_type")
     private TagType type;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tagValue")
+    @Column(name = "tag_value")
     private TagValue value;
 
     // TODO: 더 좋은 방법이 있나 고민해볼 것
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         PartyTag partyTag = (PartyTag) o;
 
         return this.type == partyTag.type && value == partyTag.value && party.equals(partyTag.party);
