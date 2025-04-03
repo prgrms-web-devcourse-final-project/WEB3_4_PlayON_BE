@@ -36,4 +36,13 @@ public class Notification extends BaseTime {
             this.read = true;
         }
     }
+
+    public static Notification create(Member receiver, String content, NotificationType type, String redirectUrl) {
+        return Notification.builder()
+                .receiver(receiver)
+                .content(content)
+                .type(type)
+                .redirectUrl(redirectUrl)
+                .build();
+    }
 }
