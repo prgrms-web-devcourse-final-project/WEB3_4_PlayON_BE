@@ -1,10 +1,6 @@
 package com.ll.playon.global.initData;
 
 import com.ll.playon.domain.game.game.entity.*;
-import com.ll.playon.domain.game.game.repository.GameGenreRepository;
-import com.ll.playon.domain.game.game.repository.GameRepository;
-import com.ll.playon.domain.game.game.repository.GenreRepository;
-import com.ll.playon.domain.game.game.entity.*;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
@@ -42,8 +38,6 @@ public class BaseInitData {
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final GameRepository gameRepository;
-    private final GenreRepository genreRepository;
-    private final GameGenreRepository gameGenreRepository;
 
     @Autowired
     @Lazy
@@ -54,17 +48,13 @@ public class BaseInitData {
         return args -> {
             self.makeSampleUsers();
             self.makeSampleGuilds();
-            self.makeSampleSteamGames();
+//            self.makeSampleSteamGames();
         };
     }
 
     @Transactional
     public void makeSampleSteamGames() {
         if (gameRepository.count() > 0) return;
-
-        SteamGenre genre1 = SteamGenre.builder().name("Action").build();
-        SteamGenre genre2 = SteamGenre.builder().name("Free To Play").build();
-        genreRepository.saveAll(List.of(genre1, genre2));
 
         List<SteamGame> games = new ArrayList<>();
 
@@ -90,6 +80,7 @@ public class BaseInitData {
         game1.setMovies(List.of(
                 SteamMovie.builder().game(game1).movie("http://video.akamai.../movie1.mp4").build()
         ));
+
 
         SteamGame game2 = SteamGame.builder()
                 .appid(570L)
@@ -117,15 +108,11 @@ public class BaseInitData {
                 SteamMovie.builder().game(game2).movie("http://video.akamai.steamstatic.com/store_trailers/256692021/movie_480p.mp4?t=1739210452").build()
         ));
 
+
         games.add(game1);
         games.add(game2);
 
         gameRepository.saveAll(games);
-
-        GameGenre gameGenre1 = GameGenre.builder().game(game1).genre(genre1).build();
-        GameGenre gameGenre2 = GameGenre.builder().game(game1).genre(genre2).build();
-        GameGenre gameGenre3 = GameGenre.builder().game(game2).genre(genre1).build();
-        gameGenreRepository.saveAll(List.of(gameGenre1, gameGenre2, gameGenre3));
     }
 
     @Transactional
@@ -135,18 +122,18 @@ public class BaseInitData {
         }
 
         Member sampleMember1 = Member.builder()
-                .steamId(123L).username("sampleUser1").nickname("sampleUser").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
+                .steamId(123L).username("sampleUser1").nickname("sampleUser1").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember1);
         List<Long> gameAppIds = Arrays.asList(2246340L, 2680010L, 2456740L);
         memberService.saveUserGameList(gameAppIds, sampleMember1);
 
         Member sampleMember2 = Member.builder()
-                .steamId(456L).username("sampleUser2").nickname("sampleUser").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
+                .steamId(456L).username("sampleUser2").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember2);
         memberService.saveUserGameList(gameAppIds, sampleMember2);
 
         Member sampleMember3 = Member.builder()
-                .steamId(789L).username("sampleUser3").nickname("sampleUser").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
+                .steamId(789L).username("sampleUser3").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember3);
 
         memberService.saveUserGameList(gameAppIds, sampleMember3);
@@ -167,42 +154,6 @@ public class BaseInitData {
         memberRepository.save(owner);
 
         memberService.saveUserGameList(gameAppIds, owner);
-
-        Member user1 = Member.builder()
-                .steamId(1515L)
-                .username("user1")
-                .nickname("user1")
-                .profileImg("")
-                .lastLoginAt(LocalDateTime.now())
-                .role(Role.USER)
-                .build();
-        memberRepository.save(user1);
-
-        memberService.saveUserGameList(gameAppIds, user1);
-
-        Member user2 = Member.builder()
-                .steamId(2222L)
-                .username("user2")
-                .nickname("user2")
-                .profileImg("")
-                .lastLoginAt(LocalDateTime.now())
-                .role(Role.USER)
-                .build();
-        memberRepository.save(user2);
-
-        memberService.saveUserGameList(gameAppIds, user2);
-
-        Member user3 = Member.builder()
-                .steamId(3333L)
-                .username("user3")
-                .nickname("user3")
-                .profileImg("")
-                .lastLoginAt(LocalDateTime.now())
-                .role(Role.USER)
-                .build();
-        memberRepository.save(user3);
-
-        memberService.saveUserGameList(gameAppIds, user3);
     }
 
     @Transactional
@@ -316,6 +267,4 @@ public class BaseInitData {
 
         return guildTags;
     }
-
-
 }
