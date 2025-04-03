@@ -5,6 +5,7 @@ import com.ll.playon.domain.notification.entity.NotificationType;
 
 public record NotificationResponse(
         Long id,
+        Long receiverId,
         String content,
         NotificationType type,
         boolean read,
@@ -13,6 +14,7 @@ public record NotificationResponse(
     public static NotificationResponse fromEntity(Notification notification) {
         return new NotificationResponse(
                 notification.getId(),
+                notification.getReceiver().getId(),
                 notification.getContent(),
                 notification.getType(),
                 notification.isRead(),
