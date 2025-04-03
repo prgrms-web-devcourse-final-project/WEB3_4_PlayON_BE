@@ -51,8 +51,7 @@ public class SteamGame extends BaseTime {
     private String developers;
 
     @Column(columnDefinition = "TEXT")
-
-    private String developers;
+    private String publishers;
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
