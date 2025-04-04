@@ -4,16 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
-import com.ll.playon.domain.guild.guildMember.dto.request.AssignManagerRequest;
-import com.ll.playon.domain.guild.guildMember.dto.request.ExpelMemberRequest;
-import com.ll.playon.domain.guild.guildMember.dto.request.LeaveGuildRequest;
-import com.ll.playon.domain.guild.guildMember.dto.request.RevokeManagerRequest;
+import com.ll.playon.domain.guild.guildMember.dto.request.*;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.global.security.UserContext;
+import com.ll.playon.global.steamAPI.SteamAPI;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import jakarta.transaction.Transactional;
@@ -48,6 +46,7 @@ class GuildMemberControllerTest {
     @Autowired private GuildRepository guildRepository;
     @Autowired private GuildMemberRepository guildMemberRepository;
     @MockBean private UserContext userContext;
+    @MockBean private SteamAPI steamAPI;
 
     private Member leader, manager, member;
     private Guild guild;
@@ -217,31 +216,31 @@ class GuildMemberControllerTest {
                 .andExpect(content().string("권한 위임은 운영진에게만 가능합니다."));
     }
 
-//    @Test @DisplayName("멤버 초대 - 성공")
-//    void inviteMember_success() throws Exception {
-//        Member target = saveMember("targetUser", 4L);
-//        loginAs(leader);
-//        performRequest("POST", "/api/guilds/{guildId}/invite", new InviteMemberRequest(guild.getId(), "targetUser"))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.data").value("길드에 멤버를 초대했습니다."));
-//    }
-//
-//    @Test @DisplayName("이미 가입된 유저 초대 - 실패")
-//    void inviteMember_fail_alreadyInGuild() throws Exception {
-//        Member target = saveMember("targetUser", 5L);
-//        saveGuildMember(target, GuildRole.MEMBER);
-//        loginAs(leader);
-//        performRequest("POST", "/api/guilds/invite", new InviteMemberRequest(guild.getId(), "targetUser"))
-//                .andExpect(status().isBadRequest())
-//                .andExpect(jsonPath("$.code").value("ALREADY_GUILD_MEMBER"));
-//    }
-//
-//    @Test @DisplayName("권한 없는 유저가 초대 - 실패")
-//    void inviteMember_fail_noPermission() throws Exception {
-//        Member target = saveMember("targetUser", 6L);
-//        loginAs(member);
-//        performRequest("POST", "/api/guilds/invite", new InviteMemberRequest(guild.getId(), "targetUser"))
-//                .andExpect(status().isForbidden())
-//                .andExpect(jsonPath("$.code").value("GUILD_NO_PERMISSION"));
-//    }
+    @Test @DisplayName("멤버 초대 - 성공")
+    void inviteMember_success() throws Exception {
+        Member target = saveMember("targetUser", 4L);
+        loginAs(leader);
+        performRequest("POST", "/api/guilds/%s/invite".formatted(guild.getId()), new InviteMemberRequest("targetUser"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").value("길드에 멤버를 초대했습니다."));
+    }
+
+    @Test @DisplayName("이미 가입된 유저 초대 - 실패")
+    void inviteMember_fail_alreadyInGuild() throws Exception {
+        Member target = saveMember("targetUser", 5L);
+        saveGuildMember(target, GuildRole.MEMBER);
+        loginAs(leader);
+        performRequest("POST", "/api/guilds/%s/invite".formatted(guild.getId()), new InviteMemberRequest("targetUser"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("이미 해당 길드에 가입한 멤버입니다."));
+    }
+
+    @Test @DisplayName("권한 없는 유저가 초대 - 실패")
+    void inviteMember_fail_noPermission() throws Exception {
+        Member target = saveMember("targetUser", 6L);
+        loginAs(member);
+        performRequest("POST", "/api/guilds/%s/invite".formatted(guild.getId()), new InviteMemberRequest("targetUser"))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("길드 권한이 없습니다."));
+    }
 }
