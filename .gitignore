@@ -44,3 +44,4 @@ src/main/generated
 application-secret.yml
 
 logs/
+src/main/resources/steam.csv
