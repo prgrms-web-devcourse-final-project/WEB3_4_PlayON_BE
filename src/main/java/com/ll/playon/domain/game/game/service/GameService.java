@@ -38,7 +38,7 @@ public class GameService {
     public List<GameListResponse> makeGameList(List<Long> appIds, SteamGenre preferredGenre) {
         final List<GameListResponse> responses = new ArrayList<>();
 
-        final List<SteamGame> gameList = gameRepository.findAllByAppidIn(appIds);
+        final List<SteamGame> gameList = gameRepository.findAllByAppidIn(appIds); // DB 에 없는 게임은 제외됨
         for (SteamGame game : gameList) {
             List<String> genres = game.getGenres().stream()
                     .map(SteamGenre::getName)
@@ -61,9 +61,6 @@ public class GameService {
         // 게임 리스트 id 불러오기
         final List<Long> steamRankingIds = steamAPI.getSteamRanking();
 
-        // 리스트에 없는 게임 DB 추가
-        updateGameDB(steamRankingIds);
-
         // 장르 추가 후 응답
         return makeGameListWithoutGenre(steamRankingIds.stream().limit(TOP_FIVE).toList());
     }
@@ -82,14 +79,5 @@ public class GameService {
 
         // 장르 필터링 후 리스트 완성
         return makeGameListWithGenre(notOwnedGames, member.getPreferredGenre());
-    }
-
-    // 인기게임 중에 DB에 없는 게임 추가
-    private void updateGameDB(List<Long> appIds) {
-        // DB에 없는 게임 찾기
-
-        // 해당 게임의 상세정보 조회
-
-        // DB에 저장
     }
 }
