@@ -5,10 +5,11 @@ import com.ll.playon.domain.notification.dto.request.NotificationRequest;
 import com.ll.playon.domain.notification.dto.response.NotificationResponse;
 import com.ll.playon.domain.notification.service.NotificationService;
 import com.ll.playon.domain.notification.service.NotificationSseService;
+import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -35,29 +36,29 @@ public class NotificationController {
      * 알림 전송
      */
     @PostMapping("/send")
-    public ResponseEntity<NotificationResponse> sendNotification(@RequestBody NotificationRequest request) {
+    public RsData<NotificationResponse> sendNotification(@RequestBody NotificationRequest request) {
         Member actor = this.userContext.getActor();
         NotificationResponse response = notificationService.sendNotification(request.withSenderId(actor.getId()));
-        return ResponseEntity.ok(response);
+        return RsData.success(HttpStatus.OK, response);
     }
 
     /**
      * 특정 알림 읽음 처리
      */
     @PatchMapping("/{notificationId}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable Long notificationId) {
+    public RsData<String> markAsRead(@PathVariable Long notificationId) {
         Member actor = this.userContext.getActor();
         notificationService.markAsRead(actor.getId(), notificationId);
-        return ResponseEntity.noContent().build();
+        return RsData.success(HttpStatus.NO_CONTENT, "알림 읽음 처리 완료");
     }
 
     /**
      * 사용자의 알림 목록 조회
      */
     @GetMapping
-    public ResponseEntity<List<NotificationResponse>> getNotifications() {
+    public RsData<List<NotificationResponse>> getNotifications() {
         Member actor = this.userContext.getActor();
         List<NotificationResponse> notifications = notificationService.getNotifications(actor.getId());
-        return ResponseEntity.ok(notifications);
+        return RsData.success(HttpStatus.OK, notifications);
     }
 }
