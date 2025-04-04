@@ -1,8 +1,9 @@
 package com.ll.playon.domain.game.game.entity;
 
 import com.ll.playon.global.jpa.entity.BaseTime;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToMany;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -15,9 +16,15 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class SteamGenre extends BaseTime {
+
+    @Column(unique = true)
     private String name;
 
-    @OneToMany(mappedBy = "genre", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(mappedBy = "genres")
     @Builder.Default
-    private List<GameGenre> gameGenres = new ArrayList<>();
+    private List<SteamGame> games = new ArrayList<>();
+
+    public SteamGenre(String name) {
+        this.name = name;
+    }
 }

@@ -25,16 +25,19 @@ public class SteamGame extends BaseTime {
 
     private String name;
 
+    @Column(name = "release_date")
     private LocalDate releaseDate;
 
+    @Column(name = "header_image")
     private String headerImage;
 
+    @Column(name = "required_age")
     private Integer requiredAge;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "about_the_game", columnDefinition = "TEXT")
     private String aboutTheGame;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "short_description", columnDefinition = "TEXT")
     private String shortDescription;
 
     private String website;
@@ -43,9 +46,20 @@ public class SteamGame extends BaseTime {
     private boolean isMacSupported;
     private boolean isLinuxSupported;
 
+    private boolean isSinglePlayer;
+    private boolean isMultiPlayer;
+
+    @Column(columnDefinition = "TEXT")
     private String developers;
 
+    @Column(columnDefinition = "TEXT")
     private String publishers;
+
+    @Column(name = "pct_pos_total")
+    private Integer percentPositiveTotal;
+
+    @Column(name = "num_reviews_total")
+    private Long totalReviewCount;
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -55,7 +69,11 @@ public class SteamGame extends BaseTime {
     @Builder.Default
     private List<SteamMovie> movies = new ArrayList<>();
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "steam_game_genre",
+            joinColumns = @JoinColumn(name = "steam_game_id"),
+            inverseJoinColumns = @JoinColumn(name = "genre_id"))
     @Builder.Default
-    private List<GameGenre> gameGenres = new ArrayList<>();
+    private List<SteamGenre> genres = new ArrayList<>();
+
 }
