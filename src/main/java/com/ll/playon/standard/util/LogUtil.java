@@ -1,6 +1,7 @@
 package com.ll.playon.standard.util;
 
 import com.ll.playon.global.app.AppConfig;
+import com.ll.playon.global.exceptions.EventListenerException;
 import com.ll.playon.global.exceptions.ServiceException;
 import com.ll.playon.global.response.RsData;
 import org.aspectj.lang.JoinPoint;
@@ -36,6 +37,10 @@ public class LogUtil {
 
         switch (ex) {
             case ServiceException exception -> {
+                status = exception.getResultCode().toString();
+                msg = exception.getMsg();
+            }
+            case EventListenerException exception -> {
                 status = exception.getResultCode().toString();
                 msg = exception.getMsg();
             }

@@ -7,11 +7,13 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
@@ -77,6 +79,23 @@ public class S3Service {
         }
     }
 
+    // URL을 포함한 S3 객체 삭제
+    public void deleteObjectByUrl(String url) {
+        if (StringUtils.isBlank(url)) {
+            return;
+        }
+
+        try {
+            // 삭제할 키가 포함되는 ObjectIdentifier 생성
+            String key = S3Util.extractS3KeyFromUrl(url);
+
+            // 키가 포함되면 S3에서 삭제
+            s3Client.deleteObject(this.buildDeleteObjectRequest(key));
+        } catch (SdkException e) {
+            throw ErrorCode.S3_OBJECT_DELETE_FAILED.throwServiceException();
+        }
+    }
+
     // S3 폴더 내의 모든 객체 삭제
     public void deleteAllObjectsById(ImageType imageType, long referenceId) {
         String folderPath = S3Util.getFolderPath(imageType, referenceId);
@@ -100,6 +119,27 @@ public class S3Service {
         }
     }
 
+    // S3 폴더 내의 단일 객체 삭제
+    public void deleteObjectById(ImageType imageType, long referenceId) {
+        String folderPath = S3Util.getFolderPath(imageType, referenceId);
+
+        try {
+            // 삭제할 폴더 내 모든 객체 조회
+            List<S3Object> objects = this.getAllS3ObjectsInFolderPath(folderPath);
+
+            if (objects.isEmpty()) {
+                return;
+            }
+
+            // 단일 객체 삭제
+            String key = objects.getFirst().key();
+
+            s3Client.deleteObject(this.buildDeleteObjectRequest(key));
+        } catch (SdkException e) {
+            throw ErrorCode.S3_OBJECT_DELETE_FAILED.throwServiceException();
+        }
+    }
+
     // S3 PutObjectRequest 생성
     private PutObjectRequest buildPutObjectRequest(ImageType imageType, long referenceId, String fileType) {
         return PutObjectRequest.builder()
@@ -113,6 +153,22 @@ public class S3Service {
         return DeleteObjectsRequest.builder()
                 .bucket(bucketName)
                 .delete(delete -> delete.objects(objectIdentifiers))
+                .build();
+    }
+
+    // S3 DeleteObjectsRequest 생성
+    private DeleteObjectsRequest buildDeleteObjectsRequest(ObjectIdentifier objectIdentifier) {
+        return DeleteObjectsRequest.builder()
+                .bucket(bucketName)
+                .delete(delete -> delete.objects(objectIdentifier))
+                .build();
+    }
+
+    // S3 DeleteObjectRequest 생성
+    private DeleteObjectRequest buildDeleteObjectRequest(String key) {
+        return DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
                 .build();
     }
 
