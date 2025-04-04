@@ -1,12 +1,16 @@
 package com.ll.playon.domain.party.party.entity;
 
+import static jakarta.persistence.GenerationType.IDENTITY;
+
 import com.ll.playon.domain.party.party.type.PartyStatus;
-import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -18,18 +22,27 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(
         name = "party",
         indexes = {
-                @Index(name = "idx_party_status_partyAt", columnList = "partyStatus, partyAt")
+                @Index(name = "idx_party_status_party_at_created_at", columnList = "partyStatus, partyAt, createdAt")
         }
 )
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Party extends BaseTime {
+@EntityListeners(AuditingEntityListener.class)
+public class Party {
+    @Id
+    @GeneratedValue(strategy = IDENTITY)
+    @Setter(AccessLevel.PROTECTED)
+    private Long id;
+
     // TODO : Game 엔티티 개설되면 연결
     @Column(nullable = false)
 //    @ManyToOne(fetch = FetchType.LAZY)
@@ -66,6 +79,14 @@ public class Party extends BaseTime {
 
     @OneToMany(mappedBy = "party", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PartyTag> partyTags = new ArrayList<>();
+
+    @CreatedDate
+    @Setter(AccessLevel.PRIVATE)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Setter(AccessLevel.PRIVATE)
+    private LocalDateTime modifiedAt;
 
     // TODO : 파티 룸
 

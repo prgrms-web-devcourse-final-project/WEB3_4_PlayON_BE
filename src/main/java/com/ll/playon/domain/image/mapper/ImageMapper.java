@@ -8,6 +8,7 @@ public class ImageMapper {
         return Image.builder()
                 .imageUrl(imageUrl)
                 .referenceId(referenceId)
+                .imageType(imageType)
                 .build();
     }
 }

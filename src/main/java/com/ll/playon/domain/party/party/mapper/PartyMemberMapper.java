@@ -9,6 +9,7 @@ public class PartyMemberMapper {
         return PartyMember.builder()
                 .member(actor)
                 .partyRole(partyRole)
+                .mvpPoint(0)
                 .build();
     }
 }

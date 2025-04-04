@@ -16,7 +16,7 @@ import org.springframework.util.CollectionUtils;
 public class ImageService {
     private final ImageRepository imageRepository;
 
-    // 이미지 DB에 저장
+    // 이미지 리스트 DB에 저장
     @Transactional
     public void saveImages(ImageType imageType, long referenceId, List<String> urls) {
         List<Image> images = urls.stream()
@@ -24,6 +24,12 @@ public class ImageService {
                 .toList();
 
         this.imageRepository.saveAll(images);
+    }
+
+    // 이미지 DB에 저장
+    @Transactional
+    public void saveImage(ImageType imageType, long referenceId, String url) {
+        this.imageRepository.save(ImageMapper.of(url, referenceId, imageType));
     }
 
     // Id로 이미지 목록 호출

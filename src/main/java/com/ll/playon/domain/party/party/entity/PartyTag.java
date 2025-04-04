@@ -21,7 +21,7 @@ import lombok.Setter;
 
 @Entity
 @Table(
-        name = "party_tags",
+        name = "party_tag",
         indexes = {
                 @Index(name = "idx_party_tag_party_id_value", columnList = "party_id, tag_value"),
         }
