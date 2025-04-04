@@ -78,7 +78,12 @@ public class GameService {
         return makeGameListWithGenre(notOwnedGames, actor.getPreferredGenre());
     }
 
+    // 인기게임 중에 DB에 없는 게임 추가
     private void updateGameDB(List<Long> appIds) {
-        // 인기게임 중에 DB에 없는 게임 추가
+        // DB에 없는 게임 찾기
+
+        // 해당 게임의 상세정보 조회
+
+        // DB에 저장
     }
 }
