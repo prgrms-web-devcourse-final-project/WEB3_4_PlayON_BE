@@ -6,7 +6,9 @@ import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
+import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
+import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.steamAPI.SteamAPI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class GameService {
     private final GameRepository gameRepository;
     private final SteamAPI steamAPI;
     private final MemberSteamDataRepository memberSteamDataRepository;
+    private final MemberRepository memberRepository;
 
     private static final int TOP_FIVE = 5;
 
@@ -67,15 +70,18 @@ public class GameService {
 
     // 메인 페이지에 보여줄 사용자 게임 추천
     public List<GameListResponse> getGameRecommendations(Member actor) {
+        Member member = memberRepository.findById(actor.getId())
+                .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
+
         // 사용자가 소유하지 않은 게임 필터링
-        final List<Long> ownedGames = memberSteamDataRepository.findAllByMemberId(actor.getId()).stream()
+        final List<Long> ownedGames = memberSteamDataRepository.findAllByMemberId(member.getId()).stream()
                 .map(MemberSteamData::getAppId).toList();
 
         final List<Long> notOwnedGames = steamAPI.getSteamRanking().stream()
                 .filter(appId -> !ownedGames.contains(appId)).toList();
 
         // 장르 필터링 후 리스트 완성
-        return makeGameListWithGenre(notOwnedGames, actor.getPreferredGenre());
+        return makeGameListWithGenre(notOwnedGames, member.getPreferredGenre());
     }
 
     // 인기게임 중에 DB에 없는 게임 추가
