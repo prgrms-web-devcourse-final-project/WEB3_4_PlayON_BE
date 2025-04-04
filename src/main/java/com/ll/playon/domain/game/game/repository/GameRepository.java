@@ -6,7 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+import java.util.List;
+
 @Repository
 public interface GameRepository extends JpaRepository<SteamGame, Long> {
+    List<SteamGame> findAllByAppidIn(List<Long> appIds);
     Optional<Object> findByAppid(Long appid);
 }

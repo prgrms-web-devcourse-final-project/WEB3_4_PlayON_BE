@@ -238,7 +238,11 @@ public class MemberControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.memberDetail.steamId").value(actor.getSteamId()))
                 .andExpect(jsonPath("$.data.memberDetail.username").value(actor.getUsername()))
-                .andExpect(jsonPath("$.data.ownedGames", hasSize(actor.getGames().size())));
+                .andExpect(jsonPath("$.data.ownedGames", hasSize(actor.getGames().size())))
+                .andExpect(jsonPath("$.data.ownedGames[0].appid").exists())
+                .andExpect(jsonPath("$.data.ownedGames[0].name").exists())
+                .andExpect(jsonPath("$.data.ownedGames[0].headerImage").exists())
+                .andExpect(jsonPath("$.data.ownedGames[0].gameGenres").exists());
     }
 
     @Test
