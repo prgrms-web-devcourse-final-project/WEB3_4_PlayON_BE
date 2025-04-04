@@ -138,8 +138,7 @@ public class GuildMemberService {
         Member target = memberRepository.findByUsername(request.nickname())
                 .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
 
-        boolean alreadyInGuild = guild.getMembers().stream()
-                .anyMatch(gm -> gm.getMember().equals(target));
+        boolean alreadyInGuild = guildMemberRepository.existsByGuildAndMember(guild, target);
         if (alreadyInGuild) {
             throw ErrorCode.ALREADY_GUILD_MEMBER.throwServiceException();
         }
