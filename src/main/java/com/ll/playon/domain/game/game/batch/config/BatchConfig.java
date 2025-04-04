@@ -35,7 +35,7 @@ public class BatchConfig {
     @Bean
     public Step steamGameStep() {
         return new StepBuilder("steamGameStep", jobRepository)
-                .<SteamCsvDto, SteamGame>chunk(100, transactionManager)
+                .<SteamCsvDto, SteamGame>chunk(500, transactionManager)
                 .reader(steamCsvReader)
                 .processor(steamGameProcessor)
                 .writer(steamGameWriter)

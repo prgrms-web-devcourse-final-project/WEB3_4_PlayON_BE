@@ -1,6 +1,5 @@
 package com.ll.playon.global.initData;
 
-import com.ll.playon.domain.game.game.entity.*;
 import com.ll.playon.domain.game.game.repository.GameGenreRepository;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.GenreRepository;
@@ -25,7 +24,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,7 +52,6 @@ public class BaseInitData {
             self.makeSampleGuilds();
         };
     }
-
 
     @Transactional
     public void makeSampleUsers() {

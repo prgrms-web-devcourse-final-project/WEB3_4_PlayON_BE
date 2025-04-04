@@ -7,6 +7,7 @@ import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.entity.SteamImage;
 import com.ll.playon.domain.game.game.entity.SteamMovie;
+import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.GenreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +27,16 @@ public class SteamGameProcessor implements ItemProcessor<SteamCsvDto, SteamGame>
 
     private final ObjectMapper objectMapper;
     private final GenreRepository genreRepository;
+    private final GameRepository gameRepository;
 
     @Override
     public SteamGame process(SteamCsvDto dto) throws Exception {
+
+        if (gameRepository.findByAppid(dto.getAppid()).isPresent()) {
+            log.info("중복 appid {}: {} → skip", dto.getAppid(), dto.getName());
+            return null;
+        }
+
         List<SteamGenre> genreEntities = new ArrayList<>();
         try {
             String rawGenres = dto.getGenres();
@@ -70,9 +78,9 @@ public class SteamGameProcessor implements ItemProcessor<SteamCsvDto, SteamGame>
             }
         }
 
-        boolean isWindows = "true".equalsIgnoreCase(dto.getWindows());
-        boolean isMac = "true".equalsIgnoreCase(dto.getMac());
-        boolean isLinux = "true".equalsIgnoreCase(dto.getLinux());
+        boolean isWindows = Boolean.parseBoolean(dto.getWindows());
+        boolean isMac = Boolean.parseBoolean(dto.getMac());
+        boolean isLinux = Boolean.parseBoolean(dto.getLinux());
 
         boolean isSinglePlayer = false;
         boolean isMultiPlayer = false;

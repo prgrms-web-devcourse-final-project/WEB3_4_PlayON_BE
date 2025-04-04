@@ -11,10 +11,10 @@ public interface GenreRepository extends JpaRepository<SteamGenre, Long> {
     Optional<SteamGenre> findByName(String mostFrequentGenre);
     List<SteamGenre> findByIdIn(List<Long> genreIds);
     
-    Optional<SteamGenre> findByGenre(String genre);
-
+//    Optional<SteamGenre> findByName(String genre);
+//
     default SteamGenre findOrCreate(String genre) {
-        return findByGenre(genre)
+        return findByName(genre)
                 .orElseGet(() -> save(new SteamGenre(genre)));
     }
 }

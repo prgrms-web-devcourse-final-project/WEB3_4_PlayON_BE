@@ -18,12 +18,13 @@ import java.util.List;
 public class SteamGenre extends BaseTime {
 
     @Column(unique = true)
-    private String genre;
+    private String name;
 
     @ManyToMany(mappedBy = "genres")
+    @Builder.Default
     private List<SteamGame> games = new ArrayList<>();
 
-    public SteamGenre(String genre) {
-        this.genre = genre;
+    public SteamGenre(String name) {
+        this.name = name;
     }
 }
