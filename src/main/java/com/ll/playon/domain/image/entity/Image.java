@@ -15,10 +15,10 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
-        name = "images",
-        indexes = @Index(
-                name = "idx_img",
-                columnList = "referenceId, imageType")
+        name = "image",
+        indexes = {
+                @Index(name = "idx_image_reference_id_image_type", columnList = "referenceId, imageType")
+        }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

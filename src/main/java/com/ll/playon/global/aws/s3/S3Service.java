@@ -45,7 +45,7 @@ public class S3Service {
     }
 
     // PresignedURL 생성
-    private URL generatePresignedUrl(ImageType imageType, long referenceId, String fileType) {
+    public URL generatePresignedUrl(ImageType imageType, long referenceId, String fileType) {
         try {
             // PresignedURL 생성
             return s3Presigner.presignPutObject(builder -> builder

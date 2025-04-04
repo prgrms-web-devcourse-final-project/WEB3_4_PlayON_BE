@@ -66,11 +66,16 @@ public enum ErrorCode {
 
     // PartyMember
     IS_NOT_PARTY_OWNER(HttpStatus.FORBIDDEN, "해당 파티의 파티장이 아닙니다."),
+    IS_NOT_PARTY_MEMBER(HttpStatus.FORBIDDEN, "해당 파티의 파티원이 아닙니다."),
     IS_ALREADY_PARTY_MEMBER(HttpStatus.FORBIDDEN, "이미 해당 파티의 파티원입니다."),
-    PARTY_OWNER_CANNOT_APPLY(HttpStatus.FORBIDDEN, "파티장은 파티에 신청할 수 없습니다."),
+    IS_PARTY_MEMBER_OWN(HttpStatus.FORBIDDEN, "본인 스스로에 대한 처리는 불가능합니다."),
     PARTY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티 멤버가 존재하지 않습니다."),
     PARTY_OWNER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티장이 존재하지 않습니다."),
     PENDING_PARTY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티 참가를 신청한 사용자가 아닙니다."),
+
+    // PartyLog
+    PARTY_LOG_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 파티 로그를 작성하셨습니다."),
+    PARTY_IS_NOT_ENDED(HttpStatus.BAD_REQUEST, "파티가 종료되지 않았습니다."),
 
     // Tag
     TAG_TYPE_CONVERT_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "태그 타입 변환에 실패하였습니다."),

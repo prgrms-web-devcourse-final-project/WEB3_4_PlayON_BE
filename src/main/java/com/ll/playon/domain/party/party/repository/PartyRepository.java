@@ -3,6 +3,7 @@ package com.ll.playon.domain.party.party.repository;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
+import com.ll.playon.domain.party.party.type.PartyStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -104,4 +105,6 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             AND pm.partyRole <> 'PENDING'
             """)
     List<PartyMember> findPartyMembersByPartyIds(@Param("partyIds") List<Long> partyIds);
+
+    List<Party> findAllByPartyStatusOrderByPartyAtDescCreatedAtDesc(PartyStatus partyStatus, Pageable pageable);
 }
