@@ -25,20 +25,17 @@ public class GameService {
     private final MemberSteamDataRepository memberSteamDataRepository;
     private final MemberRepository memberRepository;
 
-    private static final int TOP_FIVE = 5;
-
-    public List<GameListResponse> makeGameListWithGenre(List<Long> appIds, SteamGenre preferredGenre) {
-        return makeGameList(appIds, preferredGenre);
+    public List<GameListResponse> makeGameListWithGenre(List<SteamGame> gameList, SteamGenre preferredGenre) {
+        return makeGameList(gameList, preferredGenre);
     }
 
-    public List<GameListResponse> makeGameListWithoutGenre(List<Long> appIds) {
-        return makeGameList(appIds, null);
+    public List<GameListResponse> makeGameListWithoutGenre(List<SteamGame> gameList) {
+        return makeGameList(gameList, null);
     }
 
-    public List<GameListResponse> makeGameList(List<Long> appIds, SteamGenre preferredGenre) {
+    public List<GameListResponse> makeGameList(List<SteamGame> gameList, SteamGenre preferredGenre) {
         final List<GameListResponse> responses = new ArrayList<>();
 
-        final List<SteamGame> gameList = gameRepository.findAllByAppidIn(appIds); // DB 에 없는 게임은 제외됨
         for (SteamGame game : gameList) {
             List<String> genres = game.getGenres().stream()
                     .map(SteamGenre::getName)
@@ -58,11 +55,8 @@ public class GameService {
 
     // 메인 페이지에 보여줄 스팀 랭킹
     public List<GameListResponse>  getGameRanking() {
-        // 게임 리스트 id 불러오기
-        final List<Long> steamRankingIds = steamAPI.getSteamRanking();
-
-        // 장르 추가 후 응답
-        return makeGameListWithoutGenre(steamRankingIds.stream().limit(TOP_FIVE).toList());
+        final List<SteamGame> gameList = gameRepository.findTop5ByAppidIn(steamAPI.getSteamRanking()); // DB 에 없는 게임은 제외됨
+        return makeGameListWithoutGenre(gameList);
     }
 
     // 메인 페이지에 보여줄 사용자 게임 추천
@@ -78,6 +72,6 @@ public class GameService {
                 .filter(appId -> !ownedGames.contains(appId)).toList();
 
         // 장르 필터링 후 리스트 완성
-        return makeGameListWithGenre(notOwnedGames, member.getPreferredGenre());
+        return makeGameListWithGenre(gameRepository.findAllByAppidIn(notOwnedGames), member.getPreferredGenre());
     }
 }
