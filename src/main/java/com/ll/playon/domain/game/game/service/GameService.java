@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,8 @@ public class GameService {
     private final SteamAPI steamAPI;
     private final MemberSteamDataRepository memberSteamDataRepository;
     private final MemberRepository memberRepository;
+
+    private final static int TOP_FIVE = 5;
 
     public List<GameListResponse> makeGameListWithGenre(List<SteamGame> gameList, SteamGenre preferredGenre) {
         return makeGameList(gameList, preferredGenre);
@@ -55,7 +58,20 @@ public class GameService {
 
     // 메인 페이지에 보여줄 스팀 랭킹
     public List<GameListResponse>  getGameRanking() {
-        final List<SteamGame> gameList = gameRepository.findTop5ByAppidIn(steamAPI.getSteamRanking()); // DB 에 없는 게임은 제외됨
+        final List<Long> steamRankingIds = steamAPI.getSteamRanking();
+        final List<SteamGame> gameList = new ArrayList<>();
+
+        int count = 1;
+        for (Long id : steamRankingIds) {
+            if(count == TOP_FIVE) break;
+
+            Optional<SteamGame> steamGameOptional = gameRepository.findByAppid(id);
+            if(steamGameOptional.isEmpty()) continue;
+            gameList.add(steamGameOptional.get());
+
+            count++;
+        }
+
         return makeGameListWithoutGenre(gameList);
     }
 
