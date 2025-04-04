@@ -1,5 +1,8 @@
 package com.ll.playon.domain.member.service;
 
+import com.ll.playon.domain.game.game.entity.SteamGenre;
+import com.ll.playon.domain.game.game.dto.GameListResponse;
+import com.ll.playon.domain.game.game.service.GameService;
 import com.ll.playon.domain.member.dto.*;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
@@ -27,6 +30,7 @@ public class MemberService {
     private final SteamAPI steamAPI;
     private final MemberSteamDataRepository memberSteamDataRepository;
     private final PasswordEncoder passwordEncoder;
+    private final GameService gameService;
 
     public Optional<Member> findById(Long id){
         return memberRepository.findById(id);
@@ -119,7 +123,10 @@ public class MemberService {
                 .build();
         memberRepository.save(newMember);
 
-        saveUserGameList(steamAPI.getUserGames(steamId), newMember);
+        List<Long> userGames = steamAPI.getUserGames(steamId);
+        SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
+        memberRepository.save(newMember.toBuilder().preferredGenre(preferredGenre).build());
+        saveUserGameList(userGames, newMember);
 
         return newMember;
     }
@@ -162,7 +169,10 @@ public class MemberService {
                 targetMember.setSteamId(steamId);
                 memberRepository.save(targetMember);
 
-                saveUserGameList(steamAPI.getUserGames(steamId), targetMember);
+                List<Long> userGames = steamAPI.getUserGames(steamId);
+                SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
+                memberRepository.save(targetMember.toBuilder().preferredGenre(preferredGenre).build());
+                saveUserGameList(userGames, targetMember);
                 return targetMember;
             })
             .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
@@ -206,7 +216,7 @@ public class MemberService {
         ProfileMemberDetailDto profileMemberDetailDto = new ProfileMemberDetailDto(
                 member.getSteamId(), member.getUsername(), member.getNickname(), member.getProfileImg(),
                 member.getLastLoginAt(), member.getPlayStyle(), member.getSkillLevel(),
-                member.getGender(), member.getPreferredGenres()
+                member.getGender(), member.getPreferredGenre()
         );
 
         // 보유한 게임 목록 조회
@@ -216,17 +226,8 @@ public class MemberService {
         return new MemberProfileResponse(profileMemberDetailDto, getMemberOwnedGamesDto(gamesList));
     }
 
-    private static List<GameDetailDto> getMemberOwnedGamesDto(List<MemberSteamData> gamesList) {
-        List<GameDetailDto> gameDetailDtoList = new ArrayList<>();
-        for(MemberSteamData game : gamesList) {
-            // TODO : 게임 데이터 작업 후 수정
-            String gameName = "gameName";
-            String gameImg = "gameImg";
-            List<String> gameGenres = List.of("genre1","genre2");
-            GameDetailDto gameDetail = new GameDetailDto(game.getAppId(), gameName, gameImg, gameGenres);
-            gameDetailDtoList.add(gameDetail);
-        }
-        return gameDetailDtoList;
+    private List<GameListResponse> getMemberOwnedGamesDto(List<MemberSteamData> gamesList) {
+        return gameService.getGameList(gamesList.stream().map(MemberSteamData::getAppId).toList());
     }
 
     public List<GetMembersResponse> findByNickname(String nickname) {

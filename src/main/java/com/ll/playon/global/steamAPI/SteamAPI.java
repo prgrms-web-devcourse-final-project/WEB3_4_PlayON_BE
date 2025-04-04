@@ -1,23 +1,29 @@
 package com.ll.playon.global.steamAPI;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ll.playon.domain.game.game.entity.SteamGenre;
+import com.ll.playon.domain.game.game.repository.GenreRepository;
+import com.ll.playon.global.openFeign.SteamApiClient;
+import com.ll.playon.global.openFeign.SteamStoreClient;
+import com.ll.playon.global.openFeign.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class SteamAPI {
-    private final RestTemplate restTemplate;
+    private final SteamApiClient steamApiClient;
+    private final SteamStoreClient steamStoreClient;
+    private final GenreRepository genreRepository;
+
+    private static final int MAX_GAMES_TO_ANALYZE = 30;
 
     // TODO : 스팀 API 장애 대응
 
@@ -25,52 +31,52 @@ public class SteamAPI {
     private String apikey;
 
     public Map<String, String> getUserProfile(Long steamId) {
-        final String steamUserInfoUrl = String.format("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=%s&steamids=%d", apikey, steamId);
+        SteamResponse steamResponse = steamApiClient.getPlayerSummaries(apikey, String.valueOf(steamId));
+        Player player = steamResponse.getResponse().getPlayers().getFirst();
+        Map<String, String> response = new HashMap<>();
 
-        String response = restTemplate.getForObject(steamUserInfoUrl, String.class);
+        response.put("nickname", player.getNickname());
+        response.put("profileImg", player.getAvatar());
 
-        Map<String, String> userProfile = new HashMap<>();
-
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = objectMapper.readTree(response);
-            JsonNode playerNode = rootNode.path("response").path("players").get(0);
-
-            String personaname = playerNode.path("personaname").asText();
-            String avatarfull = playerNode.path("avatarfull").asText();
-
-            userProfile.put("nickname", personaname);
-            userProfile.put("profileImg", avatarfull);
-
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            // TODO : 에러 발생시 후행 조치
-        }
-
-        return userProfile;
+        return response;
     }
 
     public List<Long> getUserGames(Long steamId) {
-        final String steamOwnedGamesUrl = String.format("https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=%s&steamid=%d", apikey, steamId);
-
-        String response = restTemplate.getForObject(steamOwnedGamesUrl, String.class);
-
-        List<Long> gameIds = new ArrayList<>();
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = objectMapper.readTree(response);
-            JsonNode gamesNode = rootNode.path("response").path("games");
-
-            // games 배열에서 appid만 추출하여 gameIds 리스트에 추가
-            for (JsonNode gameNode : gamesNode) {
-                gameIds.add(gameNode.path("appid").asLong());
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            // TODO : 에러 발생시 후행 조치
-        }
-
-        return gameIds;
+        SteamGameResponse steamGameResponse = steamApiClient.getPlayerOwnedGames(apikey, String.valueOf(steamId));
+        return steamGameResponse.getResponse().getGames().stream()
+                .map(game -> Long.valueOf(game.getAppId()))
+                .toList();
     }
 
+    public SteamGenre getPreferredGenre(List<Long> userGames) {
+        Map<String, Integer> genreCountMap = new HashMap<>();
+
+        int count = 0;
+
+        for(Long gameId : userGames) {
+            String appId = String.valueOf(gameId);
+            if(count++ > MAX_GAMES_TO_ANALYZE) break;
+
+            // TODO : DB 조회로
+            SteamGameDetailResponse response = steamStoreClient.getGameDetail(
+                    Integer.valueOf(appId), "KR", "genres");
+
+            GameDetailWrapper gameDetailWrapper = response.getGames().get(appId);
+            if (gameDetailWrapper == null || !gameDetailWrapper.isSuccess()) continue;
+            if (response.getGames().get(appId).getGameData() == null) continue;
+
+            List<Genre> genres = response.getGames().get(appId).getGameData().getGenres();
+            for (Genre genre : genres) {
+                genreCountMap.put(genre.getDescription(), genreCountMap.getOrDefault(genre.getDescription(), 0) + 1);
+            }
+        }
+
+        String preferredGenre = genreCountMap.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+
+        Optional<SteamGenre> genre = genreRepository.findByName(preferredGenre);
+        return genre.orElseGet(() -> genreRepository.save(SteamGenre.builder().name(preferredGenre).build()));
+    }
 }
