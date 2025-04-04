@@ -8,7 +8,7 @@ import lombok.Getter;
 public enum PartyRole {
     OWNER("생성자"),
     MEMBER("참여자"),
-    PENDING("신청자");
+    PENDING("대기자");
 
     private final String value;
 }

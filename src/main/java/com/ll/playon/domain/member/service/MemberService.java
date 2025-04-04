@@ -3,7 +3,10 @@ package com.ll.playon.domain.member.service;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.dto.GameListResponse;
 import com.ll.playon.domain.game.game.service.GameService;
-import com.ll.playon.domain.member.dto.*;
+import com.ll.playon.domain.member.dto.GetMembersResponse;
+import com.ll.playon.domain.member.dto.MemberDetailDto;
+import com.ll.playon.domain.member.dto.MemberProfileResponse;
+import com.ll.playon.domain.member.dto.ProfileMemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
@@ -12,13 +15,15 @@ import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-
-import java.time.LocalDateTime;
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +37,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final GameService gameService;
 
-    public Optional<Member> findById(Long id){
+    public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
     }
 
@@ -51,13 +56,15 @@ public class MemberService {
     public Member getUserFromAccessToken(String accessToken) {
         Map<String, Object> payload = authTokenService.payload(accessToken);
 
-        if (ObjectUtils.isEmpty(payload)) return null;
+        if (ObjectUtils.isEmpty(payload)) {
+            return null;
+        }
 
         Member parsedMember = Member.builder()
                 .username((String) payload.get("username"))
                 .role((Role) payload.get("role"))
                 .build();
-        parsedMember.changeMemberId(((Number)payload.get("id")).longValue());
+        parsedMember.changeMemberId(((Number) payload.get("id")).longValue());
 
         return parsedMember;
     }
@@ -98,7 +105,7 @@ public class MemberService {
 
     public MemberDetailDto signupNoSteam(String username, String password) {
         Optional<Member> memberOptional = memberRepository.findByUsername(username);
-        if(memberOptional.isPresent()) {
+        if (memberOptional.isPresent()) {
             throw ErrorCode.USER_ALREADY_REGISTERED.throwServiceException();
         }
 
@@ -165,17 +172,17 @@ public class MemberService {
 
     public void steamLink(Long steamId, Member actor) {
         memberRepository.findById(actor.getId())
-            .map(targetMember -> {
-                targetMember.setSteamId(steamId);
-                memberRepository.save(targetMember);
+                .map(targetMember -> {
+                    targetMember.setSteamId(steamId);
+                    memberRepository.save(targetMember);
 
-                List<Long> userGames = steamAPI.getUserGames(steamId);
-                SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
-                memberRepository.save(targetMember.toBuilder().preferredGenre(preferredGenre).build());
-                saveUserGameList(userGames, targetMember);
-                return targetMember;
-            })
-            .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
+                    List<Long> userGames = steamAPI.getUserGames(steamId);
+                    SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
+                    memberRepository.save(targetMember.toBuilder().preferredGenre(preferredGenre).build());
+                    saveUserGameList(userGames, targetMember);
+                    return targetMember;
+                })
+                .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
     }
 
     public void modifyMember(MemberDetailDto req, Member actor) {

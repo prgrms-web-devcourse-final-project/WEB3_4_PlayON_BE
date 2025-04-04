@@ -1,15 +1,16 @@
 package com.ll.playon.domain.party.party.validation;
 
+import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.global.exceptions.ErrorCode;
 
 public class PartyMemberValidation {
 
-    // 파티장인지 확인
-    public static void checkPartyOwner(PartyMember partyMember) {
-        if (partyMember.getPartyRole().equals(PartyRole.OWNER)) {
-            ErrorCode.PARTY_OWNER_CANNOT_APPLY.throwServiceException();
+    // 해당 파티멤버가 본인 자신인지 확인
+    public static void checkIsPartyMemberOwn(PartyMember partyMember, Member actor) {
+        if (partyMember.isOwn(actor)) {
+            ErrorCode.IS_PARTY_MEMBER_OWN.throwServiceException();
         }
     }
 

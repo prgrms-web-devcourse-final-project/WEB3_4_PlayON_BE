@@ -6,6 +6,7 @@ import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
 import com.ll.playon.domain.party.party.dto.request.PutPartyRequest;
 import com.ll.playon.domain.party.party.dto.response.GetAllPendingMemberResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyDetailResponse;
+import com.ll.playon.domain.party.party.dto.response.GetPartyMainResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.PostPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.PutPartyResponse;
@@ -39,8 +40,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "PartyController")
 public class PartyController {
     private final PartyService partyService;
-
-    // TODO : 인증된 사용자로 변경
     private final UserContext userContext;
 
     @PostMapping
@@ -71,6 +70,16 @@ public class PartyController {
 
         return RsData.success(HttpStatus.OK,
                 new PageDto<>(this.partyService.getAllParties(page, pageSize, orderBy, partyAt, getAllPartiesRequest)));
+    }
+
+    @GetMapping("/main")
+    @Operation(summary = "파티 메인용 리스트 조회")
+    public RsData<GetPartyMainResponse> getPartyMain(@RequestParam(defaultValue = "2") int limit) {
+        // TODO : 추후 롤백
+//        정책 고민 (회원만 조회 가능하게 할 것인지)
+//        Member actor = this.userContext.getActor();
+
+        return RsData.success(HttpStatus.OK, this.partyService.getPartyMain(limit));
     }
 
     @GetMapping("/{partyId}")
@@ -146,5 +155,16 @@ public class PartyController {
         Member actor = this.userContext.findById(5L);
 
         return RsData.success(HttpStatus.OK, this.partyService.getPartyPendingMembers(actor, partyId));
+    }
+
+    @PostMapping("/{partyId}/members/{memberId}/invitation")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "파티 초대")
+    public void inviteParty(@PathVariable long partyId, @PathVariable long memberId) {
+        // TODO : 추후 롤백
+//        Member actor = this.userContext.getActor();
+        Member actor = this.userContext.findById(5L);
+
+        this.partyService.inviteParty(actor, partyId, memberId);
     }
 }
