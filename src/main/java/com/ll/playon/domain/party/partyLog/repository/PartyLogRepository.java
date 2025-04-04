@@ -1,4 +1,4 @@
-package com.ll.playon.domain.party.partyLog;
+package com.ll.playon.domain.party.partyLog.repository;
 
 import com.ll.playon.domain.party.partyLog.entity.PartyLog;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,22 +1,20 @@
 package com.ll.playon.domain.party.partyLog.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.Objects;
 
-public record PostPartyLogRequest(
+public record PutPartyLogRequest(
         @NotNull
         String comment,
 
         @NotNull
         String content,
 
-        @NotBlank
-        String fileType,
+        String deleteUrl,
 
-        Long partyMemberId
+        String newFileType
 ) {
-    public PostPartyLogRequest {
+    public PutPartyLogRequest {
         comment = Objects.requireNonNullElse(comment, "");
         content = Objects.requireNonNullElse(content, "");
     }

@@ -4,8 +4,10 @@ import com.ll.playon.domain.image.entity.Image;
 import com.ll.playon.domain.image.mapper.ImageMapper;
 import com.ll.playon.domain.image.repository.ImageRepository;
 import com.ll.playon.domain.image.type.ImageType;
+import com.ll.playon.global.aws.s3.S3Service;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -15,6 +17,7 @@ import org.springframework.util.CollectionUtils;
 @Transactional
 public class ImageService {
     private final ImageRepository imageRepository;
+    private final S3Service s3Service;
 
     // 이미지 리스트 DB에 저장
     @Transactional
@@ -40,14 +43,43 @@ public class ImageService {
 
     // DB에서 해당 Id의 이미지 전부 삭제
     @Transactional
-    public long deleteAllImagesById(ImageType imageType, long referenceId) {
-        return this.imageRepository.deleteByImageTypeAndReferenceId(imageType, referenceId);
+    public void deleteAllImagesById(ImageType imageType, long referenceId) {
+        long imageDeleteCount = this.imageRepository.deleteByImageTypeAndReferenceId(imageType, referenceId);
+
+        if (imageDeleteCount > 0) {
+            this.s3Service.deleteAllObjectsById(ImageType.LOG, referenceId);
+        }
+    }
+
+    // DB에서 해당 Id의 이미지 삭제
+    @Transactional
+    public void deleteImageById(ImageType imageType, long referenceId) {
+        long imageDeleteCount = this.imageRepository.deleteByImageTypeAndReferenceId(imageType, referenceId);
+
+        if (imageDeleteCount > 0) {
+            this.s3Service.deleteObjectById(ImageType.LOG, referenceId);
+        }
     }
 
     // DB에서 해당 ID에 존재하는 URL 모두 삭제
     @Transactional
-    public long deleteImagesByIdAndUrls(ImageType imageType, long referenceId, List<String> urls) {
-        return !CollectionUtils.isEmpty(urls)
+    public void deleteImagesByIdAndUrls(ImageType imageType, long referenceId, List<String> urls) {
+        long imageDeleteCount = !CollectionUtils.isEmpty(urls)
                 ? this.imageRepository.deleteByReferenceIdAndImageUrl(imageType, referenceId, urls) : 0;
+
+        if (imageDeleteCount > 0) {
+            this.s3Service.deleteObjectsByUrl(urls);
+        }
+    }
+
+    // DB에서 해당 ID에 존재하는 URL 삭제
+    @Transactional
+    public void deleteImagesByIdAndUrl(ImageType imageType, long referenceId, String url) {
+        long imageDeleteCount = StringUtils.isNotBlank(url)
+                ? this.imageRepository.deleteByReferenceIdAndImageUrl(imageType, referenceId, url) : 0;
+
+        if (imageDeleteCount > 0) {
+            this.s3Service.deleteObjectByUrl(url);
+        }
     }
 }

@@ -9,17 +9,20 @@ import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.repository.PartyMemberRepository;
 import com.ll.playon.domain.party.party.validation.PartyMemberValidation;
-import com.ll.playon.domain.party.partyLog.PartyLogRepository;
 import com.ll.playon.domain.party.partyLog.dto.request.PostPartyLogRequest;
-import com.ll.playon.domain.party.partyLog.dto.response.PostPartyLogResponse;
+import com.ll.playon.domain.party.partyLog.dto.request.PutPartyLogRequest;
+import com.ll.playon.domain.party.partyLog.dto.response.PartyLogResponse;
 import com.ll.playon.domain.party.partyLog.entity.PartyLog;
+import com.ll.playon.domain.party.partyLog.event.ImageDeleteEvent;
 import com.ll.playon.domain.party.partyLog.mapper.PartyLogMapper;
+import com.ll.playon.domain.party.partyLog.repository.PartyLogRepository;
 import com.ll.playon.domain.party.partyLog.validation.PartyLogValidation;
 import com.ll.playon.global.annotation.ActivePartyMemberOnly;
 import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import java.net.URL;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,12 +33,13 @@ public class PartyLogService {
     private final S3Service s3Service;
     private final PartyLogRepository partyLogRepository;
     private final PartyMemberRepository partyMemberRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     // 파티 로그 작성
     // AOP로 권한 체크
     @ActivePartyMemberOnly
     @Transactional
-    public PostPartyLogResponse createPartyLog(Member actor, long partyId, PostPartyLogRequest request) {
+    public PartyLogResponse createPartyLog(Member actor, long partyId, PostPartyLogRequest request) {
         Party party = PartyContext.getParty();
         PartyMember partyMember = PartyMemberContext.getPartyMember();
 
@@ -52,20 +56,76 @@ public class PartyLogService {
             mvpCandidate.voteMvp();
         }
 
-        URL presignedUrl = this.s3Service.generatePresignedUrl(ImageType.LOG, partyId, request.fileType());
+        return new PartyLogResponse(
+                partyLog.getId(),
+                partyId,
+                this.savePartyLogImage(partyLog.getId(), request.fileType()));
+    }
 
-        return new PostPartyLogResponse(partyLog.getId(), partyLog.getId(), presignedUrl);
+    // 로그 이미지 저장
+    private URL savePartyLogImage(long logId, String fileType) {
+        return this.s3Service.generatePresignedUrl(ImageType.LOG, logId, fileType);
     }
 
     // 스크린샷 URL 저장
     // AOP로 권한 체크
     @ActivePartyMemberOnly
+    @Transactional
     public void saveImageUrl(Member actor, long partyId, long logId, String url) {
         Party party = PartyContext.getParty();
 
-        PartyMemberValidation.checkIsPartyMemberOwn(PartyMemberContext.getPartyMember(), actor);
+        PartyMemberValidation.checkIsNotPartyMemberOwn(PartyMemberContext.getPartyMember(), actor);
         PartyLogValidation.checkIsPartyEnd(party);
 
         this.imageService.saveImage(ImageType.LOG, logId, url);
+    }
+
+    // 파티 로그 수정
+    // AOP로 권한 체크
+    @ActivePartyMemberOnly
+    @Transactional
+    public PartyLogResponse updatePartyLog(Member actor, long partyId, long logId, PutPartyLogRequest request) {
+        PartyMember partyMember = PartyMemberContext.getPartyMember();
+
+        PartyMemberValidation.checkIsNotPartyMemberOwn(partyMember, actor);
+
+        PartyLog partyLog = this.getPartyLog(logId);
+
+        this.updatePartyLog(partyLog, request);
+
+        this.imageService.deleteImagesByIdAndUrl(ImageType.LOG, logId, request.deleteUrl());
+
+        return new PartyLogResponse(
+                logId,
+                partyId,
+                this.savePartyLogImage(logId, request.newFileType()));
+    }
+
+    // 파티 로그 삭제
+    // AOP로 권한 체크
+    @ActivePartyMemberOnly
+    @Transactional
+    public void deletePartyLog(Member actor, long partyId, long logId) {
+        PartyMember partyMember = PartyMemberContext.getPartyMember();
+
+        PartyMemberValidation.checkIsNotPartyMemberOwn(partyMember, actor);
+
+        PartyLog partyLog = this.getPartyLog(logId);
+
+        partyLog.delete();
+
+        eventPublisher.publishEvent(new ImageDeleteEvent(logId));
+    }
+
+    // logId로 PartyLog 조회
+    private PartyLog getPartyLog(long logId) {
+        return this.partyLogRepository.findById(logId)
+                .orElseThrow(ErrorCode.PARTY_LOG_NOT_FOUND::throwServiceException);
+    }
+
+    // PartyLog 수정
+    private void updatePartyLog(PartyLog partyLog, PutPartyLogRequest request) {
+        partyLog.setComment(request.comment());
+        partyLog.setContent(request.content());
     }
 }
