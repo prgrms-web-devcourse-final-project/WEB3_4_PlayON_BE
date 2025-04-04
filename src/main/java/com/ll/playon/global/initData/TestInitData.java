@@ -34,6 +34,8 @@ public class TestInitData {
 
     @Transactional
     public void makeSampleGames() {
+        if(gameRepository.count() > 0) return;
+
         SteamGenre strategy = SteamGenre.builder().name("Strategy").build();
         SteamGenre moba = SteamGenre.builder().name("MOBA").build();
         SteamGenre action = SteamGenre.builder().name("Action").build();
