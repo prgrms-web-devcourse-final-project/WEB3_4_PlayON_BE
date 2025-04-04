@@ -3,9 +3,7 @@ package com.ll.playon.domain.game.game.service;
 import com.ll.playon.domain.game.game.dto.GameListResponse;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
-import com.ll.playon.domain.game.game.repository.GameGenreRepository;
 import com.ll.playon.domain.game.game.repository.GameRepository;
-import com.ll.playon.domain.game.game.repository.GenreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +15,6 @@ import java.util.List;
 public class GameService {
 
     private final GameRepository gameRepository;
-    private final GameGenreRepository gameGenreRepository;
-    private final GenreRepository genreRepository;
 
     public List<GameListResponse> getGameList(List<Long> appIds) {
         final List<GameListResponse> responses = new ArrayList<>();

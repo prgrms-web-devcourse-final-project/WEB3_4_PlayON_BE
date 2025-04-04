@@ -1,8 +1,5 @@
 package com.ll.playon.global.initData;
 
-import com.ll.playon.domain.game.game.repository.GameGenreRepository;
-import com.ll.playon.domain.game.game.repository.GameRepository;
-import com.ll.playon.domain.game.game.repository.GenreRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
@@ -37,9 +34,6 @@ public class BaseInitData {
     private final GuildMemberRepository guildMemberRepository;
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
-    private final GameRepository gameRepository;
-    private final GenreRepository genreRepository;
-    private final GameGenreRepository gameGenreRepository;
 
     @Autowired
     @Lazy
