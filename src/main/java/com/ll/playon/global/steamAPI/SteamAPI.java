@@ -17,9 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @Service
@@ -116,7 +116,12 @@ public class SteamAPI {
         // releaseDate, LocalDate 로
         final String dateString = gameData.getRelease_date().getDate();
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMM, yyyy", Locale.ENGLISH);
-        final LocalDate date = LocalDate.parse(dateString, formatter);
+        LocalDate date;
+        try {
+            date = LocalDate.parse(dateString, formatter);
+        } catch (DateTimeParseException exception){
+            date = null;
+        }
 
         // requiredAge, 나이 계산
         final int age;

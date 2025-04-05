@@ -15,6 +15,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -41,8 +42,8 @@ public class GameController {
     }
 
     // 테스트용 엔드포인트
-    @GetMapping
-    public RsData<SteamGame> getGameDetail() {
-        return RsData.success(HttpStatus.OK,steamAPI.fetchOrCreateGameDetail(2246340L));
+    @GetMapping("/{appid}")
+    public RsData<SteamGame> getGameDetail(@PathVariable Long appid) {
+        return RsData.success(HttpStatus.OK,steamAPI.fetchOrCreateGameDetail(appid));
     }
 }
