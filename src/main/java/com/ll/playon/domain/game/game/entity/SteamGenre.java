@@ -1,5 +1,6 @@
 package com.ll.playon.domain.game.game.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,6 +22,7 @@ public class SteamGenre extends BaseTime {
     private String name;
 
     @ManyToMany(mappedBy = "genres")
+    @JsonIgnore
     @Builder.Default
     private List<SteamGame> games = new ArrayList<>();
 
