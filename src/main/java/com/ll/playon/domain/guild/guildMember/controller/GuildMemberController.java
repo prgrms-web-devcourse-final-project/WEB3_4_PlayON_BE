@@ -58,11 +58,11 @@ public class GuildMemberController {
         return RsData.success(HttpStatus.OK, "길드 멤버를 강제 퇴출했습니다.");
     }
 
-    //닉네임을 기반으로 길드에 멤버 초대
-//    @PostMapping("/invite")
-//    public RsData<String> inviteMember(@RequestBody InviteMemberRequest request) {
-//        Member actor = userContext.getActor();
-//        guildMemberService.inviteMember(actor, request);
-//        return RsData.success(HttpStatus.OK, "길드에 멤버를 초대했습니다.");
-//    }
+    @PostMapping("/{guildId}/invite")
+    public RsData<String> inviteMember(@PathVariable Long guildId,
+                                       @RequestBody InviteMemberRequest request) {
+        Member actor = userContext.getActor();
+        guildMemberService.inviteMember(guildId, actor, request);
+        return RsData.success(HttpStatus.OK, "길드에 멤버를 초대했습니다.");
+    }
 }

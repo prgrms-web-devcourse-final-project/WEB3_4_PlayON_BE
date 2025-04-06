@@ -11,6 +11,7 @@ import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.global.security.UserContext;
+import com.ll.playon.global.steamAPI.SteamAPI;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import jakarta.transaction.Transactional;
@@ -44,6 +45,7 @@ class GuildJoinRequestControllerTest {
     @Autowired private MemberRepository memberRepository;
     @Autowired private GuildJoinRequestRepository guildJoinRequestRepository;
     @MockBean private UserContext userContext;
+    @MockBean private SteamAPI steamAPI;
 
     private Member leader, manager, member;
     private Guild guild;

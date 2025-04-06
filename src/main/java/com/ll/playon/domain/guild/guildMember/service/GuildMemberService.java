@@ -2,10 +2,7 @@ package com.ll.playon.domain.guild.guildMember.service;
 
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
-import com.ll.playon.domain.guild.guildMember.dto.request.AssignManagerRequest;
-import com.ll.playon.domain.guild.guildMember.dto.request.ExpelMemberRequest;
-import com.ll.playon.domain.guild.guildMember.dto.request.LeaveGuildRequest;
-import com.ll.playon.domain.guild.guildMember.dto.request.RevokeManagerRequest;
+import com.ll.playon.domain.guild.guildMember.dto.request.*;
 import com.ll.playon.domain.guild.guildMember.dto.response.GuildMemberResponse;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
@@ -126,37 +123,34 @@ public class GuildMemberService {
         guildMemberRepository.delete(targetMember);
     }
 
-    //닉네임을 기반으로 길드에 멤버 초대
-    //memberRepository에 Optional<Member> findByUsername(String username) 추가
-//    @Transactional
-//    public void inviteMember(Member actor, InviteMemberRequest request) {
-//        Guild guild = guildRepository.findById(request.guildId())
-//                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
-//
-//        GuildMember requesterMember = guildMemberRepository.findByGuildAndMember(guild, actor)
-//                .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
-//
-//        if (!isManager(requesterMember)) {
-//            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-//        }
-//
-//        Member target = memberRepository.findByUsername(request.nickname())
-//                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
-//
-//        boolean alreadyInGuild = guild.getMembers().stream()
-//                .anyMatch(gm -> gm.getMember().equals(target));
-//        if (alreadyInGuild) {
-//            throw ErrorCode.ALREADY_GUILD_MEMBER.throwServiceException();
-//        }
-//
-//        GuildMember newGuildMember = GuildMember.builder()
-//                .guild(guild)
-//                .member(target)
-//                .guildRole(GuildRole.MEMBER)
-//                .build();
-//
-//        guildMemberRepository.save(newGuildMember);
-//    }
+    @Transactional
+    public void inviteMember(Long guildId, Member actor, InviteMemberRequest request) {
+        Guild guild = guildRepository.findById(guildId)
+                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
+
+        GuildMember requesterMember = guildMemberRepository.findByGuildAndMember(guild, actor)
+                .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
+
+        if (!isManager(requesterMember)) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        Member target = memberRepository.findByUsername(request.nickname())
+                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+
+        boolean alreadyInGuild = guildMemberRepository.existsByGuildAndMember(guild, target);
+        if (alreadyInGuild) {
+            throw ErrorCode.ALREADY_GUILD_MEMBER.throwServiceException();
+        }
+
+        GuildMember newGuildMember = GuildMember.builder()
+                .guild(guild)
+                .member(target)
+                .guildRole(GuildRole.MEMBER)
+                .build();
+
+        guildMemberRepository.save(newGuildMember);
+    }
 
     private Guild getGuild(Long id) {
         return guildRepository.findById(id)

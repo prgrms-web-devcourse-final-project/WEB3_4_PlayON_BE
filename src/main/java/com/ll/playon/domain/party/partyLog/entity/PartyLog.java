@@ -32,4 +32,9 @@ public class PartyLog extends BaseTime {
         this.comment = comment;
         this.content = content;
     }
+
+    public void delete() {
+        this.partyMember.setPartyLog(null);
+        this.partyMember = null;
+    }
 }

@@ -1,5 +1,7 @@
 package com.ll.playon.global.initData;
 
+import com.ll.playon.domain.game.game.entity.SteamGame;
+import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
@@ -34,6 +36,7 @@ public class BaseInitData {
     private final GuildMemberRepository guildMemberRepository;
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
+    private final GameRepository gameRepository;
 
     @Autowired
     @Lazy
@@ -90,13 +93,20 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleGuilds() {
-        if(guildRepository.count() != 0) return;
+        if (gameRepository.count() == 0) {
+            return;
+        }
+
+        if(guildRepository.count() != 0) {
+            return;
+        }
 
         List<Member> members = memberRepository.findAll().stream()
                 .limit(3)
                 .collect(Collectors.toList());
 
-        List<Long> gameIds = List.of(789L, 570L, 730L);
+        List<Long> gameIds = List.of(252490L, 570L, 730L); // 샘플 SteamGame ID들
+        List<SteamGame> games = gameRepository.findAllByAppidIn(gameIds);
 
         List<String> guildNames = List.of(
                 "게임 마스터즈", "프로 플레이어스", "데빌 헌터즈",
@@ -121,13 +131,14 @@ public class BaseInitData {
         Random random = new Random();
         for (int i = 0; i < 10; i++) {
             Member owner = members.get(random.nextInt(members.size()));
+            SteamGame selectedGame = games.get(random.nextInt(games.size()));
 
             Guild guild = Guild.builder()
                     .owner(owner)
                     .name(guildNames.get(i))
                     .description(descriptions.get(i))
                     .maxMembers(5 + random.nextInt(16))
-                    .game(gameIds.get(random.nextInt(gameIds.size())))
+                    .game(selectedGame)
                     .guildImg("a.png")
                     .isPublic(random.nextBoolean())
                     .isDeleted(false)

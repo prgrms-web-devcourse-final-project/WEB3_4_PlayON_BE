@@ -35,6 +35,9 @@ public enum ErrorCode {
     USER_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 가입된 사용자입니다."),
     PASSWORD_INCORRECT(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
 
+    // EventListener
+    EVENT_LISTENER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "이벤트 리스너에서 오류가 발생했습니다."),
+
     // Guild
     DUPLICATE_GUILD_NAME(HttpStatus.CONFLICT, "이미 존재하는 길드 이름입니다."),
     GUILD_NOT_FOUND(HttpStatus.NOT_FOUND, "길드를 찾을 수 없습니다."),
@@ -67,8 +70,9 @@ public enum ErrorCode {
     // PartyMember
     IS_NOT_PARTY_OWNER(HttpStatus.FORBIDDEN, "해당 파티의 파티장이 아닙니다."),
     IS_NOT_PARTY_MEMBER(HttpStatus.FORBIDDEN, "해당 파티의 파티원이 아닙니다."),
+    IS_NOT_PARTY_MEMBER_OWN(HttpStatus.FORBIDDEN, "파티원 본인이 아닙니다."),
     IS_ALREADY_PARTY_MEMBER(HttpStatus.FORBIDDEN, "이미 해당 파티의 파티원입니다."),
-    IS_PARTY_MEMBER_OWN(HttpStatus.FORBIDDEN, "본인 스스로에 대한 처리는 불가능합니다."),
+    IS_PARTY_MEMBER_OWN(HttpStatus.FORBIDDEN, "파티원 본인 스스로에 대한 처리는 불가능합니다."),
     PARTY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티 멤버가 존재하지 않습니다."),
     PARTY_OWNER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티장이 존재하지 않습니다."),
     PENDING_PARTY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티 참가를 신청한 사용자가 아닙니다."),
@@ -76,6 +80,7 @@ public enum ErrorCode {
     // PartyLog
     PARTY_LOG_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 파티 로그를 작성하셨습니다."),
     PARTY_IS_NOT_ENDED(HttpStatus.BAD_REQUEST, "파티가 종료되지 않았습니다."),
+    PARTY_LOG_NOT_FOUND(HttpStatus.NOT_FOUND, "파티 로그가 존재하지 않습니다."),
 
     // Tag
     TAG_TYPE_CONVERT_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "태그 타입 변환에 실패하였습니다."),
