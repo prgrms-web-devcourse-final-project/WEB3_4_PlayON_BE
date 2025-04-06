@@ -41,6 +41,14 @@ public class ImageService {
         return this.imageRepository.findAllByImageTypeAndReferenceId(imageType, referenceId);
     }
 
+    // Id로 이미지 이미지 호출
+    @Transactional(readOnly = true)
+    public String getImageById(ImageType imageType, long referenceId) {
+        Image image = this.imageRepository.findByImageTypeAndReferenceId(imageType, referenceId);
+
+        return image != null ? image.getImageUrl() : "";
+    }
+
     // DB에서 해당 Id의 이미지 전부 삭제
     @Transactional
     public void deleteAllImagesById(ImageType imageType, long referenceId) {

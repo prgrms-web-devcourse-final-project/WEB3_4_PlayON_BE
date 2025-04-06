@@ -26,6 +26,9 @@ public enum ErrorCode {
     S3_OBJECT_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "S3 오브젝트 제거에 실패하였습니다."),
     S3_OBJECT_GET_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "S3 오브젝트 호출에 실패하였습니다."),
 
+    // 이미지
+    IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "이미지를 찾을 수 없습니다."),
+
     // Filtering
     PAGE_SIZE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "pageSize는 1에서 100 사이로 입력해주세요."),
 
