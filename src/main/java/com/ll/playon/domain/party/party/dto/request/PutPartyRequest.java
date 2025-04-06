@@ -28,7 +28,7 @@ public record PutPartyRequest(
 
         // TODO : Game 엔티티 개설되면 변경
         @NotNull
-        Long game,
+        Long gameId,
 
         @NotNull(message = "태그 정보들을 입력해주세요.")
         List<@Valid PartyTagRequest> tags
