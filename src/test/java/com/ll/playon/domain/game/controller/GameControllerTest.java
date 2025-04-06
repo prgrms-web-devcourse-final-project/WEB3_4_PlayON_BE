@@ -67,7 +67,7 @@ public class GameControllerTest {
                 .releaseDate(LocalDate.of(2023, 1, 1))
                 .headerImage("image.jpg")
                 .shortDescription("Short desc")
-                .aboutTheGame("About the game")
+                .aboutTheGame("About the gameId")
                 .requiredAge(19)
                 .website("http://test.com")
                 .isWindowsSupported(true)
@@ -172,7 +172,7 @@ public class GameControllerTest {
     @DisplayName("게임별 파티 목록 조회 성공")
     void getGamePartiesSuccess() throws Exception {
         Party party = partyRepository.save(Party.builder()
-                .game(game.getId())
+                .game(game)
                 .name("Test Party")
                 .partyAt(LocalDateTime.now().plusDays(1))
                 .publicFlag(true)
@@ -197,7 +197,7 @@ public class GameControllerTest {
     @DisplayName("게임별 파티 로그 조회 성공")
     void getGamePartyLogsSuccess() throws Exception {
         Party party = partyRepository.save(Party.builder()
-                .game(game.getId())
+                .game(game)
                 .name("Logged Party")
                 .partyAt(LocalDateTime.now().minusDays(1))
                 .publicFlag(true)
@@ -215,7 +215,7 @@ public class GameControllerTest {
 
         PartyLog log = partyLogRepository.save(PartyLog.builder()
                 .partyMember(member)
-                .comment("Good game")
+                .comment("Good gameId")
                 .content("Enjoyed it")
                 .build());
 

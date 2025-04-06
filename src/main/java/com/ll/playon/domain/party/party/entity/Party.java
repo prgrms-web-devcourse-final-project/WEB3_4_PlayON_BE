@@ -2,6 +2,7 @@ package com.ll.playon.domain.party.party.entity;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
+import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.party.party.dto.request.PutPartyRequest;
 import com.ll.playon.domain.party.party.type.PartyStatus;
 import jakarta.persistence.CascadeType;
@@ -10,9 +11,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
@@ -46,10 +49,8 @@ public class Party {
     private Long id;
 
     // TODO : Game 엔티티 개설되면 연결
-    @Column(nullable = false)
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(nullable = false)
-    private Long game;  // gameId
+    @ManyToOne(fetch = FetchType.LAZY)
+    private SteamGame game;
 
     @Column(nullable = false)
     private String name;
@@ -99,7 +100,8 @@ public class Party {
     // TODO : 파티 룸
 
     @Builder
-    public Party(Long game, String name, String description, LocalDateTime partyAt, boolean publicFlag, int minimum,
+    public Party(SteamGame game, String name, String description, LocalDateTime partyAt, boolean publicFlag,
+                 int minimum,
                  int maximum) {
         this.game = game;
         this.name = name;
@@ -125,14 +127,15 @@ public class Party {
         this.total -= 1;
     }
 
-    public void update(PutPartyRequest request) {
+    public void update(PutPartyRequest request, SteamGame game) {
         this.name = request.name();
         this.description = request.description() != null ? request.description() : "";
         this.partyAt = request.partyAt();
         this.publicFlag = request.isPublic();
         this.minimum = request.minimum();
-        this.maximum = request.maximum();;
-        this.game = request.game();
+        this.maximum = request.maximum();
+        ;
+        this.game = game;
     }
 
     public void closeParty() {

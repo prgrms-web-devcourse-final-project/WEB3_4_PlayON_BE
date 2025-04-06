@@ -34,6 +34,9 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
@@ -146,7 +149,7 @@ public class BaseInitData {
             return;
         }
 
-        if(guildRepository.count() != 0) {
+        if (guildRepository.count() != 0) {
             return;
         }
 
@@ -244,17 +247,25 @@ public class BaseInitData {
         // 태그 타입과 태그 값들
         List<TagType> tagTypes = new ArrayList<>(List.of(TagType.values()));
 
+        // 파티에 사용할 SteamGame 리스트 조회
+        List<SteamGame> steamGames = this.gameRepository.findAll(
+                PageRequest.of(0, 100, Sort.by(Direction.DESC, "id"))
+        ).getContent();
+
+        // 랜덤 객체 생성
+        Random random = new Random();
+
         // 각 멤버에 대해 3개의 파티 생성
         for (Member member : members) {
             for (int i = 0; i < 3; i++) {
                 // 랜덤 값 생성
                 String randomName = "파티_" + UUID.randomUUID().toString().substring(0, 6);  // 랜덤 이름 생성
                 String randomDescription = "랜덤 파티 설명 " + UUID.randomUUID().toString().substring(0, 6);  // 랜덤 설명
-                LocalDateTime randomPartyAt = LocalDateTime.now().plusDays(new Random().nextInt(30));  // 30일 이내의 랜덤 날짜
-                boolean isPublic = new Random().nextBoolean();  // 공개 여부 랜덤
-                int minimum = new Random().nextInt(2, 10);  // 최소 인원 2명 이상
-                int maximum = new Random().nextInt(10, 51);  // 최대 인원 10명 이상, 50명 이하
-                Long gameId = (long) (new Random().nextInt(1, 10));  // 랜덤 게임 ID (나중에 게임 엔티티로 연결)
+                LocalDateTime randomPartyAt = LocalDateTime.now().plusDays(random.nextInt(30));  // 30일 이내의 랜덤 날짜
+                boolean isPublic = random.nextBoolean();  // 공개 여부 랜덤
+                int minimum = random.nextInt(2, 10);  // 최소 인원 2명 이상
+                int maximum = random.nextInt(10, 51);  // 최대 인원 10명 이상, 50명 이하
+                SteamGame steamGame = steamGames.get(random.nextInt(steamGames.size()));
 
                 // 파티 태그 생성
                 List<PartyTagRequest> randomTags = new ArrayList<>();
@@ -281,7 +292,7 @@ public class BaseInitData {
                         isPublic,
                         minimum,
                         maximum,
-                        gameId,
+                        steamGame.getId(),
                         randomTags
                 );
 

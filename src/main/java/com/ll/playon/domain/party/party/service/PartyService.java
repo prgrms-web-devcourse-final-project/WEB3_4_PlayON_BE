@@ -1,5 +1,7 @@
 package com.ll.playon.domain.party.party.service;
 
+import com.ll.playon.domain.game.game.entity.SteamGame;
+import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.domain.party.party.context.PartyContext;
@@ -59,11 +61,15 @@ public class PartyService {
     private final PartyLogService partyLogService;
     private final MemberService memberService;
     private final PartyRepository partyRepository;
+    private final GameRepository gameRepository;
 
     // 파티 생성
     @Transactional
     public PostPartyResponse createParty(Member actor, PostPartyRequest request) {
-        Party party = PartyMapper.of(request);
+        SteamGame game = this.gameRepository.findById(request.gameId())
+                .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
+
+        Party party = PartyMapper.of(request, game);
 
         List<PartyTag> partyTags = this.createPartyTag(request, party);
         party.setPartyTags(partyTags);
@@ -81,55 +87,84 @@ public class PartyService {
     public Page<GetPartyResponse> getAllFilteredParties(Member actor, int page, int pageSize, String orderBy,
                                                         LocalDateTime partyAt,
                                                         GetAllPartiesRequest request) {
-        Pageable pageable = PageRequest.of(page - 1, pageSize, PartySortUtils.getSort(orderBy));
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
 
         return actor == null
-                ? this.getPublicParties(pageable, partyAt, request)
-                : this.getPartiesByLoginUser(actor, pageable, partyAt, request);
+                ? this.getPublicParties(pageable, partyAt, orderBy, request)
+                : this.getPartiesByLoginUser(actor, pageable, partyAt, orderBy, request);
     }
 
     // 공개 파티들 조회
     private Page<GetPartyResponse> getPublicParties(Pageable pageable, LocalDateTime partyAt,
-                                                    GetAllPartiesRequest request) {
-        return getPartiesByConditions(Collections.emptyList(), pageable, partyAt, request);
+                                                    String orderBy, GetAllPartiesRequest request) {
+        return getPartiesByConditions(Collections.emptyList(), pageable, partyAt, orderBy, request);
     }
 
     // 내 파티 우선 조회 + 공개 파티들 조회
     private Page<GetPartyResponse> getPartiesByLoginUser(Member actor, Pageable pageable, LocalDateTime partyAt,
-                                                         GetAllPartiesRequest request) {
+                                                         String orderBy, GetAllPartiesRequest request) {
         List<Long> myPartyIds = this.partyRepository.findPartyIdsByMember(actor.getId(), partyAt);
 
-        return getPartiesByConditions(myPartyIds, pageable, partyAt, request);
+        return getPartiesByConditions(myPartyIds, pageable, partyAt, orderBy, request);
     }
 
+    // TODO: 추후 리팩토링 진행, 성능 개선 필요할 것 같음
     // 최종 파티 페이징 리스트 조회
-    private Page<GetPartyResponse> getPartiesByConditions(List<Long> excludedIds, Pageable pageable,
-                                                          LocalDateTime partyAt, GetAllPartiesRequest request) {
+    private Page<GetPartyResponse> getPartiesByConditions(List<Long> myPartyIds, Pageable pageable,
+                                                          LocalDateTime partyAt, String orderBy,
+                                                          GetAllPartiesRequest request) {
         List<String> tagValues = request.tags().stream()
                 .map(tag -> TagValue.fromValue(tag.value()).name())
                 .toList();
 
         long tagSize = tagValues.size();
 
+        int myPartyCount = myPartyIds.size();
+        int pageOffset = pageable.getPageNumber() * pageable.getPageSize();
+        int publicOffset = Math.max(0, pageOffset - myPartyCount);
+
+        Pageable publicPageable = PageRequest.of(0, publicOffset + pageable.getPageSize());
+
         // 내 파티 ID 제외 + 공개 파티 ID 조회
-        Page<Long> publicPartyIds = this.partyRepository.findPublicPartyIdsExcludingMyParties(excludedIds,
-                partyAt, tagValues, tagSize, pageable);
+        Page<Long> publicPartyIds = this.partyRepository.findPublicPartyIdsExcludingMyParties(myPartyIds,
+                partyAt, tagValues, tagSize, publicPageable);
 
         // 최종 파티 ID 페이징 리스트
-        List<Long> mergedPartyIds = new ArrayList<>(excludedIds);
+        List<Long> mergedPartyIds = new ArrayList<>(myPartyIds);
         mergedPartyIds.addAll(publicPartyIds.getContent());
 
         List<Party> parties = this.partyRepository.findPartiesByIds(mergedPartyIds);
         List<PartyMember> partyMembers = this.partyRepository.findPartyMembersByPartyIds(mergedPartyIds);
         List<PartyTag> partyTags = this.partyRepository.findPartyTagsByPartyIds(mergedPartyIds);
 
-        return new PageImpl<>(
-                this.mergePartyWithJoinData(
-                        parties, partyTags, partyMembers
-                ),
-                pageable,
-                publicPartyIds.getTotalElements()
-        );
+        Map<Long, Party> partyMap = PartySortUtils.convertToMap(parties);
+        Map<Long, Long> totalCountMap = PartySortUtils.convertToTotalCountMap(partyMembers);
+
+        List<GetPartyResponse> mergedList = this.mergePartyWithJoinData(parties, partyTags, partyMembers);
+
+        Comparator<GetPartyResponse> comparator = PartySortUtils.compare(orderBy, partyMap, totalCountMap);
+
+        List<GetPartyResponse> myParties = mergedList.stream()
+                .filter(party -> myPartyIds.contains(party.partyId()))
+                .collect(Collectors.toList());
+
+        List<GetPartyResponse> publicParties = mergedList.stream()
+                .filter(party -> !myPartyIds.contains(party.partyId()))
+                .collect(Collectors.toList());
+
+        myParties.sort(comparator);
+        publicParties.sort(comparator);
+
+        List<GetPartyResponse> sortedList = new ArrayList<>(myParties.size() + publicParties.size());
+        sortedList.addAll(myParties);
+        sortedList.addAll(publicParties);
+
+        int start = Math.max(0, pageable.getPageNumber() * pageable.getPageSize());
+        int end = Math.min(start + pageable.getPageSize(), mergedList.size());
+
+        List<GetPartyResponse> pagedResponses = start >= end ? Collections.emptyList() : sortedList.subList(start, end);
+
+        return new PageImpl<>(pagedResponses, pageable, publicPartyIds.getTotalElements() + myPartyIds.size());
     }
 
     // 파티 결과창 조회
@@ -240,8 +275,14 @@ public class PartyService {
     public PutPartyResponse updateParty(Member actor, long partyId, PutPartyRequest putPartyRequest) {
         Party party = PartyContext.getParty();
 
+        SteamGame game = null;
+        if (!Objects.equals(party.getGame().getId(), putPartyRequest.gameId())) {
+            game = this.gameRepository.findById(putPartyRequest.gameId())
+                    .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
+        }
+
         // TODO: 유니크 제약 조건 있으면 체크
-        party.update(putPartyRequest);
+        party.update(putPartyRequest, game);
 
         this.partyTagService.updatePartyTags(party, putPartyRequest.tags());
 
@@ -403,6 +444,6 @@ public class PartyService {
                         party,
                         partyTagsMap.getOrDefault(party.getId(), Collections.emptyList()),
                         partyMembersMap.getOrDefault(party.getId(), Collections.emptyList())
-                )).toList();
+                )).collect(Collectors.toList());
     }
 }
