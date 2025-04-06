@@ -289,22 +289,17 @@ public class BaseInitData {
 
     // 특정 TagValue가 TagType에 맞는 값인지 확인하는 메서드
     private boolean isValidTagValueForType(TagValue tagValue, TagType tagType) {
-        switch (tagType) {
-            case PARTY_STYLE:
-                return tagValue == TagValue.HARDCORE || tagValue == TagValue.CASUAL || tagValue == TagValue.SPEEDRUN
-                       || tagValue == TagValue.COMPLETIONIST;
-            case GAME_SKILL:
-                return tagValue == TagValue.ROTTEN_WATER || tagValue == TagValue.STAGNANT_WATER
-                       || tagValue == TagValue.MUD_WATER || tagValue == TagValue.CLEAN_WATER
-                       || tagValue == TagValue.NEWBIE;
-            case GENDER:
-                return tagValue == TagValue.MALE || tagValue == TagValue.FEMALE;
-            case SOCIALIZING:
-                return tagValue == TagValue.SOCIAL_FRIENDLY || tagValue == TagValue.GAME_ONLY
-                       || tagValue == TagValue.NO_CHAT;
-            default:
-                return false;
-        }
+        return switch (tagType) {
+            case PARTY_STYLE ->
+                    tagValue == TagValue.HARDCORE || tagValue == TagValue.CASUAL || tagValue == TagValue.SPEEDRUN
+                    || tagValue == TagValue.COMPLETIONIST;
+            case GAME_SKILL -> tagValue == TagValue.ROTTEN_WATER || tagValue == TagValue.STAGNANT_WATER
+                               || tagValue == TagValue.MUD_WATER || tagValue == TagValue.CLEAN_WATER
+                               || tagValue == TagValue.NEWBIE;
+            case GENDER -> tagValue == TagValue.MALE || tagValue == TagValue.FEMALE;
+            case SOCIALIZING -> tagValue == TagValue.SOCIAL_FRIENDLY || tagValue == TagValue.GAME_ONLY
+                                || tagValue == TagValue.NO_CHAT;
+        };
     }
 
     private List<GuildTag> createSampleGuildTags(Guild guild) {
