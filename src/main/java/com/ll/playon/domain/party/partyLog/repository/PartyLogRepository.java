@@ -9,5 +9,5 @@ import org.springframework.data.repository.query.Param;
 
 public interface PartyLogRepository extends JpaRepository<PartyLog, Long> {
     @Query("SELECT pl FROM PartyLog pl WHERE pl.partyMember.party.game = :gameId")
-    Page<PartyLog> findByPartyGameId(@Param("gameId") Long gameId, Pageable pageable);
+    Page<PartyLog> findByPartyGameId(@Param("gameId") Long gameId, Pageable logPageable);
 }

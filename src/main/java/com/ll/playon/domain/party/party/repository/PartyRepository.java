@@ -109,5 +109,5 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
     List<Party> findAllByPartyStatusOrderByPartyAtDescCreatedAtDesc(PartyStatus partyStatus, Pageable pageable);
 
     @Query("SELECT p FROM Party p WHERE p.game = :gameId")
-    Page<Party> findByGameId(@Param("gameId") Long gameId, Pageable pageable);
+    Page<Party> findByGameId(@Param("gameId") Long gameId, Pageable partyPageable);
 }
