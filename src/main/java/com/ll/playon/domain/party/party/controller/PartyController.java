@@ -47,7 +47,7 @@ public class PartyController {
     public RsData<PostPartyResponse> createParty(@RequestBody @Valid PostPartyRequest postPartyRequest) {
         // TODO : 추후 롤백
 //        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.findById(6L);
 
         return RsData.success(HttpStatus.CREATED, this.partyService.createParty(actor, postPartyRequest));
     }
@@ -66,18 +66,22 @@ public class PartyController {
         // TODO : 추후 롤백
 //        정책 고민 (회원만 조회 가능하게 할 것인지)
 //        Member actor = this.userContext.getActor();
+        Member actor = this.userContext.findById(5L);
+
         GlobalValidation.checkPageSize(pageSize);
 
         return RsData.success(HttpStatus.OK,
-                new PageDto<>(this.partyService.getAllParties(page, pageSize, orderBy, partyAt, getAllPartiesRequest)));
+                new PageDto<>(this.partyService.getAllFilteredParties(actor, page, pageSize, orderBy, partyAt,
+                        getAllPartiesRequest)));
     }
 
     @GetMapping("/main")
-    @Operation(summary = "파티 메인용 리스트 조회")
+    @Operation(summary = "메인용 파티 리스트 조회")
     public RsData<GetPartyMainResponse> getPartyMain(@RequestParam(defaultValue = "2") int limit) {
         // TODO : 추후 롤백
 //        정책 고민 (회원만 조회 가능하게 할 것인지)
 //        Member actor = this.userContext.getActor();
+        Member actor = this.userContext.findById(5L);
 
         return RsData.success(HttpStatus.OK, this.partyService.getPartyMain(limit));
     }

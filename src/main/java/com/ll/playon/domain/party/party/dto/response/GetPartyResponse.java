@@ -5,7 +5,6 @@ import com.ll.playon.domain.party.party.dto.PartyDetailTagDto;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
-import com.ll.playon.domain.party.party.type.PartyRole;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,9 +39,7 @@ public record GetPartyResponse(
                 party.getName(),
                 party.getDescription(),
                 party.getPartyAt(),
-                (int) memberDtos.stream()
-                        .filter(pm -> !pm.getPartyRole().equals(PartyRole.PENDING))
-                        .count(),
+                party.getTotal(),
                 memberDtos.stream()
                         .map(PartyDetailMemberDto::new)
                         .toList(),

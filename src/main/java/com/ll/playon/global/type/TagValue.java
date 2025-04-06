@@ -30,8 +30,7 @@ public enum TagValue {
     // 친목
     SOCIAL_FRIENDLY("친목 환영"),
     GAME_ONLY("게임만 하고 싶어요"),
-    NOC_CHAT("대화 안함");
-
+    NO_CHAT("대화 안함");
 
     private final String koreanValue;
 
