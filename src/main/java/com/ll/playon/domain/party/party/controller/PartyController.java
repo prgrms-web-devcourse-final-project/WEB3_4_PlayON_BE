@@ -87,7 +87,7 @@ public class PartyController {
         return RsData.success(HttpStatus.OK, this.partyService.getPartyResult(partyId));
     }
 
-    @GetMapping("/main")
+    @GetMapping("/main/pending")
     @Operation(summary = "메인용 진행 예정 리스트 조회")
     public RsData<GetPartyMainResponse> getPendingPartyMain(@RequestParam(defaultValue = "2") int limit) {
         // TODO : 추후 롤백
@@ -98,7 +98,7 @@ public class PartyController {
         return RsData.success(HttpStatus.OK, this.partyService.getPendingPartyMain(limit));
     }
 
-    @GetMapping("/logs/main")
+    @GetMapping("/main/completed")
     @Operation(summary = "메인용 종료된 파티 리스트 조회")
     public RsData<GetPartyMainResponse> getCompletedPartyMain(@RequestParam(defaultValue = "3") int limit) {
         // TODO : 추후 롤백
