@@ -155,4 +155,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
     List<Party> findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtAscCreatedAtDesc(PartyStatus partyStatus,
                                                                                     Pageable pageable);
+
+    List<Party> findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtDescCreatedAtDesc(PartyStatus partyStatus,
+                                                                                    Pageable pageable);
 }

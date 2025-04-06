@@ -123,12 +123,35 @@ public class PartyService {
         );
     }
 
-    // 파티 메인 조회 (limit 만큼)
-    public GetPartyMainResponse getPartyMain(int limit) {
+    // 메인용 진행 예정 파티 조회 (limit 만큼)
+    public GetPartyMainResponse getPendingPartyMain(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
 
         List<Party> parties = this.partyRepository.findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtAscCreatedAtDesc(
                 PartyStatus.PENDING,
+                pageable);
+
+        if (parties.isEmpty()) {
+            return new GetPartyMainResponse(Collections.emptyList());
+        }
+
+        List<Long> partyIds = parties.stream().map(Party::getId).toList();
+
+        return new GetPartyMainResponse(
+                this.mergePartyWithJoinData(
+                        parties,
+                        this.partyRepository.findPartyTagsByPartyIds(partyIds),
+                        this.partyRepository.findPartyMembersByPartyIds(partyIds)
+                )
+        );
+    }
+
+    // 메인용 종료된 파티 조회 (limit 만큼)
+    public GetPartyMainResponse getCompletedPartyMain(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+
+        List<Party> parties = this.partyRepository.findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtDescCreatedAtDesc(
+                PartyStatus.COMPLETED,
                 pageable);
 
         if (parties.isEmpty()) {
