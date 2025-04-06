@@ -127,8 +127,8 @@ public class PartyService {
     public GetPartyMainResponse getPartyMain(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
 
-        List<Party> parties = this.partyRepository.findAllByPartyStatusOrderByPartyAtDescCreatedAtDesc(
-                PartyStatus.COMPLETED,
+        List<Party> parties = this.partyRepository.findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtAscCreatedAtDesc(
+                PartyStatus.PENDING,
                 pageable);
 
         if (parties.isEmpty()) {
