@@ -44,7 +44,6 @@ public class GameControllerTest {
     @Autowired private GameRepository gameRepository;
     @Autowired private PartyRepository partyRepository;
     @Autowired private PartyLogRepository partyLogRepository;
-
     @Autowired private TestMemberHelper testMemberHelper;
 
     @MockitoBean
@@ -78,21 +77,20 @@ public class GameControllerTest {
     }
 
     private void setFakeRakingResponse() {
-        SteamSearchResponse fakeSteamRankingResponse = new SteamSearchResponse();
-        GameItem gameItem1 = new GameItem();
-        GameItem gameItem2 = new GameItem();
+        SteamSearchResponse fakeResponse = new SteamSearchResponse();
+        GameItem game1 = new GameItem();
+        GameItem game2 = new GameItem();
 
-        gameItem1.setName("Counter-Strike 2");
-        gameItem1.setLogo("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/header.jpg");
+        game1.setName("Counter-Strike 2");
+        game1.setLogo("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/header.jpg");
 
-        gameItem2.setName("Dota 2");
-        gameItem2.setLogo("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/header.jpg");
+        game2.setName("Dota 2");
+        game2.setLogo("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/header.jpg");
 
-        fakeSteamRankingResponse.setDesc("");
-        fakeSteamRankingResponse.setItems(List.of(gameItem1, gameItem2));
+        fakeResponse.setDesc("");
+        fakeResponse.setItems(List.of(game1, game2));
 
-        Mockito.when(mockSteamStoreClient.getGameRanking())
-                .thenReturn(fakeSteamRankingResponse);
+        Mockito.when(mockSteamStoreClient.getGameRanking()).thenReturn(fakeResponse);
     }
 
     @Test
@@ -138,18 +136,17 @@ public class GameControllerTest {
                 .andExpect(jsonPath("$.data.game.name").value(game.getName()))
                 .andExpect(jsonPath("$.data.partyList").isArray())
                 .andExpect(jsonPath("$.data.partyLogList").isArray());
-
     }
 
     @Test
     @DisplayName("존재하지 않는 게임 조회 실패")
-    void getGameDetailNotFound() throws Exception {
-        mvc.perform(get("/api/games/99999/details"))
+    void getGameDetailFailWhenGameNotFound() throws Exception {
+        mvc.perform(get("/api/games/{appid}/details", 99999))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @DisplayName("게임 목록 조회 - 성공")
+    @DisplayName("게임 목록 조회 성공")
     void getGameListSuccess() throws Exception {
         mvc.perform(get("/api/games/list"))
                 .andExpect(status().isOk())
@@ -158,16 +155,17 @@ public class GameControllerTest {
     }
 
     @Test
-    @DisplayName("게임 자동완성 검색 - 성공")
+    @DisplayName("게임 자동완성 검색 성공")
     void autoCompleteSuccess() throws Exception {
-        mvc.perform(get("/api/games/search").param("keyword", "Test"))
+        mvc.perform(get("/api/games/search")
+                        .param("keyword", "Test"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data[0].name").value("Test Game"));
     }
 
     @Test
-    @DisplayName("게임별 파티 목록 조회 - 성공")
+    @DisplayName("게임별 파티 목록 조회 성공")
     void getGamePartiesSuccess() throws Exception {
         Party party = partyRepository.save(Party.builder()
                 .game(game.getId())
@@ -185,14 +183,14 @@ public class GameControllerTest {
     }
 
     @Test
-    @DisplayName("게임별 파티 목록 조회 - 존재하지 않는 게임 ID")
+    @DisplayName("게임별 파티 목록 조회 실패 - 존재하지 않는 게임 ID")
     void getGamePartiesFailWhenGameNotFound() throws Exception {
         mvc.perform(get("/api/games/{appid}/party", 99999))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @DisplayName("게임별 파티 로그 조회 - 성공")
+    @DisplayName("게임별 파티 로그 조회 성공")
     void getGamePartyLogsSuccess() throws Exception {
         Party party = partyRepository.save(Party.builder()
                 .game(game.getId())
@@ -224,7 +222,7 @@ public class GameControllerTest {
     }
 
     @Test
-    @DisplayName("게임별 파티 로그 조회 - 존재하지 않는 게임 ID")
+    @DisplayName("게임별 파티 로그 조회 실패 - 존재하지 않는 게임 ID")
     void getGamePartyLogsFailWhenGameNotFound() throws Exception {
         mvc.perform(get("/api/games/{appid}/logs", 99999))
                 .andExpect(status().isNotFound());
