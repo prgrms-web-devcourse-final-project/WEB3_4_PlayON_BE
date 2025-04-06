@@ -17,6 +17,8 @@ public record PutGuildRequest(
         @Max(value = 100, message = "최대 인원은 100명 이하로 설정해주세요.")
         int maxMembers,
 
+        Long gameId,
+
         boolean isPublic,
 
         @NotBlank(message = "길드 대표 이미지는 필수입니다.")

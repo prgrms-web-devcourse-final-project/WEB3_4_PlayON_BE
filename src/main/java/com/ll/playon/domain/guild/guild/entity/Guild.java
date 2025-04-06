@@ -64,10 +64,11 @@ public class Guild extends BaseTime {
         this.description = "DELETED";
     }
 
-    public void updateFromRequest(PutGuildRequest request) {
+    public void updateFromRequest(PutGuildRequest request, SteamGame game) {
         this.name = request.name();
         this.description = request.description();
         this.maxMembers = request.maxMembers();
+        this.game = game;
         this.isPublic = request.isPublic();
         this.guildImg = request.guildImg();
     }

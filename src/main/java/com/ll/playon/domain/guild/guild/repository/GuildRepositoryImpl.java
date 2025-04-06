@@ -57,7 +57,6 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
                         .map(TagValue::valueOf)
                         .toList();
 
-                // guildTag 서브 alias
                 QGuildTag subTag = new QGuildTag("subTag");
 
                 builder.and(JPAExpressions.selectOne()
@@ -81,11 +80,11 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
 
         long total = Optional.ofNullable(
                 queryFactory
-                    .select(guild.id.countDistinct())
-                    .from(guild)
-                    .leftJoin(guild.guildTags, guildTag)
-                    .where(builder)
-                    .fetchOne()
+                        .select(guild.id.countDistinct())
+                        .from(guild)
+                        .leftJoin(guild.guildTags, guildTag)
+                        .where(builder)
+                        .fetchOne()
         ).orElse(0L);
 
         return new PageImpl<>(content, pageable, total);

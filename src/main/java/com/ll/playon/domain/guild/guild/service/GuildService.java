@@ -49,11 +49,9 @@ public class GuildService {
         SteamGame game = gameRepository.findById(request.gameId())
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
-        Guild guild = Guild.createFrom(request, owner, game);
-        guild = guildRepository.save(guild);
+        Guild guild = guildRepository.save(Guild.createFrom(request, owner, game));
 
-        List<GuildTag> guildTags = convertTags(request.tags(), guild);
-        guild.setGuildTags(guildTags);
+        guild.setGuildTags(convertTags(request.tags(), guild));
 
         GuildMember guildMember = GuildMember.builder()
                 .guild(guild)
@@ -76,7 +74,10 @@ public class GuildService {
             throw ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
 
-        guild.updateFromRequest(request);
+        SteamGame game = gameRepository.findById(request.gameId())
+                .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
+
+        guild.updateFromRequest(request, game);
         guild.getGuildTags().clear();
 
         List<GuildTag> guildTags = convertTags(request.tags(), guild);
@@ -125,9 +126,7 @@ public class GuildService {
 
     @Transactional(readOnly = true)
     public PageDto<GetGuildListResponse> searchGuilds(int page, int pageSize, String sort, GetGuildListRequest request) {
-
         Pageable pageable = PageRequest.of(page, pageSize);
-
 
         Page<Guild> guilds = guildRepository.searchGuilds(request, pageable, sort);
 
