@@ -31,7 +31,7 @@ public record PutPartyResponse(
                 party.getGame(),
                 party.getName(),
                 party.getDescription(),
-                party.isPublic(),
+                party.isPublicFlag(),
                 party.getMinimum(),
                 party.getMaximum(),
                 PartyTagResponse.fromList(party.getPartyTags())

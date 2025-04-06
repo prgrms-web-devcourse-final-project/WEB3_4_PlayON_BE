@@ -20,7 +20,8 @@ import lombok.*;
 @Table(
         name = "party_member",
         indexes = {
-                @Index(name = "idx_party_member_party_id_role", columnList = "party_id, partyRole")
+                @Index(name = "idx_party_member_party_id_role", columnList = "party_id, party_role"),
+                @Index(name = "idx_party_member_member_id", columnList = "member_id")
         }
 )
 @Getter
@@ -62,8 +63,7 @@ public class PartyMember extends BaseTime {
 
     public void delete() {
         if (this.party != null) {
-            this.party.getPartyMembers().remove(this);
-            this.party = null;
+            this.party.deletePartyMember(this);
         }
     }
 }
