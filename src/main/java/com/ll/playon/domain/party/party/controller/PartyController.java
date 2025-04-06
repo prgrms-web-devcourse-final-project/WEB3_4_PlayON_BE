@@ -8,6 +8,7 @@ import com.ll.playon.domain.party.party.dto.response.GetAllPendingMemberResponse
 import com.ll.playon.domain.party.party.dto.response.GetPartyDetailResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyMainResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyResponse;
+import com.ll.playon.domain.party.party.dto.response.GetPartyResultResponse;
 import com.ll.playon.domain.party.party.dto.response.PostPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.PutPartyResponse;
 import com.ll.playon.domain.party.party.service.PartyService;
@@ -75,9 +76,20 @@ public class PartyController {
                         getAllPartiesRequest)));
     }
 
+    @GetMapping("/{partyId}/result")
+    @Operation(summary = "파티 결과 조회")
+    public RsData<GetPartyResultResponse> getPartyResult(@PathVariable long partyId) {
+        // TODO : 추후 롤백
+//        정책 고민 (회원만 조회 가능하게 할 것인지)
+//        Member actor = this.userContext.getActor();
+//        Member actor = this.userContext.findById(5L);
+
+        return RsData.success(HttpStatus.OK, this.partyService.getPartyResult(partyId));
+    }
+
     @GetMapping("/main")
     @Operation(summary = "메인용 진행 예정 리스트 조회")
-    public RsData<GetPartyMainResponse> getPartyMain(@RequestParam(defaultValue = "2") int limit) {
+    public RsData<GetPartyMainResponse> getPendingPartyMain(@RequestParam(defaultValue = "2") int limit) {
         // TODO : 추후 롤백
 //        정책 고민 (회원만 조회 가능하게 할 것인지)
 //        Member actor = this.userContext.getActor();
@@ -88,7 +100,7 @@ public class PartyController {
 
     @GetMapping("/logs/main")
     @Operation(summary = "메인용 종료된 파티 리스트 조회")
-    public RsData<GetPartyMainResponse> GetPartyLogMain(@RequestParam(defaultValue = "3") int limit) {
+    public RsData<GetPartyMainResponse> getCompletedPartyMain(@RequestParam(defaultValue = "3") int limit) {
         // TODO : 추후 롤백
 //        정책 고민 (회원만 조회 가능하게 할 것인지)
 //        Member actor = this.userContext.getActor();

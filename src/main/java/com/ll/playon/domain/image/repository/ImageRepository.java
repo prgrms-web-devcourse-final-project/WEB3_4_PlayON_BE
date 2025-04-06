@@ -11,6 +11,8 @@ import org.springframework.data.repository.query.Param;
 public interface ImageRepository extends JpaRepository<Image, Long> {
     List<Image> findAllByImageTypeAndReferenceId(ImageType imageType, long referenceId);
 
+    Image findByImageTypeAndReferenceId(ImageType imageType, long referenceId);
+
     long deleteByImageTypeAndReferenceId(ImageType imageType, long referenceId);
 
     @Modifying
