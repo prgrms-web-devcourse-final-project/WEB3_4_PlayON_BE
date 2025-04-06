@@ -152,4 +152,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
     @Query("SELECT p FROM Party p WHERE p.game = :gameId")
     Page<Party> findByGameId(@Param("gameId") Long gameId, Pageable partyPageable);
+
+    List<Party> findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtAscCreatedAtDesc(PartyStatus partyStatus,
+                                                                                    Pageable pageable);
 }
