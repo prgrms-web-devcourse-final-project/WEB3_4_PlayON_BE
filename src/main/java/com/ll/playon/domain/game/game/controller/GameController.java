@@ -1,6 +1,9 @@
 package com.ll.playon.domain.game.game.controller;
 
+import com.ll.playon.domain.game.game.dto.request.GameSearchCondition;
+import com.ll.playon.domain.game.game.dto.response.GameAutoCompleteResponse;
 import com.ll.playon.domain.game.game.dto.response.GameDetailWithPartyResponse;
+import com.ll.playon.domain.game.game.dto.response.GameSummaryResponse;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.dto.GameListResponse;
 import com.ll.playon.domain.game.game.service.GameService;
@@ -9,6 +12,7 @@ import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.steamAPI.SteamAPI;
 import com.ll.playon.global.security.UserContext;
+import com.ll.playon.standard.page.dto.PageDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -58,4 +62,18 @@ public class GameController {
     ) {
         return RsData.success(HttpStatus.OK, gameService.getGameDetailWithParties(appid, partyPageable, logPageable));
     }
+
+    @GetMapping("/list")
+    public RsData<PageDto<GameSummaryResponse>> getFilteredGames(
+            @ModelAttribute GameSearchCondition condition,
+            @PageableDefault(size = 12) Pageable pageable
+    ) {
+        return RsData.success(HttpStatus.OK, gameService.searchGames(condition, pageable));
+    }
+
+    @GetMapping("/search")
+    public RsData<List<GameAutoCompleteResponse>> searchGameByKeyword(@RequestParam String keyword) {
+        return RsData.success(HttpStatus.OK, gameService.autoCompleteGames(keyword));
+    }
+
 }

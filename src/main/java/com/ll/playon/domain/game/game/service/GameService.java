@@ -1,7 +1,10 @@
 package com.ll.playon.domain.game.game.service;
 
 import com.ll.playon.domain.game.game.dto.GameListResponse;
+import com.ll.playon.domain.game.game.dto.request.GameSearchCondition;
+import com.ll.playon.domain.game.game.dto.response.GameAutoCompleteResponse;
 import com.ll.playon.domain.game.game.dto.response.GameDetailWithPartyResponse;
+import com.ll.playon.domain.game.game.dto.response.GameSummaryResponse;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
@@ -15,6 +18,7 @@ import com.ll.playon.domain.party.partyLog.entity.PartyLog;
 import com.ll.playon.domain.party.partyLog.repository.PartyLogRepository;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.steamAPI.SteamAPI;
+import com.ll.playon.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -123,6 +127,20 @@ public class GameService {
                 partyPage.getContent(),
                 logPage.getContent()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public PageDto<GameSummaryResponse> searchGames(GameSearchCondition condition, Pageable pageable) {
+        Page<SteamGame> result = gameRepository.searchGames(condition, pageable);
+        return new PageDto<>(result.map(GameSummaryResponse::from));
+    }
+
+    @Transactional(readOnly = true)
+    public List<GameAutoCompleteResponse> autoCompleteGames(String keyword) {
+        return gameRepository.searchByGameName(keyword)
+                .stream()
+                .map(GameAutoCompleteResponse::from)
+                .toList();
     }
 
 }
