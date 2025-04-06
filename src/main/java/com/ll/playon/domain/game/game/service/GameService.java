@@ -90,4 +90,8 @@ public class GameService {
         // 장르 필터링 후 리스트 완성
         return makeGameListWithGenre(gameRepository.findAllByAppidIn(notOwnedGames), member.getPreferredGenre());
     }
+
+    public void updateDB(Long appId) {
+
+    }
 }

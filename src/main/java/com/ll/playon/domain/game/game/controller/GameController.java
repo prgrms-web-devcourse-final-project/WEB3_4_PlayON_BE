@@ -1,10 +1,12 @@
 package com.ll.playon.domain.game.game.controller;
 
+import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.dto.GameListResponse;
 import com.ll.playon.domain.game.game.service.GameService;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
+import com.ll.playon.global.steamAPI.SteamAPI;
 import com.ll.playon.global.security.UserContext;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "GameController")
 public class GameController {
+    private final SteamAPI steamAPI;
 
     private final GameService gameService;
     private final UserContext userContext;
@@ -35,5 +39,11 @@ public class GameController {
         Member actor = userContext.getActor();
         if(ObjectUtils.isEmpty(actor)) throw ErrorCode.UNAUTHORIZED.throwServiceException();
         return RsData.success(HttpStatus.OK, gameService.getGameRecommendations(actor));
+    }
+
+    // 테스트용 엔드포인트
+    @GetMapping("/{appid}")
+    public RsData<SteamGame> getGameDetail(@PathVariable Long appid) {
+        return RsData.success(HttpStatus.OK,steamAPI.fetchOrCreateGameDetail(appid));
     }
 }

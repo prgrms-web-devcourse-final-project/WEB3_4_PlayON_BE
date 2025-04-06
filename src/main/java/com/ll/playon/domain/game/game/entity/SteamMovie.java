@@ -1,5 +1,6 @@
 package com.ll.playon.domain.game.game.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -19,5 +20,6 @@ public class SteamMovie extends BaseTime {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "game_id")
+    @JsonIgnore
     private SteamGame game;
 }
