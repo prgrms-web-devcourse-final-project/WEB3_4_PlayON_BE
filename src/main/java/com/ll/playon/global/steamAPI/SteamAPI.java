@@ -10,10 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -78,5 +75,23 @@ public class SteamAPI {
 
         Optional<SteamGenre> genre = genreRepository.findByName(preferredGenre);
         return genre.orElseGet(() -> genreRepository.save(SteamGenre.builder().name(preferredGenre).build()));
+    }
+
+    public List<Long> getSteamRanking() {
+        final List<Long> result = new ArrayList<>();
+
+        final List<GameItem> list = steamStoreClient.getGameRanking().getItems().stream().limit(10).toList();
+
+        for (GameItem game : list) {
+            String img = game.getLogo();
+
+            // img 에서 appId 파싱
+            int startIndex = img.indexOf("/apps/") + 6;
+            int endIndex = img.indexOf("/", startIndex);
+            String appId = img.substring(startIndex, endIndex);
+
+            result.add(Long.valueOf(appId));
+        }
+        return result;
     }
 }

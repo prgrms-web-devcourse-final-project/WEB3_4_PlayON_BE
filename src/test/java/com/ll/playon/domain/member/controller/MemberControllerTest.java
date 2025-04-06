@@ -1,7 +1,5 @@
 package com.ll.playon.domain.member.controller;
 
-import com.ll.playon.domain.game.game.entity.SteamGame;
-import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.member.TestMemberHelper;
 import com.ll.playon.domain.member.entity.Member;
@@ -10,7 +8,6 @@ import com.ll.playon.domain.member.entity.enums.PlayStyle;
 import com.ll.playon.domain.member.entity.enums.SkillLevel;
 import com.ll.playon.domain.member.service.MemberService;
 import jakarta.servlet.http.Cookie;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +21,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,34 +48,6 @@ public class MemberControllerTest {
 
     @Autowired
     private GameRepository gameRepository;
-
-    @BeforeEach
-    void setUp() {
-        SteamGenre strategy = SteamGenre.builder().name("Strategy").build();
-        SteamGenre moba = SteamGenre.builder().name("MOBA").build();
-        SteamGenre action = SteamGenre.builder().name("Action").build();
-        SteamGenre fps = SteamGenre.builder().name("FPS").build();
-
-        SteamGame game1 = SteamGame.builder()
-                .appid(730L)
-                .name("CS2")
-                .headerImage("a.png")
-                .genres(List.of(action, fps))
-                .build();
-        action.getGames().add(game1);
-        fps.getGames().add(game1);
-
-        SteamGame game2 = SteamGame.builder()
-                .appid(570L)
-                .name("Dota 2")
-                .headerImage("a.png")
-                .genres(List.of(strategy, moba))
-                .build();
-        strategy.getGames().add(game2);
-        moba.getGames().add(game2);
-
-        gameRepository.saveAll(List.of(game1, game2));
-    }
 
     @Test
     @DisplayName("일반 회원 회원가입")

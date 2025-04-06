@@ -1,7 +1,9 @@
 package com.ll.playon.domain.member.service;
 
-import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.dto.GameListResponse;
+import com.ll.playon.domain.game.game.entity.SteamGame;
+import com.ll.playon.domain.game.game.entity.SteamGenre;
+import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.service.GameService;
 import com.ll.playon.domain.member.dto.GetMembersResponse;
 import com.ll.playon.domain.member.dto.MemberDetailDto;
@@ -15,15 +17,16 @@ import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +39,7 @@ public class MemberService {
     private final MemberSteamDataRepository memberSteamDataRepository;
     private final PasswordEncoder passwordEncoder;
     private final GameService gameService;
+    private final GameRepository gameRepository;
 
     public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
@@ -234,7 +238,8 @@ public class MemberService {
     }
 
     private List<GameListResponse> getMemberOwnedGamesDto(List<MemberSteamData> gamesList) {
-        return gameService.getGameList(gamesList.stream().map(MemberSteamData::getAppId).toList());
+        final List<SteamGame> gameList = gameRepository.findAllByAppidIn(gamesList.stream().map(MemberSteamData::getAppId).toList()); // DB 에 없는 게임은 제외됨
+        return gameService.makeGameListWithoutGenre(gameList);
     }
 
     public List<GetMembersResponse> findByNickname(String nickname) {
