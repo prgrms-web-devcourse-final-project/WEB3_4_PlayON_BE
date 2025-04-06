@@ -30,7 +30,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Table(
         name = "party",
         indexes = {
-                @Index(name = "idx_party_status_party_at_created_at", columnList = "partyStatus, partyAt, createdAt")
+                @Index(name = "idx_party_status_public_party_at_created_at", columnList = "partyStatus, is_public, party_at, created_at"),
+                @Index(name = "idx_party_status_public_party_at_id", columnList = "partyStatus, is_public, party_at, id"),
         }
 )
 @Getter
@@ -59,7 +60,7 @@ public class Party {
     private LocalDateTime partyAt;
 
     @Column(name = "is_public", nullable = false)
-    private boolean isPublic;
+    private boolean publicFlag;
 
     @Column(nullable = false)
     private long hit;
@@ -69,6 +70,9 @@ public class Party {
 
     @Column(nullable = false)
     private int maximum;
+
+    @Column(nullable = false)
+    private int total;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -91,21 +95,29 @@ public class Party {
     // TODO : 파티 룸
 
     @Builder
-    public Party(Long game, String name, String description, LocalDateTime partyAt, boolean isPublic, int minimum,
+    public Party(Long game, String name, String description, LocalDateTime partyAt, boolean publicFlag, int minimum,
                  int maximum) {
         this.game = game;
         this.name = name;
         this.description = description != null ? description : "";
         this.partyAt = partyAt;
-        this.isPublic = isPublic;
+        this.publicFlag = publicFlag;
         this.hit = 0;
         this.minimum = minimum;
         this.maximum = maximum;
+        this.total = 0;
         this.partyStatus = PartyStatus.PENDING;
     }
 
     public void addPartyMember(PartyMember partyMember) {
         this.partyMembers.add(partyMember);
         partyMember.setParty(this);
+        this.total += 1;
+    }
+
+    public void deletePartyMember(PartyMember partyMember) {
+        this.partyMembers.remove(partyMember);
+        partyMember.setParty(null);
+        this.total -= 1;
     }
 }

@@ -29,6 +29,7 @@ import com.ll.playon.global.annotation.PartyOwnerOnly;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.type.TagValue;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -66,36 +67,59 @@ public class PartyService {
         return new PostPartyResponse(this.partyRepository.save(party));
     }
 
-    // 파티 검색 및 조회
+    // 파티 검색 및 조회 (조건 반영)
     @Transactional(readOnly = true)
-    public Page<GetPartyResponse> getAllParties(int page, int pageSize, String orderBy, LocalDateTime partyAt,
-                                                GetAllPartiesRequest request) {
+    public Page<GetPartyResponse> getAllFilteredParties(Member actor, int page, int pageSize, String orderBy,
+                                                        LocalDateTime partyAt,
+                                                        GetAllPartiesRequest request) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, PartySortUtils.getSort(orderBy));
 
-        partyAt = partyAt == null ? LocalDateTime.now() : partyAt;
+        return actor == null
+                ? this.getPublicParties(pageable, partyAt, request)
+                : this.getPartiesByLoginUser(actor, pageable, partyAt, request);
+    }
 
+    // 공개 파티들 조회
+    private Page<GetPartyResponse> getPublicParties(Pageable pageable, LocalDateTime partyAt,
+                                                    GetAllPartiesRequest request) {
+        return getPartiesByConditions(Collections.emptyList(), pageable, partyAt, request);
+    }
+
+    // 내 파티 우선 조회 + 공개 파티들 조회
+    private Page<GetPartyResponse> getPartiesByLoginUser(Member actor, Pageable pageable, LocalDateTime partyAt,
+                                                         GetAllPartiesRequest request) {
+        List<Long> myPartyIds = this.partyRepository.findPartyIdsByMember(actor.getId(), partyAt);
+
+        return getPartiesByConditions(myPartyIds, pageable, partyAt, request);
+    }
+
+    // 최종 파티 페이징 리스트 조회
+    private Page<GetPartyResponse> getPartiesByConditions(List<Long> excludedIds, Pageable pageable,
+                                                          LocalDateTime partyAt, GetAllPartiesRequest request) {
         List<String> tagValues = request.tags().stream()
                 .map(tag -> TagValue.fromValue(tag.value()).name())
                 .toList();
 
-        Page<Long> partyIds = tagValues.isEmpty()
-                ? this.partyRepository.findPartyIdsWithoutFilter(partyAt, pageable)
-                : this.partyRepository.findPartyIdsWithFilter(partyAt, tagValues, tagValues.size(), pageable);
+        long tagSize = tagValues.size();
 
-        if (partyIds.isEmpty()) {
-            return Page.empty(pageable);
-        }
+        // 내 파티 ID 제외 + 공개 파티 ID 조회
+        Page<Long> publicPartyIds = this.partyRepository.findPublicPartyIdsExcludingMyParties(excludedIds,
+                partyAt, tagValues, tagSize, pageable);
 
-        List<Party> parties = this.partyRepository.findPartiesByIds(partyIds.getContent());
+        // 최종 파티 ID 페이징 리스트
+        List<Long> mergedPartyIds = new ArrayList<>(excludedIds);
+        mergedPartyIds.addAll(publicPartyIds.getContent());
+
+        List<Party> parties = this.partyRepository.findPartiesByIds(mergedPartyIds);
+        List<PartyMember> partyMembers = this.partyRepository.findPartyMembersByPartyIds(mergedPartyIds);
+        List<PartyTag> partyTags = this.partyRepository.findPartyTagsByPartyIds(mergedPartyIds);
 
         return new PageImpl<>(
                 this.mergePartyWithJoinData(
-                        parties,
-                        this.partyRepository.findPartyTagsByPartyIds(partyIds.getContent()),
-                        this.partyRepository.findPartyMembersByPartyIds(partyIds.getContent())
+                        parties, partyTags, partyMembers
                 ),
                 pageable,
-                partyIds.getTotalElements()
+                publicPartyIds.getTotalElements()
         );
     }
 
@@ -104,7 +128,7 @@ public class PartyService {
         Pageable pageable = PageRequest.of(0, limit);
 
         List<Party> parties = this.partyRepository.findAllByPartyStatusOrderByPartyAtDescCreatedAtDesc(
-                PartyStatus.PENDING,
+                PartyStatus.COMPLETED,
                 pageable);
 
         if (parties.isEmpty()) {
@@ -304,7 +328,7 @@ public class PartyService {
         party.setName(request.name());
         party.setDescription(request.description() != null ? request.description() : "");
         party.setPartyAt(request.partyAt());
-        party.setPublic(request.isPublic());
+        party.setPublicFlag(request.isPublic());
         party.setMinimum(request.minimum());
         party.setMaximum(request.maximum());
         party.setGame(request.game());

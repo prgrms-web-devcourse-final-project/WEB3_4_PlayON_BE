@@ -11,7 +11,7 @@ public class PartyMapper {
                 .name(postPartyRequest.name())
                 .description(postPartyRequest.description())
                 .partyAt(postPartyRequest.partyAt())
-                .isPublic(postPartyRequest.isPublic())
+                .publicFlag(postPartyRequest.isPublic())
                 .minimum(postPartyRequest.minimum())
                 .maximum(postPartyRequest.maximum())
                 .build();
