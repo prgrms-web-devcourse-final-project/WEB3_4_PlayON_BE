@@ -76,14 +76,24 @@ public class PartyController {
     }
 
     @GetMapping("/main")
-    @Operation(summary = "메인용 파티 리스트 조회")
+    @Operation(summary = "메인용 진행 예정 리스트 조회")
     public RsData<GetPartyMainResponse> getPartyMain(@RequestParam(defaultValue = "2") int limit) {
         // TODO : 추후 롤백
 //        정책 고민 (회원만 조회 가능하게 할 것인지)
 //        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+//        Member actor = this.userContext.findById(5L);
 
-        return RsData.success(HttpStatus.OK, this.partyService.getPartyMain(limit));
+        return RsData.success(HttpStatus.OK, this.partyService.getPendingPartyMain(limit));
+    }
+
+    @GetMapping("/logs/main")
+    @Operation(summary = "메인용 종료된 파티 리스트 조회")
+    public RsData<GetPartyMainResponse> GetPartyLogMain(@RequestParam(defaultValue = "3") int limit) {
+        // TODO : 추후 롤백
+//        정책 고민 (회원만 조회 가능하게 할 것인지)
+//        Member actor = this.userContext.getActor();
+
+        return RsData.success(HttpStatus.OK, this.partyService.getCompletedPartyMain(limit));
     }
 
     @GetMapping("/{partyId}")
