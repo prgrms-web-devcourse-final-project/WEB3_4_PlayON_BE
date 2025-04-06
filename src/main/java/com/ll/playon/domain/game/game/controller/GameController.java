@@ -4,6 +4,7 @@ import com.ll.playon.domain.game.game.dto.request.GameSearchCondition;
 import com.ll.playon.domain.game.game.dto.response.GameAutoCompleteResponse;
 import com.ll.playon.domain.game.game.dto.response.GameDetailWithPartyResponse;
 import com.ll.playon.domain.game.game.dto.response.GameSummaryResponse;
+import com.ll.playon.domain.game.game.dto.response.PartySummaryResponse;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.dto.GameListResponse;
 import com.ll.playon.domain.game.game.service.GameService;
@@ -74,6 +75,14 @@ public class GameController {
     @GetMapping("/search")
     public RsData<List<GameAutoCompleteResponse>> searchGameByKeyword(@RequestParam String keyword) {
         return RsData.success(HttpStatus.OK, gameService.autoCompleteGames(keyword));
+    }
+
+    @GetMapping("/{appid}/party")
+    public RsData<PageDto<PartySummaryResponse>> getGameParties(
+            @PathVariable Long appid,
+            @PageableDefault(size = 12, sort = "partyAt") Pageable pageable
+    ) {
+        return RsData.success(HttpStatus.OK, gameService.getGameParties(appid, pageable));
     }
 
 }

@@ -5,6 +5,7 @@ import com.ll.playon.domain.game.game.dto.request.GameSearchCondition;
 import com.ll.playon.domain.game.game.dto.response.GameAutoCompleteResponse;
 import com.ll.playon.domain.game.game.dto.response.GameDetailWithPartyResponse;
 import com.ll.playon.domain.game.game.dto.response.GameSummaryResponse;
+import com.ll.playon.domain.game.game.dto.response.PartySummaryResponse;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
@@ -142,5 +143,15 @@ public class GameService {
                 .map(GameAutoCompleteResponse::from)
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public PageDto<PartySummaryResponse> getGameParties(Long appid, Pageable pageable) {
+        SteamGame game = gameRepository.findSteamGameByAppid(appid)
+                .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
+
+        Page<Party> page = partyRepository.findByGameId(game.getId(), pageable);
+        return new PageDto<>(page.map(PartySummaryResponse::from));
+    }
+
 
 }
