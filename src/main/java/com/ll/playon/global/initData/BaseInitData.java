@@ -142,7 +142,11 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleGuilds() {
-        if (guildRepository.count() != 0) {
+        if (gameRepository.count() == 0) {
+            return;
+        }
+
+        if(guildRepository.count() != 0) {
             return;
         }
 
