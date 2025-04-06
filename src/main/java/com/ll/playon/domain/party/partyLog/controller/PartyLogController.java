@@ -3,6 +3,7 @@ package com.ll.playon.domain.party.partyLog.controller;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.party.partyLog.dto.request.PostPartyLogRequest;
 import com.ll.playon.domain.party.partyLog.dto.request.PutPartyLogRequest;
+import com.ll.playon.domain.party.partyLog.dto.response.GetAllPartyLogResponse;
 import com.ll.playon.domain.party.partyLog.dto.response.PartyLogResponse;
 import com.ll.playon.domain.party.partyLog.service.PartyLogService;
 import com.ll.playon.global.response.RsData;
@@ -13,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -49,6 +51,15 @@ public class PartyLogController {
         Member actor = this.userContext.findById(5L);
 
         this.partyLogService.saveImageUrl(actor, partyId, logId, url);
+    }
+
+    @GetMapping("/party/{partyId}")
+    @Operation(summary = "파티의 모든 파티 로그 조회")
+    public RsData<GetAllPartyLogResponse> getAllPartyLogs(@PathVariable long partyId) {
+        // TODO : 추후 롤백
+//        Member actor = this.userContext.getActor();
+
+        return RsData.success(HttpStatus.OK, this.partyLogService.getAllPartyLogs(partyId));
     }
 
     @PutMapping("/{logId}/party/{partyId}")

@@ -3,15 +3,17 @@ package com.ll.playon.standard.util;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ll.playon.global.app.AppConfig;
+import com.ll.playon.standard.time.dto.TotalPlayTimeDto;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import java.io.Serializable;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.Map;
+import javax.crypto.SecretKey;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.crypto.SecretKey;
-import java.io.Serializable;
-import java.util.Map;
-import java.util.Date;
 
 @Slf4j
 public class Ut {
@@ -25,7 +27,8 @@ public class Ut {
 
         @SneakyThrows
         public static Map<String, Object> toMap(String jsonStr) {
-            return om.readValue(jsonStr, new TypeReference<Map<String, Object>>() {});
+            return om.readValue(jsonStr, new TypeReference<Map<String, Object>>() {
+            });
         }
     }
 
@@ -47,7 +50,7 @@ public class Ut {
         public static Map<String, Object> payload(String secret, String accessTokenStr) {
             SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes());
 
-            try{
+            try {
                 return Jwts
                         .parserBuilder()
                         .setSigningKey(secretKey)
@@ -57,6 +60,18 @@ public class Ut {
             } catch (Exception e) {
                 return null;
             }
+        }
+    }
+
+    public static class Time {
+        public static TotalPlayTimeDto getTotalPlayTime(LocalDateTime startAt, LocalDateTime endAt) {
+            Duration duration = Duration.between(startAt, endAt);
+
+            return new TotalPlayTimeDto(
+                    duration.toHours(),
+                    duration.toMinutes() % 60,
+                    duration.toSeconds() % 60
+            );
         }
     }
 }

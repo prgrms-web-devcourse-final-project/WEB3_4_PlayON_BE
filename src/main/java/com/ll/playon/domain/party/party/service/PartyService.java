@@ -9,9 +9,11 @@ import com.ll.playon.domain.party.party.dto.request.GetAllPartiesRequest;
 import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
 import com.ll.playon.domain.party.party.dto.request.PutPartyRequest;
 import com.ll.playon.domain.party.party.dto.response.GetAllPendingMemberResponse;
+import com.ll.playon.domain.party.party.dto.response.GetCompletedPartyDto;
 import com.ll.playon.domain.party.party.dto.response.GetPartyDetailResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyMainResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyResponse;
+import com.ll.playon.domain.party.party.dto.response.GetPartyResultResponse;
 import com.ll.playon.domain.party.party.dto.response.PostPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.PutPartyResponse;
 import com.ll.playon.domain.party.party.entity.Party;
@@ -25,12 +27,18 @@ import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.party.party.type.PartyStatus;
 import com.ll.playon.domain.party.party.util.PartySortUtils;
 import com.ll.playon.domain.party.party.validation.PartyMemberValidation;
+import com.ll.playon.domain.party.party.validation.PartyValidation;
+import com.ll.playon.domain.party.partyLog.dto.response.GetAllPartyLogResponse;
+import com.ll.playon.domain.party.partyLog.service.PartyLogService;
 import com.ll.playon.global.annotation.PartyOwnerOnly;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.type.TagValue;
+import com.ll.playon.standard.time.dto.TotalPlayTimeDto;
+import com.ll.playon.standard.util.Ut;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,6 +56,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PartyService {
     private final PartyTagService partyTagService;
+    private final PartyLogService partyLogService;
     private final MemberService memberService;
     private final PartyRepository partyRepository;
 
@@ -123,7 +132,40 @@ public class PartyService {
         );
     }
 
+    // 파티 결과창 조회
+    @Transactional(readOnly = true)
+    public GetPartyResultResponse getPartyResult(long partyId) {
+        Party party = this.getParty(partyId);
+
+        PartyValidation.checkIsPartyClosed(party);
+
+        List<PartyMember> partyMembers = party.getPartyMembers();
+
+        PartyMember mvp = partyMembers.stream()
+                .filter(pm -> pm.getMvpPoint() > 0)
+                .max(Comparator.comparingInt(PartyMember::getMvpPoint))
+                .orElseGet(() -> this.getPartyOwner(party));
+
+        TotalPlayTimeDto totalPlayTime = Ut.Time.getTotalPlayTime(party.getPartyAt(), party.getEndedAt());
+
+        List<PartyDetailMemberDto> partyMemberDtos = partyMembers.stream()
+                .map(PartyDetailMemberDto::new)
+                .toList();
+
+        List<PartyDetailTagDto> partyTagDtos = party.getPartyTags().stream()
+                .map(PartyDetailTagDto::new)
+                .toList();
+
+        GetCompletedPartyDto completedPartyDto = new GetCompletedPartyDto(party, mvp, totalPlayTime, partyMemberDtos,
+                partyTagDtos);
+
+        GetAllPartyLogResponse partyLogs = this.partyLogService.getAllPartyLogs(partyId);
+
+        return new GetPartyResultResponse(completedPartyDto, partyLogs);
+    }
+
     // 메인용 진행 예정 파티 조회 (limit 만큼)
+    @Transactional(readOnly = true)
     public GetPartyMainResponse getPendingPartyMain(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
 
@@ -147,6 +189,7 @@ public class PartyService {
     }
 
     // 메인용 종료된 파티 조회 (limit 만큼)
+    @Transactional(readOnly = true)
     public GetPartyMainResponse getCompletedPartyMain(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
 

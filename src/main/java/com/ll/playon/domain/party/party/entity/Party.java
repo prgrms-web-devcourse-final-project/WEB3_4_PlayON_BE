@@ -59,6 +59,9 @@ public class Party {
     @Column(nullable = false)
     private LocalDateTime partyAt;
 
+    @Column
+    private LocalDateTime endedAt;
+
     @Column(name = "is_public", nullable = false)
     private boolean publicFlag;
 
@@ -119,5 +122,9 @@ public class Party {
         this.partyMembers.remove(partyMember);
         partyMember.setParty(null);
         this.total -= 1;
+    }
+
+    public void closeParTy() {
+        this.endedAt = LocalDateTime.now();
     }
 }
