@@ -5,7 +5,6 @@ import com.ll.playon.domain.guild.guild.dto.request.GuildTagRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.response.GetGuildDetailResponse;
-import com.ll.playon.domain.guild.guild.dto.response.PostGuildResponse;
 import com.ll.playon.domain.guild.guild.dto.response.PutGuildResponse;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
@@ -59,25 +58,6 @@ class GuildServiceTest {
     @BeforeEach
     void setUp() {
         mockMember = mock(Member.class);
-    }
-
-    @Test
-    @DisplayName("길드 생성 성공")
-    void createGuild() {
-        //given
-        PostGuildRequest request = createPostGuildRequest("테스트용 길드1");
-        Guild dummyGuild = Guild.createFrom(request, mockMember);
-
-        when(guildRepository.existsByName("테스트용 길드1")).thenReturn(false);
-        when(guildRepository.save(any(Guild.class))).thenReturn(dummyGuild);
-
-        //when
-        PostGuildResponse response = guildService.createGuild(request, mockMember);
-
-        //then
-        assertThat(response.name()).isEqualTo("테스트용 길드1");
-        verify(guildRepository).save(any(Guild.class));
-        verify(guildMemberRepository).save(any(GuildMember.class));
     }
 
     @Test

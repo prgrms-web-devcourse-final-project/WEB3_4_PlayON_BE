@@ -8,6 +8,7 @@ import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,7 +26,7 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Guild> searchGuilds(GetGuildListRequest req, Pageable pageable) {
+    public Page<Guild> searchGuilds(GetGuildListRequest req, Pageable pageable, String sort) {
         QGuild guild = QGuild.guild;
         QGuildTag guildTag = QGuildTag.guildTag;
 
@@ -34,36 +35,37 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
                 .and(guild.isPublic.isTrue());   // 비공개 길드 제외
 
         // 이름 검색
-        if (req.name() != null && !req.name().isBlank()) {
-            builder.and(guild.name.containsIgnoreCase(req.name()));
+        if (req.getName() != null && !req.getName().isBlank()) {
+            builder.and(guild.name.containsIgnoreCase(req.getName()));
         }
 
         // 게임 필터
-        if (req.gameIds() != null && !req.gameIds().isEmpty()) {
-            builder.and(guild.game.in(req.gameIds()));
+        if (req.getGameIds() != null && !req.getGameIds().isEmpty()) {
+            builder.and(guild.game.id.in(req.getGameIds()));
         }
 
         // 태그 필터
-        if (req.tagFilters() != null && !req.tagFilters().isEmpty()) {
-            for (Map.Entry<String, List<String>> entry : req.tagFilters().entrySet()) {
+        if (req.getTags() != null && !req.getTags().isEmpty()) {
+            for (Map.Entry<String, List<String>> entry : req.getTags().entrySet()) {
                 String typeKey = entry.getKey();
                 List<String> values = entry.getValue();
 
-                // ALL 해당 태그 무시
                 if (values.contains("ALL")) continue;
 
                 TagType tagType = TagType.valueOf(typeKey);
-
                 List<TagValue> tagValues = values.stream()
                         .map(TagValue::valueOf)
                         .toList();
 
-                BooleanBuilder tagCondition = new BooleanBuilder();
-                for (TagValue tagValue : tagValues) {
-                    tagCondition.or(guildTag.type.eq(tagType).and(guildTag.value.eq(tagValue)));
-                }
+                // guildTag 서브 alias
+                QGuildTag subTag = new QGuildTag("subTag");
 
-                builder.and(tagCondition);
+                builder.and(JPAExpressions.selectOne()
+                        .from(subTag)
+                        .where(subTag.guild.eq(guild)
+                                .and(subTag.type.eq(tagType))
+                                .and(subTag.value.in(tagValues)))
+                        .exists());
             }
         }
 
@@ -74,7 +76,7 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
                 .where(builder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(getSort(req.sort(), guild))
+                .orderBy(getSort(sort, guild))
                 .fetch();
 
         long total = Optional.ofNullable(
@@ -93,6 +95,7 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
         return switch (sort) {
             // TODO: activity 활동 많은 순 구현 필요(일주일당 게시글 많은 순)
             case "members" -> new OrderSpecifier[]{guild.maxMembers.desc()};
+//            case "activity" -> new OrderSpecifier[]{guild.id.desc()};
             default -> new OrderSpecifier[]{guild.createdAt.desc()}; // 최신순 기본
         };
     }

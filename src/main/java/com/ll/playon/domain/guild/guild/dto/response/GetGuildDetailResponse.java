@@ -14,7 +14,6 @@ public record GetGuildDetailResponse(
         int maxMembers,
         boolean isPublic,
         String guildImg,
-        Long gameId,
         LocalDateTime createdAt,
         List<GuildTagResponse> tags,
         GuildRole myRole
@@ -28,7 +27,6 @@ public record GetGuildDetailResponse(
                 guild.getMaxMembers(),
                 guild.isPublic(),
                 guild.getGuildImg(),
-                guild.getGame(),
                 guild.getCreatedAt(),
                 GuildTagResponse.fromList(guild.getGuildTags()),
                 myRole

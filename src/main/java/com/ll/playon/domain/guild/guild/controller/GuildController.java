@@ -8,6 +8,7 @@ import com.ll.playon.domain.guild.guild.service.GuildService;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
+import com.ll.playon.global.validation.GlobalValidation;
 import com.ll.playon.standard.page.dto.PageDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -51,9 +52,20 @@ public class GuildController {
 //        return RsData.success(HttpStatus.OK, guildService.getGuildMembers(guildId, getActor(), pageable));
 //    }
 
-    @GetMapping("/search")
-    public RsData<PageDto<GetGuildListResponse>> searchGuilds(@ModelAttribute @Valid GetGuildListRequest request) {
-        return RsData.success(HttpStatus.OK, guildService.searchGuilds(request));
+    @GetMapping
+    public RsData<PageDto<GetGuildListResponse>> searchGuilds(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "latest") String sort,
+            @ModelAttribute @Valid GetGuildListRequest request
+    ) {
+        GlobalValidation.checkPageSize(pageSize);
+
+        request.getTags().forEach((type, values) -> {
+            System.out.println("🔖 태그 타입: " + type + ", 값들: " + values);
+        });
+        
+        return RsData.success(HttpStatus.OK, guildService.searchGuilds(page, pageSize, sort, request));
     }
 
     @GetMapping("/popular")

@@ -1,5 +1,6 @@
 package com.ll.playon.domain.guild.guild.entity;
 
+import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
@@ -40,11 +41,10 @@ public class Guild extends BaseTime {
     @Builder.Default
     private boolean isPublic = true;
 
-    // TODO: 게임 생성후 연결
-    @Column(name = "game_id")
-//    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-//    @JoinColumn(name = "game_id")
-    private Long game; // 임시로 게임 id를 Long 설정해놓음
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "game_id")
+    private SteamGame game;
 
     @Column(name = "guild_img")
     private String guildImg;
@@ -72,14 +72,14 @@ public class Guild extends BaseTime {
         this.guildImg = request.guildImg();
     }
 
-    public static Guild createFrom(PostGuildRequest request, Member owner) {
+    public static Guild createFrom(PostGuildRequest request, Member owner, SteamGame game) {
         return Guild.builder()
                 .owner(owner)
                 .name(request.name())
                 .description(request.description())
                 .maxMembers(request.maxMembers())
                 .isPublic(request.isPublic())
-                .game(request.gameId())
+                .game(game)
                 .guildImg(request.guildImg())
                 .build();
     }
