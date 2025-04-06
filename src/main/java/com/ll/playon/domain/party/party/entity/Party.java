@@ -2,6 +2,7 @@ package com.ll.playon.domain.party.party.entity;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
+import com.ll.playon.domain.party.party.dto.request.PutPartyRequest;
 import com.ll.playon.domain.party.party.type.PartyStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -124,7 +125,17 @@ public class Party {
         this.total -= 1;
     }
 
-    public void closeParTy() {
+    public void update(PutPartyRequest request) {
+        this.name = request.name();
+        this.description = request.description() != null ? request.description() : "";
+        this.partyAt = request.partyAt();
+        this.publicFlag = request.isPublic();
+        this.minimum = request.minimum();
+        this.maximum = request.maximum();;
+        this.game = request.game();
+    }
+
+    public void closeParty() {
         this.endedAt = LocalDateTime.now();
     }
 }

@@ -241,8 +241,7 @@ public class PartyService {
         Party party = PartyContext.getParty();
 
         // TODO: 유니크 제약 조건 있으면 체크
-
-        this.updatePartyFromRequest(party, putPartyRequest);
+        party.update(putPartyRequest);
 
         this.partyTagService.updatePartyTags(party, putPartyRequest.tags());
 
@@ -388,17 +387,6 @@ public class PartyService {
         return request.tags().stream()
                 .map(tag -> PartyTagMapper.build(party, tag.type(), tag.value()))
                 .toList();
-    }
-
-    // 파티 정보 수정
-    private void updatePartyFromRequest(Party party, PutPartyRequest request) {
-        party.setName(request.name());
-        party.setDescription(request.description() != null ? request.description() : "");
-        party.setPartyAt(request.partyAt());
-        party.setPublicFlag(request.isPublic());
-        party.setMinimum(request.minimum());
-        party.setMaximum(request.maximum());
-        party.setGame(request.game());
     }
 
     // Party 내부 Join 데이터들 병합
