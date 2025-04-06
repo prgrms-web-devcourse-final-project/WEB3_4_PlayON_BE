@@ -13,4 +13,5 @@ public interface GameRepository extends JpaRepository<SteamGame, Long> {
     List<SteamGame> findAllByAppidIn(List<Long> appIds);
     List<SteamGame> findTop5ByAppidIn(List<Long> appIds);
     Optional<SteamGame> findByAppid(Long appid);
+    Optional<SteamGame> findSteamGameByAppid(Long appid);
 }

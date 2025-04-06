@@ -1,6 +1,7 @@
 package com.ll.playon.domain.game.game.service;
 
 import com.ll.playon.domain.game.game.dto.GameListResponse;
+import com.ll.playon.domain.game.game.dto.response.GameDetailWithPartyResponse;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
@@ -8,10 +9,18 @@ import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
+import com.ll.playon.domain.party.party.entity.Party;
+import com.ll.playon.domain.party.party.repository.PartyRepository;
+import com.ll.playon.domain.party.partyLog.entity.PartyLog;
+import com.ll.playon.domain.party.partyLog.repository.PartyLogRepository;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.steamAPI.SteamAPI;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +34,8 @@ public class GameService {
     private final SteamAPI steamAPI;
     private final MemberSteamDataRepository memberSteamDataRepository;
     private final MemberRepository memberRepository;
+    private final PartyRepository partyRepository;
+    private final PartyLogRepository partyLogRepository;
 
     private final static int TOP_FIVE = 5;
 
@@ -94,4 +105,24 @@ public class GameService {
     public void updateDB(Long appId) {
 
     }
+
+    @Transactional(readOnly = true)
+    public GameDetailWithPartyResponse getGameDetailWithParties(
+            Long appid,
+            Pageable partyPageable,
+            Pageable logPageable
+    ) {
+        SteamGame game = gameRepository.findSteamGameByAppid(appid)
+                .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
+
+        Page<Party> partyPage = partyRepository.findByGameId(game.getId(), partyPageable);
+        Page<PartyLog> logPage = partyLogRepository.findByPartyGameId(game.getId(), logPageable);
+
+        return GameDetailWithPartyResponse.from(
+                game,
+                partyPage.getContent(),
+                logPage.getContent()
+        );
+    }
+
 }
