@@ -142,15 +142,7 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleGuilds() {
-<<<<<<< HEAD
-        if (gameRepository.count() == 0) {
-            return;
-        }
-
-        if(guildRepository.count() != 0) {
-=======
         if (guildRepository.count() != 0) {
->>>>>>> 8c1f356 ([REFACTOR] 파티 조회 조건 처리 및 인덱스 개선)
             return;
         }
 
