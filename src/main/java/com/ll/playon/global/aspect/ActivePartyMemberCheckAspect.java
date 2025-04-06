@@ -51,6 +51,7 @@ public class ActivePartyMemberCheckAspect {
         }
     }
 
+    // 활성화된 파티 멤버인지 확인
     private boolean isNotActivePartyMember(Member actor, Party party) {
         return party.getPartyMembers().stream()
                 .noneMatch(pm -> pm.getMember().getId().equals(actor.getId())
