@@ -118,8 +118,7 @@ public class PartyLogService {
         PartyMemberValidation.checkIsNotPartyMemberOwn(partyMember, actor);
 
         PartyLog partyLog = this.getPartyLog(logId);
-
-        this.updatePartyLog(partyLog, request);
+        partyLog.update(request);
 
         this.imageService.deleteImagesByIdAndUrl(ImageType.LOG, logId, request.deleteUrl());
 
@@ -149,11 +148,5 @@ public class PartyLogService {
     private PartyLog getPartyLog(long logId) {
         return this.partyLogRepository.findById(logId)
                 .orElseThrow(ErrorCode.PARTY_LOG_NOT_FOUND::throwServiceException);
-    }
-
-    // PartyLog 수정
-    private void updatePartyLog(PartyLog partyLog, PutPartyLogRequest request) {
-        partyLog.setComment(request.comment());
-        partyLog.setContent(request.content());
     }
 }
