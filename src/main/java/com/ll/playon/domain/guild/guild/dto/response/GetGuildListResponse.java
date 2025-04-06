@@ -8,6 +8,7 @@ public record GetGuildListResponse(
         long guildId,
         String guildImg,
         String name,
+        String gameName,
         String description,
         int memberCount,
         List<GuildTagResponse> tags
@@ -17,6 +18,7 @@ public record GetGuildListResponse(
                 guild.getId(),
                 guild.getGuildImg(),
                 guild.getName(),
+                guild.getGame().getName(),
                 guild.getDescription(),
                 guild.getMembers().size(),
                 GuildTagResponse.fromList(guild.getGuildTags())
