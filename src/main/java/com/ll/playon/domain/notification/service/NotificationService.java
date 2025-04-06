@@ -4,7 +4,9 @@ import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.notification.dto.request.NotificationRequest;
 import com.ll.playon.domain.notification.dto.response.NotificationResponse;
+import com.ll.playon.domain.notification.dto.response.NotificationSummaryResponse;
 import com.ll.playon.domain.notification.entity.Notification;
+import com.ll.playon.domain.notification.entity.NotificationType;
 import com.ll.playon.domain.notification.event.NotificationEvent;
 import com.ll.playon.domain.notification.repository.NotificationRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -27,23 +29,23 @@ public class NotificationService {
      * 알림 전송 (DB 저장 후 이벤트 발행)
      */
     @Transactional
-    public NotificationResponse sendNotification(NotificationRequest request) {
+    public NotificationResponse sendNotification(Long senderId, NotificationRequest request) {
         Member receiver = memberRepository.findById(request.receiverId())
                 .orElseThrow(() -> new EntityNotFoundException("수신자를 찾을 수 없습니다: " + request.receiverId()));
 
-        Notification notification = Notification.builder()
-                .receiver(receiver)
-                .content(request.content())
-                .type(request.type())
-                .redirectUrl(request.redirectUrl())
-                .build();
+        NotificationType type = request.type();
+        String content = request.content() != null ? request.content() : type.getDefaultMessage();
+        String redirectUrl = request.redirectUrl() != null ? request.redirectUrl() : type.getDefaultRedirectUrl();
+
+        Notification notification = Notification.create(receiver, content, type, redirectUrl);
         notificationRepository.save(notification);
 
-        // SSE 전송을 위한 이벤트 발행
-        eventPublisher.publishEvent(new NotificationEvent(this, receiver.getId(), NotificationResponse.fromEntity(notification)));
+        NotificationResponse response = NotificationResponse.fromEntity(notification, senderId);
+        eventPublisher.publishEvent(new NotificationEvent(this, receiver.getId(), response));
 
-        return NotificationResponse.fromEntity(notification);
+        return response;
     }
+
 
     /**
      * 알림 읽음 처리
@@ -70,4 +72,16 @@ public class NotificationService {
                 .map(NotificationResponse::fromEntity)
                 .toList();
     }
+
+    /**
+     * 사용자의 알림 요약 정보 조회 (최신 10개 알림 및 읽지 않은 알림 개수)
+     */
+    @Transactional(readOnly = true)
+    public NotificationSummaryResponse getNotificationSummary(Long memberId) {
+        List<Notification> latest = notificationRepository.findTop10ByReceiverIdOrderByCreatedAtDesc(memberId);
+        long unreadCount = notificationRepository.countByReceiverIdAndIsReadFalse(memberId);
+
+        return NotificationSummaryResponse.of(latest, unreadCount);
+    }
+
 }

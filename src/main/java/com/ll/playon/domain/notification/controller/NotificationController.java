@@ -3,6 +3,7 @@ package com.ll.playon.domain.notification.controller;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.notification.dto.request.NotificationRequest;
 import com.ll.playon.domain.notification.dto.response.NotificationResponse;
+import com.ll.playon.domain.notification.dto.response.NotificationSummaryResponse;
 import com.ll.playon.domain.notification.service.NotificationService;
 import com.ll.playon.domain.notification.service.NotificationSseService;
 import com.ll.playon.global.response.RsData;
@@ -38,7 +39,7 @@ public class NotificationController {
     @PostMapping("/send")
     public RsData<NotificationResponse> sendNotification(@RequestBody NotificationRequest request) {
         Member actor = this.userContext.getActor();
-        NotificationResponse response = notificationService.sendNotification(request.withSenderId(actor.getId()));
+        NotificationResponse response = notificationService.sendNotification(actor.getId(), request);
         return RsData.success(HttpStatus.OK, response);
     }
 
@@ -49,7 +50,7 @@ public class NotificationController {
     public RsData<String> markAsRead(@PathVariable Long notificationId) {
         Member actor = this.userContext.getActor();
         notificationService.markAsRead(actor.getId(), notificationId);
-        return RsData.success(HttpStatus.NO_CONTENT, "알림 읽음 처리 완료");
+        return RsData.success(HttpStatus.OK, "알림 읽음 처리 완료");
     }
 
     /**
@@ -60,5 +61,15 @@ public class NotificationController {
         Member actor = this.userContext.getActor();
         List<NotificationResponse> notifications = notificationService.getNotifications(actor.getId());
         return RsData.success(HttpStatus.OK, notifications);
+    }
+
+    /**
+     * 알림 요약 정보 조회
+     */
+    @GetMapping("/summary")
+    public RsData<NotificationSummaryResponse> getNotificationSummary() {
+        Member actor = this.userContext.getActor();
+        NotificationSummaryResponse summary = notificationService.getNotificationSummary(actor.getId());
+        return RsData.success(HttpStatus.OK, summary);
     }
 }

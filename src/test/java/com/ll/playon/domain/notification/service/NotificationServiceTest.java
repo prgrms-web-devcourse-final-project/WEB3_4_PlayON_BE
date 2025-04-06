@@ -56,11 +56,12 @@ class NotificationServiceTest {
     @Test
     void 알림_저장_및_전송_테스트() {
         // Given
+        Long senderId = sender.getId();  // senderId 분리
+
         NotificationRequest request = new NotificationRequest(
-                sender.getId(), // senderId 포함
                 receiver.getId(),
-                "새로운 파티 초대",
                 NotificationType.PARTY_INVITE,
+                "새로운 파티 초대",
                 "https://example.com"
         );
 
@@ -71,25 +72,25 @@ class NotificationServiceTest {
                 .redirectUrl(request.redirectUrl())
                 .build();
 
-        // receiver만 조회하도록 수정 (sender 조회 삭제)
+        // receiver만 조회하도록 설정
         when(memberRepository.findById(receiver.getId())).thenReturn(Optional.of(receiver));
 
-        // save() 호출 시 동일한 객체를 반환하도록 설정
+        // 저장 시 반환될 Notification 설정
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification);
 
         // When
-        NotificationResponse response = notificationService.sendNotification(request);
+        NotificationResponse response = notificationService.sendNotification(senderId, request);
 
         // Then
-        assertThat(response.receiverId()).isEqualTo(receiver.getId());
         assertThat(response.content()).isEqualTo("새로운 파티 초대");
+        assertThat(response.type()).isEqualTo(NotificationType.PARTY_INVITE);
+        assertThat(response.redirectUrl()).isEqualTo("https://example.com");
 
-        // 알림이 저장되었는지 검증
+        // 저장 및 이벤트 발행 검증
         verify(notificationRepository, times(1)).save(any(Notification.class));
-
-        // 이벤트가 발행되었는지 검증
         verify(eventPublisher, times(1)).publishEvent(any(NotificationEvent.class));
     }
+
 
 
     /**

@@ -56,11 +56,14 @@ public class NotificationSseService {
 
     private void sendDummyEvent(SseEmitter emitter) {
         try {
-            emitter.send(SseEmitter.event().name("connect").data("Connected!"));
+            emitter.send(SseEmitter.event()
+                    .name("INIT")
+                    .data("Connected!"));
         } catch (IOException e) {
             emitter.complete();
         }
     }
+
 
     private void removeEmitter(Long memberId, SseEmitter emitter) {
         List<SseEmitter> userEmitters = emitters.get(memberId);

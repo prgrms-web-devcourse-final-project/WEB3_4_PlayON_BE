@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,9 +48,16 @@ class NotificationSseServiceTest {
         SseEmitter emitter = notificationSseService.subscribe(receiverId);
 
         NotificationResponse response = new NotificationResponse(
-                1L, receiverId, "SSE 알림 테스트",
-                NotificationType.PARTY_INVITE, false, "https://example.com"
+                1L,
+                100L,
+                "SSE 알림 테스트",
+                NotificationType.PARTY_INVITE,
+                false,
+                "https://example.com",
+                LocalDateTime.now()
         );
+
+
 
         // When
         notificationSseService.sendSseNotification(receiverId, response);
