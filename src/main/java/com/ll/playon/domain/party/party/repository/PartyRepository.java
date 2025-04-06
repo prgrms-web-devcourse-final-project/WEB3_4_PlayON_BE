@@ -36,6 +36,29 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
     );
 
     // 성능 비교용 1
+//    @Query("""
+//            SELECT p.id
+//            FROM Party p
+//            WHERE p.partyStatus = 'PENDING'
+//            AND p.publicFlag = true
+//            AND (:partyAt IS NULL OR p.partyAt >= :partyAt)
+//            AND (:tagSize = 0 OR (
+//                SELECT COUNT(pt.value)
+//                FROM PartyTag pt
+//                WHERE pt.party = p
+//                AND pt.value IN :tagValues
+//            ) = :tagSize)
+//            AND p.id NOT IN :excludedIds
+//            """)
+//    Page<Long> findPublicPartyIdsExcludingMyParties(
+//            @Param("excludedIds") List<Long> excludedIds,
+//            @Param("partyAt") LocalDateTime partyAt,
+//            @Param("tagValues") List<String> tagValues,
+//            @Param("tagSize") long tagSize,
+//            Pageable pageable
+//    );
+
+    // 성능 비교용 2
 //    @Query(value = """
 //            SELECT p.id
 //            FROM Party p
@@ -69,7 +92,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 //            Pageable pageable
 //    );
 
-    // 성능 비교용 2
+    // 성능 비교용 3
 //    @Query(value = """
 //            SELECT p.id
 //            FROM Party p
@@ -110,13 +133,30 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
     @Query("""
             SELECT p.id
             FROM Party p
+            LEFT JOIN SteamGame sg
+            ON sg.id = p.game.id
+            LEFT JOIN sg.genres g
+            ON g.name IN :genres
+            WHERE p.id IN :partyIds
+            AND (:gameId IS NULL OR p.game.id = :gameId)
+            GROUP BY p.id
+            HAVING (:genreSize = 0 OR COUNT(g.name) = :genreSize)
+            """)
+    Page<Long> findPublicPartiesFilteredByGame(
+            @Param("partyIds") List<Long> partyIds,
+            @Param("gameId") Long gameId,
+            @Param("genres") List<String> genres,
+            @Param("genreSize") int genreSize,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT p.id
+            FROM Party p
+            LEFT JOIN PartyMember pm
+            ON pm.party = p
             WHERE p.partyStatus = 'PENDING'
-            AND EXISTS (
-                SELECT 1
-                FROM PartyMember pm
-                WHERE pm.party = p
-                AND pm.member.id = :memberId
-            )
+            AND pm.member.id = :memberId
             AND (:partyAt IS NULL OR p.partyAt >= :partyAt)
             """)
     List<Long> findPartyIdsByMember(
@@ -144,7 +184,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             FROM PartyMember pm
             JOIN FETCH pm.party p
             WHERE p.id IN :partyIds
-            AND pm.partyRole <> 'PENDING'
+            AND pm.partyRole != 'PENDING'
             """)
     List<PartyMember> findPartyMembersByPartyIds(@Param("partyIds") List<Long> partyIds);
 
@@ -155,5 +195,5 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
                                                                                     Pageable pageable);
 
     List<Party> findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtDescCreatedAtDesc(PartyStatus partyStatus,
-                                                                                    Pageable pageable);
+                                                                                     Pageable pageable);
 }

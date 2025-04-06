@@ -36,8 +36,7 @@ public record GetPartyDetailResponse(
         @NonNull
         List<PartyDetailTagDto> partyTags
 
-        // TODO: 1. 스팀 헤더 사진 추가
-        //       2. 채팅 룸 여기에?
+        // TODO: 채팅 룸 여기에?
 ) {
     public GetPartyDetailResponse(Party party, PartyMember owner, List<PartyDetailMemberDto> partyMembers,
                                   List<PartyDetailTagDto> partyTags) {

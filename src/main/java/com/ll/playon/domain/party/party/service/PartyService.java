@@ -129,9 +129,13 @@ public class PartyService {
         Page<Long> publicPartyIds = this.partyRepository.findPublicPartyIdsExcludingMyParties(myPartyIds,
                 partyAt, tagValues, tagSize, publicPageable);
 
+        // Game 관련 필터링 진행한 파티 ID들 조회
+        Page<Long> partyFilteredByGameIds = this.partyRepository.findPublicPartiesFilteredByGame(
+                publicPartyIds.getContent(), request.gameId(), request.genres(), request.genres().size(), pageable);
+
         // 최종 파티 ID 페이징 리스트
         List<Long> mergedPartyIds = new ArrayList<>(myPartyIds);
-        mergedPartyIds.addAll(publicPartyIds.getContent());
+        mergedPartyIds.addAll(partyFilteredByGameIds.getContent());
 
         List<Party> parties = this.partyRepository.findPartiesByIds(mergedPartyIds);
         List<PartyMember> partyMembers = this.partyRepository.findPartyMembersByPartyIds(mergedPartyIds);
@@ -164,7 +168,7 @@ public class PartyService {
 
         List<GetPartyResponse> pagedResponses = start >= end ? Collections.emptyList() : sortedList.subList(start, end);
 
-        return new PageImpl<>(pagedResponses, pageable, publicPartyIds.getTotalElements() + myPartyIds.size());
+        return new PageImpl<>(pagedResponses, pageable, myPartyIds.size() + partyFilteredByGameIds.getTotalElements());
     }
 
     // 파티 결과창 조회
