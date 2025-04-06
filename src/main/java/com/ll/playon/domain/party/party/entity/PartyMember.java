@@ -21,7 +21,7 @@ import lombok.*;
         name = "party_member",
         indexes = {
                 @Index(name = "idx_party_member_party_id_role", columnList = "party_id, party_role"),
-                @Index(name = "idx_party_member_member_id", columnList = "member_id")
+                @Index(name = "idx_party_member_party_id_member_id", columnList = "party_id, member_id")
         }
 )
 @Getter

@@ -20,6 +20,9 @@ public record GetPartyResponse(
         String description,
 
         @NonNull
+        String headerImage,
+
+        @NonNull
         LocalDateTime partyAt,
 
         int total,
@@ -38,6 +41,7 @@ public record GetPartyResponse(
                 party.getId(),
                 party.getName(),
                 party.getDescription(),
+                party.getGame().getHeaderImage() != null ? party.getGame().getHeaderImage() : "",
                 party.getPartyAt(),
                 party.getTotal(),
                 memberDtos.stream()
