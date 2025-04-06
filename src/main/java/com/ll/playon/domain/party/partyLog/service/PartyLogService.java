@@ -59,6 +59,8 @@ public class PartyLogService {
             PartyMember mvpCandidate = this.partyMemberRepository.findById(request.partyMemberId())
                     .orElseThrow(ErrorCode.PARTY_MEMBER_NOT_FOUND::throwServiceException);
 
+            PartyMemberValidation.checkPartyMember(party, partyMember);
+
             mvpCandidate.voteMvp();
         }
 

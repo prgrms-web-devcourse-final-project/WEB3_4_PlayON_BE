@@ -212,6 +212,7 @@ public class PartyService {
         );
     }
 
+    // TODO: 동시성 고려
     // 파티 상세 정보 조회
     @Transactional
     public GetPartyDetailResponse getPartyDetail(long partyId) {
