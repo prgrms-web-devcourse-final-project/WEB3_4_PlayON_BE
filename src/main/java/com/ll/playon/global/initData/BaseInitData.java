@@ -1,7 +1,9 @@
 package com.ll.playon.global.initData;
 
 import com.ll.playon.domain.game.game.entity.SteamGame;
+import com.ll.playon.domain.game.game.entity.WeeklyPopularGame;
 import com.ll.playon.domain.game.game.repository.GameRepository;
+import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
@@ -23,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,12 +44,15 @@ public class BaseInitData {
     @Autowired
     @Lazy
     private BaseInitData self;
+    @Autowired
+    private WeeklyGameRepository weeklyGameRepository;
 
     @Bean
     public ApplicationRunner baseInitDataApplicationRunner() {
         return args -> {
             self.makeSampleUsers();
             self.makeSampleGuilds();
+            self.makeSampleWeeklyPopularGames();
         };
     }
 
@@ -209,5 +215,42 @@ public class BaseInitData {
         }
 
         return guildTags;
+    }
+
+    @Transactional
+    public void makeSampleWeeklyPopularGames() {
+        if (gameRepository.count() == 0) {
+            return;
+        }
+
+        if(weeklyGameRepository.count() > 0) {
+            return;
+        }
+
+        List<Long> gameIds = List.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L);
+        List<SteamGame> games = gameRepository.findAllByIdIn(gameIds);
+
+        List<LocalDate> weeks = List.of(
+                LocalDate.of(2025, 3, 24),
+                LocalDate.of(2025, 3, 31),
+                LocalDate.of(2025, 4, 7)
+        );
+
+        Random random = new Random();
+        int gameIndex = 0;
+
+        for (LocalDate week : weeks) {
+            for (int i = 0; i < 3; i++) {
+                SteamGame game = games.get(gameIndex++);
+
+                WeeklyPopularGame popularGame = WeeklyPopularGame.builder()
+                        .gameId(game.getId())
+                        .playCount(10 + random.nextLong(20)) // 10 ~ 29 랜덤
+                        .weekStartDate(week)
+                        .build();
+
+                weeklyGameRepository.save(popularGame);
+            }
+        }
     }
 }

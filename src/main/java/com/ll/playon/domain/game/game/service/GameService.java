@@ -6,6 +6,7 @@ import com.ll.playon.domain.game.game.dto.response.*;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
+import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.repository.MemberRepository;
@@ -19,14 +20,13 @@ import com.ll.playon.global.steamAPI.SteamAPI;
 import com.ll.playon.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +40,7 @@ public class GameService {
     private final PartyLogRepository partyLogRepository;
 
     private final static int TOP_FIVE = 5;
+    private final WeeklyGameRepository weeklyGameRepository;
 
     public List<GameListResponse> makeGameListWithGenre(List<SteamGame> gameList, SteamGenre preferredGenre) {
         return makeGameList(gameList, preferredGenre);
@@ -159,6 +160,16 @@ public class GameService {
         return new PageDto<>(page.map(PartyLogSummaryResponse::from));
     }
 
+    public List<GetWeeklyPopularGameResponse> getWeeklyPopularGames(LocalDate week) {
+        List<Long> gameIds = weeklyGameRepository.findTopGameIdsByWeek(week);
+        List<SteamGame> games = gameRepository.findAllByIdIn(gameIds);
+        Map<Long, SteamGame> gameMap = games.stream()
+                .collect(Collectors.toMap(SteamGame::getId, g -> g));
 
-
+        return gameIds.stream()
+                .map(gameMap::get)
+                .filter(Objects::nonNull)
+                .map(GetWeeklyPopularGameResponse::from)
+                .toList();
+    }
 }

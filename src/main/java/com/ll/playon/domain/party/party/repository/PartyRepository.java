@@ -4,13 +4,15 @@ import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
 import com.ll.playon.domain.party.party.type.PartyStatus;
-import java.time.LocalDateTime;
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 public interface PartyRepository extends JpaRepository<Party, Long> {
 
@@ -110,4 +112,19 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
     @Query("SELECT p FROM Party p WHERE p.game = :gameId")
     Page<Party> findByGameId(@Param("gameId") Long gameId, Pageable partyPageable);
+
+    @Query("""
+            SELECT p.game AS gameId, COUNT(*) AS playCount
+            FROM Party p
+            WHERE p.createdAt >= :fromDate
+              AND p.createdAt < :toDate
+            GROUP BY p.game
+            ORDER BY playCount DESC
+            LIMIT :limit
+        """)
+    List<Map<String, Object>> findTopGamesByPartyLastWeek(
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            @Param("limit") int limit
+    );
 }
