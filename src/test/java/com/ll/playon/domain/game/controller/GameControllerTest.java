@@ -3,6 +3,7 @@ package com.ll.playon.domain.game.controller;
 import com.ll.playon.domain.game.game.controller.GameController;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.repository.GameRepository;
+import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.member.TestMemberHelper;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
@@ -44,6 +45,7 @@ public class GameControllerTest {
     @Autowired private GameRepository gameRepository;
     @Autowired private PartyRepository partyRepository;
     @Autowired private PartyLogRepository partyLogRepository;
+    @Autowired private GuildRepository guildRepository;
     @Autowired private TestMemberHelper testMemberHelper;
 
     @MockitoBean
@@ -55,6 +57,7 @@ public class GameControllerTest {
     void setup() {
         partyLogRepository.deleteAll();
         partyRepository.deleteAll();
+        guildRepository.deleteAll();
         gameRepository.deleteAll();
 
         game = gameRepository.save(SteamGame.builder()
