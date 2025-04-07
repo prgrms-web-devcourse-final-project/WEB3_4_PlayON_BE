@@ -137,9 +137,11 @@ public class MemberService {
         memberRepository.save(newMember);
 
         List<Long> userGames = steamAPI.getUserGames(steamId);
-        SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
-        memberRepository.save(newMember.toBuilder().preferredGenre(preferredGenre).build());
-        saveUserGameList(userGames, newMember);
+        if(!userGames.isEmpty()) {
+            SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
+            memberRepository.save(newMember.toBuilder().preferredGenre(preferredGenre).build());
+            saveUserGameList(userGames, newMember);
+        }
 
         return newMember;
     }
@@ -183,9 +185,12 @@ public class MemberService {
                     memberRepository.save(targetMember);
 
                     List<Long> userGames = steamAPI.getUserGames(steamId);
-                    SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
-                    memberRepository.save(targetMember.toBuilder().preferredGenre(preferredGenre).build());
-                    saveUserGameList(userGames, targetMember);
+                    if(!userGames.isEmpty()) {
+                        SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
+                        memberRepository.save(targetMember.toBuilder().preferredGenre(preferredGenre).build());
+                        saveUserGameList(userGames, targetMember);
+                    }
+
                     return targetMember;
                 })
                 .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
