@@ -61,7 +61,7 @@ public class BaseInitData {
         return args -> {
             self.makeSampleUsers();
             self.makeSampleGuilds();
-            self.makeSampleParties();
+//            self.makeSampleParties();
         };
     }
 
