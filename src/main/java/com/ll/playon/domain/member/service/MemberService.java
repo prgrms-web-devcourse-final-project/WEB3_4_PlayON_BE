@@ -14,6 +14,8 @@ import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
+import com.ll.playon.domain.title.entity.enums.ConditionType;
+import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
@@ -40,6 +42,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final GameService gameService;
     private final GameRepository gameRepository;
+    private final TitleEvaluator titleEvaluator;
 
     public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
@@ -102,6 +105,9 @@ public class MemberService {
 
         handleSuccessfulLogin(member);
 
+        // 회원가입 칭호
+        titleEvaluator.check(ConditionType.REGISTERED, member);
+
         return new MemberDetailDto(
                 member.getNickname(), member.getProfileImg(), member.getPlayStyle(),
                 member.getSkillLevel(), member.getGender());
@@ -140,6 +146,9 @@ public class MemberService {
             memberRepository.save(newMember.toBuilder().preferredGenre(preferredGenre).build());
             saveUserGameList(userGames, newMember);
         }
+
+        // 스팀 게임 소유 칭호
+        titleEvaluator.check(ConditionType.STEAM_GAME_COUNT, newMember);
 
         return newMember;
     }

@@ -18,6 +18,7 @@ import com.ll.playon.domain.party.party.dto.response.GetPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyResultResponse;
 import com.ll.playon.domain.party.party.dto.response.PostPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.PutPartyResponse;
+import com.ll.playon.domain.party.party.dto.response.*;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
@@ -29,6 +30,8 @@ import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.party.party.type.PartyStatus;
 import com.ll.playon.domain.party.party.util.PartySortUtils;
 import com.ll.playon.domain.party.party.validation.PartyMemberValidation;
+import com.ll.playon.domain.title.entity.enums.ConditionType;
+import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.domain.party.party.validation.PartyValidation;
 import com.ll.playon.domain.party.partyLog.dto.response.GetAllPartyLogResponse;
 import com.ll.playon.domain.party.partyLog.service.PartyLogService;
@@ -54,6 +57,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class PartyService {
@@ -62,6 +69,7 @@ public class PartyService {
     private final MemberService memberService;
     private final PartyRepository partyRepository;
     private final GameRepository gameRepository;
+    private final TitleEvaluator titleEvaluator;
 
     // 파티 생성
     @Transactional
@@ -78,6 +86,9 @@ public class PartyService {
 
         // TODO: 1. Game 헤더 이미지 응답
         //       2. 파티룸 생성
+
+        // 파티 생성 칭호
+        titleEvaluator.check(ConditionType.PARTY_CREATE_COUNT, actor);
 
         return new PostPartyResponse(this.partyRepository.save(party));
     }
