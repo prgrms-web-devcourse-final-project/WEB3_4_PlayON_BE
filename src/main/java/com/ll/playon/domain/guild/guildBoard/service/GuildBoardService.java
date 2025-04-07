@@ -4,6 +4,7 @@ import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guildBoard.dto.GuildBoardCommentDto;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCommentCreateRequest;
+import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCommentUpdateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCreateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardUpdateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.response.*;
@@ -202,5 +203,31 @@ public class GuildBoardService {
         guildBoardCommentRepository.save(comment);
 
         return GuildBoardCommentCreateResponse.from(comment);
+    }
+
+    @Transactional
+    public void updateComment(Long guildId, Long boardId, Long commentId, GuildBoardCommentUpdateRequest request, Member actor){
+        Guild guild=guildRepository.findById(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        GuildBoard board=guildBoardRepository.findById(boardId)
+                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
+
+        if(!board.getGuild().getId().equals(guild.getId())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        GuildBoardComment comment = guildBoardCommentRepository.findById(commentId)
+                .orElseThrow(() -> ErrorCode.GUILD_BOARD_COMMENT_NOT_FOUND.throwServiceException());
+
+        if(!comment.getBoard().getId().equals(board.getId())){
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        if(!comment.getAuthor().getMember().getId().equals(actor.getId())){
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        comment.update(request.comment());
     }
 }

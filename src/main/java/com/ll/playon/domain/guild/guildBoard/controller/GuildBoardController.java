@@ -1,6 +1,7 @@
 package com.ll.playon.domain.guild.guildBoard.controller;
 
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCommentCreateRequest;
+import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCommentUpdateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCreateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardUpdateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.response.*;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -107,5 +109,17 @@ public class GuildBoardController {
         Member actor = userContext.getActor();
         GuildBoardCommentCreateResponse response = guildBoardService.createComment(guildId, boardId, request, actor);
         return RsData.success(HttpStatus.CREATED, response);
+    }
+
+    @PutMapping("/{guildId}/board/{boardId}/comments/{commentId}")
+    public RsData<String> updateComment(
+            @PathVariable Long guildId,
+            @PathVariable Long boardId,
+            @PathVariable Long commentId,
+            @RequestBody @Valid GuildBoardCommentUpdateRequest request
+    ){
+        Member actor = userContext.getActor();
+        guildBoardService.updateComment(guildId, boardId, commentId, request, actor);
+        return RsData.success(HttpStatus.OK, "수정되었습니다.");
     }
 }
