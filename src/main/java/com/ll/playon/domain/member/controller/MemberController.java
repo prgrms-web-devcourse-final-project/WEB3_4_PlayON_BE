@@ -69,6 +69,7 @@ public class MemberController {
     @GetMapping("/me/games")
     public RsData<List<GameListResponse>> getMembersByGame(@RequestParam(defaultValue = "3") int count) {
         // TODO: 실제 로그인 사용자로 변경
-        return RsData.success(HttpStatus.OK, memberService.getOwnedGamesByMember(count, memberService.findById(1L).get()));
+        return RsData.success(HttpStatus.OK, memberService.getOwnedGamesByMember(count, memberService.findById(4L).get()));
+//        return RsData.success(HttpStatus.OK, memberService.getOwnedGamesByMember(count, userContext.getActor()));
     }
 }

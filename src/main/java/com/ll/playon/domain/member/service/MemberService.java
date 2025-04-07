@@ -5,6 +5,7 @@ import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.service.GameService;
+import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
 import com.ll.playon.domain.member.dto.GetMembersResponse;
 import com.ll.playon.domain.member.dto.MemberDetailDto;
 import com.ll.playon.domain.member.dto.MemberProfileResponse;
@@ -45,6 +46,7 @@ public class MemberService {
     private final GameService gameService;
     private final GameRepository gameRepository;
     private final TitleEvaluator titleEvaluator;
+    private final WeeklyGameRepository weeklyGameRepository;
 
     public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
@@ -270,7 +272,16 @@ public class MemberService {
 
         List<Long> ownedGames = memberSteamDataRepository.findAppIdsByMemberId(actor.getId(), PageRequest.of(0, count));
 
-        return gameRepository.findAllByAppidIn(ownedGames).stream()
+        if (ownedGames.isEmpty()) {
+            // 보유 게임이 없으면 임의의 게임 필요
+            return toGameListResponse(List.of(730L, 578080L, 359550L));
+        }
+
+        return toGameListResponse(ownedGames);
+    }
+
+    private List<GameListResponse> toGameListResponse(List<Long> appIds) {
+        return gameRepository.findAllByAppidIn(appIds).stream()
                 .map(game -> GameListResponse.builder()
                         .appid(game.getAppid())
                         .name(game.getName())
