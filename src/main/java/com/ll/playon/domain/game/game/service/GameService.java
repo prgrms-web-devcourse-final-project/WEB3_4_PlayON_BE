@@ -7,6 +7,7 @@ import com.ll.playon.domain.game.game.dto.response.*;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
+import com.ll.playon.domain.game.scheduler.repository.LongPlaytimeGameRepository;
 import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
@@ -45,6 +46,7 @@ public class GameService {
     private final static int TOP_FIVE = 5;
     private final WeeklyGameRepository weeklyGameRepository;
     private final PartyMemberRepository partyMemberRepository;
+    private final LongPlaytimeGameRepository longPlaytimeGameRepository;
 
     public List<GameListResponse> makeGameListWithGenre(List<SteamGame> gameList, SteamGenre preferredGenre) {
         return makeGameList(gameList, preferredGenre);
@@ -179,7 +181,8 @@ public class GameService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetRecommendedGameResponse> recommendGamesForMember(Long myMemberId, int limit) {
+    public List<GetRecommendedGameResponse> recommendGamesForMember(Long myMemberId) {
+        int limit = 4;
 
         // 내가 참여한 파티들
         List<Long> myPartyIds = partyMemberRepository.findPartyIdsByMemberId(myMemberId);
@@ -216,6 +219,21 @@ public class GameService {
                 .values()
                 .stream()
                 .limit(limit)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetRecommendedGameResponse> getTopPlaytimeGames(LocalDate week) {
+        List<Long> appIds = longPlaytimeGameRepository.findAppIdsByWeek(week);
+
+        List<SteamGame> games = gameRepository.findAllByIdIn(appIds);
+
+        Map<Long, SteamGame> gameMap = games.stream()
+                .collect(Collectors.toMap(SteamGame::getId, g -> g));
+
+        return appIds.stream()
+                .map(gameMap::get)
+                .map(GetRecommendedGameResponse::from)
                 .toList();
     }
 }

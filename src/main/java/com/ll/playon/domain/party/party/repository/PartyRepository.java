@@ -223,4 +223,20 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
         ORDER BY p.createdAt DESC
     """)
     List<Party> findPublicCompletedPartiesIn(@Param("partyIds") List<Long> partyIds, Pageable pageable);
+
+    @Query(value = """
+    SELECT p.game_id AS appid,
+           SUM(TIMESTAMPDIFF(SECOND, p.party_at, p.ended_at)) / 3600 AS playtime
+    FROM party p
+    WHERE p.party_at >= :fromDate
+      AND p.party_at < :toDate
+      AND p.is_public = true
+      AND p.party_status = 'COMPLETED'
+      AND p.ended_at IS NOT NULL
+    GROUP BY p.game_id
+    ORDER BY playtime DESC
+    """,
+            countQuery = "SELECT COUNT(*) FROM party p",
+            nativeQuery = true)
+    List<Map<String, Object>> findTopGamesByPlaytimeLastWeek(@Param("fromDate") LocalDateTime fromDate, @Param("toDate") LocalDateTime toDate, Pageable pageable);
 }
