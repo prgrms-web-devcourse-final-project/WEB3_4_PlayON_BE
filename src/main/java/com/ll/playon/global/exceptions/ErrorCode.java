@@ -87,7 +87,10 @@ public enum ErrorCode {
 
     // Tag
     TAG_TYPE_CONVERT_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "태그 타입 변환에 실패하였습니다."),
-    TAG_VALUE_CONVERT_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "태그 이름 변환에 실패하였습니다.");
+    TAG_VALUE_CONVERT_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "태그 이름 변환에 실패하였습니다."),
+
+    // Title
+    TITLE_NOT_FOUND(HttpStatus.NOT_FOUND, "칭호를 찾지 못했습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

@@ -20,6 +20,8 @@ import com.ll.playon.domain.party.partyLog.event.ImageDeleteEvent;
 import com.ll.playon.domain.party.partyLog.mapper.PartyLogMapper;
 import com.ll.playon.domain.party.partyLog.repository.PartyLogRepository;
 import com.ll.playon.domain.party.partyLog.validation.PartyLogValidation;
+import com.ll.playon.domain.title.entity.enums.ConditionType;
+import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.global.annotation.ActivePartyMemberOnly;
 import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
@@ -31,6 +33,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URL;
+
 @Service
 @RequiredArgsConstructor
 public class PartyLogService {
@@ -40,6 +44,7 @@ public class PartyLogService {
     private final PartyLogRepository partyLogRepository;
     private final PartyMemberRepository partyMemberRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final TitleEvaluator titleEvaluator;
 
     // 파티 로그 작성
     // AOP로 권한 체크
@@ -54,6 +59,9 @@ public class PartyLogService {
 
         PartyLog partyLog = this.partyLogRepository.save(PartyLogMapper.of(partyMember, request));
 
+        // 파티 로그 작성 칭호
+        titleEvaluator.check(ConditionType.PARTY_LOG_WRITE_COUNT, actor);
+
         // Mvp를 투표한 경우
         if (request.partyMemberId() != null) {
             PartyMember mvpCandidate = this.partyMemberRepository.findById(request.partyMemberId())
@@ -62,6 +70,13 @@ public class PartyLogService {
             PartyMemberValidation.checkPartyMember(party, partyMember);
 
             mvpCandidate.voteMvp();
+
+
+            // MVP 받음 칭호
+            titleEvaluator.check(ConditionType.MVP_VOTE_RECEIVED, mvpCandidate.getMember());
+
+            // MVP 투표 칭호
+            titleEvaluator.check(ConditionType.MVP_VOTE_GIVEN, actor);
         }
 
         return new PartyLogResponse(

@@ -18,6 +18,9 @@ import com.ll.playon.domain.party.party.dto.request.PartyTagRequest;
 import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.party.service.PartyService;
+import com.ll.playon.domain.title.entity.Title;
+import com.ll.playon.domain.title.entity.enums.ConditionType;
+import com.ll.playon.domain.title.repository.TitleRepository;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import jakarta.transaction.Transactional;
@@ -54,6 +57,7 @@ public class BaseInitData {
     private final PartyService partyService;
     private final PartyRepository partyRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TitleRepository titleRepository;
     private final GameRepository gameRepository;
 
     @Autowired
@@ -65,11 +69,70 @@ public class BaseInitData {
     @Bean
     public ApplicationRunner baseInitDataApplicationRunner() {
         return args -> {
+            self.makeTitles();
             self.makeSampleUsers();
             self.makeSampleGuilds();
             self.makeSampleWeeklyPopularGames();
 //            self.makeSampleParties();
         };
+    }
+
+    @Transactional
+    public void makeTitles() {
+        if(titleRepository.count() > 0) return;
+
+        titleRepository.saveAll(List.of(
+                Title.builder().name("튜토리얼 클리어").description("회원 가입을 완료했다.")
+                        .conditionType(ConditionType.REGISTERED).conditionValue(1).build(),
+                Title.builder().name("초보 컬렉터").description("스팀 게임을 1개 소유했다.")
+                        .conditionType(ConditionType.STEAM_GAME_COUNT).conditionValue(1).build(),
+                Title.builder().name("열린 지갑").description("스팀 게임을 10개 소유했다.")
+                        .conditionType(ConditionType.STEAM_GAME_COUNT).conditionValue(10).build(),
+                Title.builder().name("스팀이라는 게임을 하는 것").description("스팀 게임을 100개 소유했다.")
+                        .conditionType(ConditionType.STEAM_GAME_COUNT).conditionValue(100).build(),
+                Title.builder().name("같이 게임해요!").description("파티에 처음 참여했다.")
+                        .conditionType(ConditionType.PARTY_JOIN_COUNT).conditionValue(1).build(),
+                Title.builder().name("나랑 게임할 사람!").description("파티를 처음 개설했다.")
+                        .conditionType(ConditionType.PARTY_CREATE_COUNT).conditionValue(1).build(),
+                Title.builder().name("파티 인싸").description("파티에 10번 참여했다.")
+                        .conditionType(ConditionType.PARTY_JOIN_COUNT).conditionValue(10).build(),
+                Title.builder().name("파티광").description("파티를 10번 개설했다.")
+                        .conditionType(ConditionType.PARTY_CREATE_COUNT).conditionValue(10).build(),
+                Title.builder().name("하루가 짧다").description("파티 참여 누적시간이 24시간을 넘었다.")
+                        .conditionType(ConditionType.PARTY_TIME_ACCUMULATED).conditionValue(24).build(),
+                Title.builder().name("나라가 허락한…").description("파티 참여 누적시간이 일주일을 넘었다.")
+                        .conditionType(ConditionType.PARTY_TIME_ACCUMULATED).conditionValue(168).build(),
+                Title.builder().name("로그ON").description("처음으로 파티로그를 작성했다.")
+                        .conditionType(ConditionType.PARTY_LOG_WRITE_COUNT).conditionValue(1).build(),
+                Title.builder().name("추억을 쓰는 자").description("파티로그를 10번 작성했다.")
+                        .conditionType(ConditionType.PARTY_LOG_WRITE_COUNT).conditionValue(10).build(),
+                Title.builder().name("칭찬합니다").description("MVP 투표에 처음으로 참여했다.")
+                        .conditionType(ConditionType.MVP_VOTE_GIVEN).conditionValue(1).build(),
+                Title.builder().name("인정협회 대법관").description("MVP 투표에 10번 참여했다.")
+                        .conditionType(ConditionType.MVP_VOTE_GIVEN).conditionValue(10).build(),
+                Title.builder().name("1인분은 합니다").description("MVP 추천을 처음 받았다.")
+                        .conditionType(ConditionType.MVP_VOTE_RECEIVED).conditionValue(1).build(),
+                Title.builder().name("버스기사 경력직").description("MVP 추천을 10번 받았다.")
+                        .conditionType(ConditionType.MVP_VOTE_RECEIVED).conditionValue(10).build(),
+                Title.builder().name("길드 마스터").description("길드를 개설했다.")
+                        .conditionType(ConditionType.GUILD_CREATE).conditionValue(1).build(),
+                Title.builder().name("가입인사드려요").description("길드 커뮤니티에 처음으로 글을 작성했다.")
+                        .conditionType(ConditionType.GUILD_POST_COUNT).conditionValue(1).build(),
+                Title.builder().name("길드 정회원").description("길드 커뮤니티에 10개의 글을 작성했다.")
+                        .conditionType(ConditionType.GUILD_POST_COUNT).conditionValue(10).build(),
+                Title.builder().name("선플 달기 운동").description("길드 커뮤니티에 처음으로 댓글을 달았다.")
+                        .conditionType(ConditionType.GUILD_COMMENT_COUNT).conditionValue(1).build(),
+                Title.builder().name("길드 분위기 메이커").description("길드 커뮤니티에 10개의 댓글을 달았다.")
+                        .conditionType(ConditionType.GUILD_COMMENT_COUNT).conditionValue(10).build(),
+                Title.builder().name("Dear Diary").description("자유게시판에 처음으로 글을 작성했다.")
+                        .conditionType(ConditionType.BOARD_POST_COUNT).conditionValue(1).build(),
+                Title.builder().name("여기가 인스타죠?").description("자유게시판에 10개의 글을 작성했다.")
+                        .conditionType(ConditionType.BOARD_POST_COUNT).conditionValue(10).build(),
+                Title.builder().name("무플 방지 운동").description("자유게시판에 처음으로 댓글을 달았다.")
+                        .conditionType(ConditionType.BOARD_COMMENT_COUNT).conditionValue(1).build(),
+                Title.builder().name("댓글 중독자").description("자유게시판에 10개의 댓글을 달았다.")
+                        .conditionType(ConditionType.BOARD_COMMENT_COUNT).conditionValue(10).build()
+        ));
     }
 
     @Transactional
