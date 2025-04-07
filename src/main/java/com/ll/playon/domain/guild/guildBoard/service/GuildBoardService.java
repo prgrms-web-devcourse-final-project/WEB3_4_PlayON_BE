@@ -2,9 +2,11 @@ package com.ll.playon.domain.guild.guildBoard.service;
 
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
+import com.ll.playon.domain.guild.guildBoard.dto.GuildBoardCommentDto;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCreateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardUpdateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardCreateResponse;
+import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardDetailResponse;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardSummaryResponse;
 import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
@@ -18,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -107,5 +111,30 @@ public class GuildBoardService {
         }
 
         guildBoardRepository.delete(board);
+    }
+
+    public GuildBoardDetailResponse getBoardDetail(Long guildId, Long boardId, Member actor) {
+        Guild guild = guildRepository.findById(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
+                .orElseThrow(ErrorCode.GUILD_MEMBER_NOT_FOUND::throwServiceException);
+
+        GuildBoard board = guildBoardRepository.findById(boardId)
+                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
+
+        if (!board.getGuild().getId().equals(guild.getId())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        board.increaseHit();
+
+        List<GuildBoardCommentDto> comments=guildBoardCommentRepository
+                .findByBoardOrderByCreatedAtAsc(board)
+                .stream()
+                .map(GuildBoardCommentDto::from)
+                .toList();
+
+        return GuildBoardDetailResponse.from(board, comments);
     }
 }

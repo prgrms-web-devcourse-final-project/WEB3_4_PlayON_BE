@@ -3,6 +3,7 @@ package com.ll.playon.domain.guild.guildBoard.controller;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCreateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardUpdateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardCreateResponse;
+import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardDetailResponse;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardSummaryResponse;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardSortType;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
@@ -13,6 +14,7 @@ import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -75,5 +77,15 @@ public class GuildBoardController {
         Member actor = userContext.getActor();
         guildBoardService.deleteBoard(guildId, boardId, actor);
         return RsData.success(HttpStatus.OK, "삭제되었습니다.");
+    }
+
+    @GetMapping("/{guildId}/board/{boardId}")
+    public RsData<GuildBoardDetailResponse> getBoardDetail(
+            @PathVariable Long guildId,
+            @PathVariable Long boardId
+    ){
+        Member actor = userContext.getActor();
+        GuildBoardDetailResponse response=guildBoardService.getBoardDetail(guildId, boardId,actor);
+        return RsData.success(HttpStatus.OK, response);
     }
 }
