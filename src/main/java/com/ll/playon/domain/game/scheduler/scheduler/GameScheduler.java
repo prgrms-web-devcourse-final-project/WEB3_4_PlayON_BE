@@ -35,7 +35,7 @@ public class GameScheduler {
         List<WeeklyPopularGame> list = partyRepository.findTopGamesByPartyLastWeek(fromDate, toDate, PageRequest.of(0, limit))
                 .stream()
                 .map(row -> WeeklyPopularGame.builder()
-                        .gameId(((Number) row.get("gameId")).longValue())
+                        .appid((Long) row.get("appid"))
                         .playCount(((Number) row.get("playCount")).longValue())
                         .weekStartDate(weekStart)
                         .build())

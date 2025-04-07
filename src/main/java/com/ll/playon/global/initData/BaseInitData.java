@@ -24,16 +24,6 @@ import com.ll.playon.domain.title.repository.TitleRepository;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import jakarta.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -232,8 +222,8 @@ public class BaseInitData {
                 .limit(3)
                 .collect(Collectors.toList());
 
-        List<Long> gameIds = List.of(252490L, 570L, 730L); // 샘플 SteamGame ID들
-        List<SteamGame> games = gameRepository.findAllByAppidIn(gameIds);
+        List<Long> gameAppIds = List.of(252490L, 570L, 730L); // 샘플 SteamGame ID들
+        List<SteamGame> games = gameRepository.findAllByAppidIn(gameAppIds);
 
         List<String> guildNames = List.of(
                 "게임 마스터즈", "프로 플레이어스", "데빌 헌터즈",
@@ -437,7 +427,7 @@ public class BaseInitData {
             return;
         }
 
-        List<Long> gameIds = List.of(1L, 2L, 3L);
+        List<Long> gameAppIds = List.of(252490L, 570L, 730L);
 
         List<LocalDate> weeks = List.of(
                 LocalDate.of(2025, 3, 24),
@@ -449,7 +439,7 @@ public class BaseInitData {
         for (LocalDate week : weeks) {
             for (int i = 0; i < 3; i++) {
                 WeeklyPopularGame popularGame = WeeklyPopularGame.builder()
-                        .gameId(gameIds.get(i))
+                        .appid(gameAppIds.get(i))
                         .playCount(10 + random.nextLong(20)) // 10 ~ 29 랜덤
                         .weekStartDate(week)
                         .build();

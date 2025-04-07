@@ -160,11 +160,12 @@ public class GameService {
         return new PageDto<>(page.map(PartyLogSummaryResponse::from));
     }
 
+    @Transactional(readOnly = true)
     public List<GetWeeklyPopularGameResponse> getWeeklyPopularGames(LocalDate week) {
         List<Long> gameIds = weeklyGameRepository.findTopGameIdsByWeek(week);
         List<SteamGame> games = gameRepository.findAllByIdIn(gameIds);
         Map<Long, SteamGame> gameMap = games.stream()
-                .collect(Collectors.toMap(SteamGame::getId, g -> g));
+                .collect(Collectors.toMap(SteamGame::getAppid, g -> g));
 
         return gameIds.stream()
                 .map(gameMap::get)

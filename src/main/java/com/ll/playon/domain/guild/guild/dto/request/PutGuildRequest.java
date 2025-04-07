@@ -17,7 +17,7 @@ public record PutGuildRequest(
         @Max(value = 100, message = "최대 인원은 100명 이하로 설정해주세요.")
         int maxMembers,
 
-        Long gameId,
+        Long appid,
 
         boolean isPublic,
 

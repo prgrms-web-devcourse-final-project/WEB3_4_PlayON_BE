@@ -40,8 +40,8 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
         }
 
         // 게임 필터
-        if (req.getGameIds() != null && !req.getGameIds().isEmpty()) {
-            builder.and(guild.game.id.in(req.getGameIds()));
+        if (req.getAppids() != null && !req.getAppids().isEmpty()) {
+            builder.and(guild.game.appid.in(req.getAppids()));
         }
 
         // 태그 필터

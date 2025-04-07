@@ -9,6 +9,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface WeeklyGameRepository extends JpaRepository<WeeklyPopularGame, Long> {
-    @Query("SELECT w.gameId FROM WeeklyPopularGame w WHERE w.weekStartDate = :weekStartDate ORDER BY w.playCount DESC")
+    @Query("SELECT w.appid FROM WeeklyPopularGame w WHERE w.weekStartDate = :weekStartDate ORDER BY w.playCount DESC")
     List<Long> findTopGameIdsByWeek(@Param("weekStartDate") LocalDate weekStartDate);
 }
