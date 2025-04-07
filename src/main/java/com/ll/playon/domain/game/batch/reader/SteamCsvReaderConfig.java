@@ -1,4 +1,4 @@
-package com.ll.playon.domain.game.game.batch.reader;
+package com.ll.playon.domain.game.batch.reader;
 
 import com.ll.playon.domain.game.game.dto.SteamCsvDto;
 import org.springframework.batch.item.file.FlatFileItemReader;

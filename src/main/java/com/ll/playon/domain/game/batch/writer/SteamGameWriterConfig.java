@@ -1,4 +1,4 @@
-package com.ll.playon.domain.game.game.batch.writer;
+package com.ll.playon.domain.game.batch.writer;
 
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import jakarta.persistence.EntityManagerFactory;
