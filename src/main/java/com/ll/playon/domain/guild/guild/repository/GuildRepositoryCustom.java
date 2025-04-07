@@ -6,5 +6,5 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface GuildRepositoryCustom {
-    Page<Guild> searchGuilds(GetGuildListRequest req, Pageable pageable);
+    Page<Guild> searchGuilds(GetGuildListRequest req, Pageable pageable, String sort);
 }

@@ -105,7 +105,7 @@ public class SteamGameProcessor implements ItemProcessor<SteamCsvDto, SteamGame>
                 List<String> developerList = objectMapper.readValue(developers, new TypeReference<>() {});
                 developers = developerList.isEmpty() ? null : developerList.get(0);
             } catch (Exception e) {
-                log.warn("developers 파싱 실패 → {}", developers);
+                log.warn("developers 파싱 실패: {}", developers);
                 developers = null;
             }
         }
@@ -117,7 +117,7 @@ public class SteamGameProcessor implements ItemProcessor<SteamCsvDto, SteamGame>
                 List<String> publisherList = objectMapper.readValue(publishers, new TypeReference<>() {});
                 publishers = publisherList.isEmpty() ? null : publisherList.get(0);
             } catch (Exception e) {
-                log.warn("publishers 파싱 실패 → {}", publishers);
+                log.warn("publishers 파싱 실패: {}", publishers);
                 publishers = null;
             }
         }

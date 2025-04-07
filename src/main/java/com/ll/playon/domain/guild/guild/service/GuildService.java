@@ -1,5 +1,7 @@
 package com.ll.playon.domain.guild.guild.service;
 
+import com.ll.playon.domain.game.game.entity.SteamGame;
+import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.guild.guild.dto.GuildMemberDto;
 import com.ll.playon.domain.guild.guild.dto.request.GetGuildListRequest;
 import com.ll.playon.domain.guild.guild.dto.request.GuildTagRequest;
@@ -36,6 +38,7 @@ public class GuildService {
     private final GuildRepository guildRepository;
     private final GuildMemberRepository guildMemberRepository;
     private final GuildMemberRepositoryCustom guildMemberRepositoryCustom;
+    private final GameRepository gameRepository;
 
     @Transactional
     public PostGuildResponse createGuild(PostGuildRequest request, Member owner) {
@@ -43,12 +46,12 @@ public class GuildService {
             ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
 
-        // TODO: 게임 생성 후 게임 데이터로 넣기
-        Guild guild = Guild.createFrom(request, owner);
-        guild = guildRepository.save(guild);
+        SteamGame game = gameRepository.findById(request.gameId())
+                .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
-        List<GuildTag> guildTags = convertTags(request.tags(), guild);
-        guild.setGuildTags(guildTags);
+        Guild guild = guildRepository.save(Guild.createFrom(request, owner, game));
+
+        guild.setGuildTags(convertTags(request.tags(), guild));
 
         GuildMember guildMember = GuildMember.builder()
                 .guild(guild)
@@ -71,7 +74,10 @@ public class GuildService {
             throw ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
 
-        guild.updateFromRequest(request);
+        SteamGame game = gameRepository.findById(request.gameId())
+                .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
+
+        guild.updateFromRequest(request, game);
         guild.getGuildTags().clear();
 
         List<GuildTag> guildTags = convertTags(request.tags(), guild);
@@ -119,12 +125,12 @@ public class GuildService {
     }
 
     @Transactional(readOnly = true)
-    public PageDto<GetGuildListResponse> searchGuilds(GetGuildListRequest request) {
-        Pageable pageable = PageRequest.of(request.page(), request.size());
+    public PageDto<GetGuildListResponse> searchGuilds(int page, int pageSize, String sort, GetGuildListRequest request) {
+        Pageable pageable = PageRequest.of(page, pageSize);
 
-        Page<Guild> page = guildRepository.searchGuilds(request, pageable);
+        Page<Guild> guilds = guildRepository.searchGuilds(request, pageable, sort);
 
-        return new PageDto<>(page.map(GetGuildListResponse::from));
+        return new PageDto<>(guilds.map(GetGuildListResponse::from));
     }
 
     @Transactional(readOnly = true)
