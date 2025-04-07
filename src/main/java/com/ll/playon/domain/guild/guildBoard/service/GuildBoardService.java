@@ -31,6 +31,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class GuildBoardService {
+
     private final GuildRepository guildRepository;
     private final GuildMemberRepository guildMemberRepository;
     private final GuildBoardRepository guildBoardRepository;
@@ -38,22 +39,9 @@ public class GuildBoardService {
     private final GuildBoardLikeRepository guildBoardLikeRepository;
 
     public Page<GuildBoardSummaryResponse> getBoardList(Long guildId, BoardTag tag, String keyword, Pageable pageable) {
-        Guild guild = guildRepository.findById(guildId)
-                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+        Guild guild = getGuild(guildId);
 
-        Page<GuildBoard> boards;
-
-        boolean hasKeyword = (keyword != null && !keyword.trim().isEmpty());
-
-        if (tag != null && hasKeyword) {
-            boards = guildBoardRepository.findByGuildAndTagAndTitleContaining(guild, tag, keyword, pageable);
-        } else if (tag != null) {
-            boards = guildBoardRepository.findByGuildAndTag(guild, tag, pageable);
-        } else if (hasKeyword) {
-            boards = guildBoardRepository.findByGuildAndTitleContaining(guild, keyword, pageable);
-        } else {
-            boards = guildBoardRepository.findByGuild(guild, pageable);
-        }
+        Page<GuildBoard> boards = switchBoardSearch(tag, keyword, pageable, guild);
 
         return boards.map(board -> {
             int commentCount = guildBoardCommentRepository.countByBoard(board);
@@ -62,17 +50,10 @@ public class GuildBoardService {
     }
 
     public GuildBoardCreateResponse createBoard(Long guildId, GuildBoardCreateRequest request, Member actor) {
-        Guild guild = guildRepository.findById(guildId)
-                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+        Guild guild = getGuild(guildId);
+        GuildMember guildMember = getGuildMember(guild, actor);
 
-        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
-                .orElseThrow(ErrorCode.GUILD_MEMBER_NOT_FOUND::throwServiceException);
-
-        // 공지글 작성 권한 체크
-        if (request.tag() == BoardTag.NOTICE &&
-                !guildMember.getGuildRole().isManagerOrLeader()) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
+        validateNoticePermission(request.tag(), guildMember);
 
         GuildBoard board = GuildBoard.builder()
                 .guild(guild)
@@ -89,63 +70,28 @@ public class GuildBoardService {
     }
 
     public void updateBoard(Long guildId, Long boardId, GuildBoardUpdateRequest request, Member actor) {
-        Guild guild=guildRepository.findById(guildId)
-                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
-
-        GuildBoard board=guildBoardRepository.findById(boardId)
-                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
-
-        if(!board.getGuild().getId().equals(guildId)) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
-
-        if(!board.getAuthor().getMember().getId().equals(actor.getId())) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
-
-        if (request.tag() == BoardTag.NOTICE &&
-                !board.getAuthor().getGuildRole().isManagerOrLeader()) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
+        GuildBoard board = getBoardInGuild(guildId, boardId);
+        validateAuthor(board, actor);
+        validateNoticePermission(request.tag(), board.getAuthor());
 
         board.update(request.title(), request.content(), request.tag(), request.imageUrl());
     }
 
     public void deleteBoard(Long guildId, Long boardId, Member actor) {
-        Guild guild=guildRepository.findById(guildId)
-                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
-
-        GuildBoard board=guildBoardRepository.findById(boardId)
-                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
-
-        if(!board.getGuild().getId().equals(guild.getId())) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
-
-        if(!board.getAuthor().getMember().getId().equals(actor.getId())) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
+        GuildBoard board = getBoardInGuild(guildId, boardId);
+        validateAuthor(board, actor);
 
         guildBoardRepository.delete(board);
     }
 
     public GuildBoardDetailResponse getBoardDetail(Long guildId, Long boardId, Member actor) {
-        Guild guild = guildRepository.findById(guildId)
-                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
-
-        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
-                .orElseThrow(ErrorCode.GUILD_MEMBER_NOT_FOUND::throwServiceException);
-
-        GuildBoard board = guildBoardRepository.findById(boardId)
-                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
-
-        if (!board.getGuild().getId().equals(guild.getId())) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
+        Guild guild = getGuild(guildId);
+        GuildMember guildMember = getGuildMember(guild, actor);
+        GuildBoard board = getBoardInGuild(guildId, boardId);
 
         board.increaseHit();
 
-        List<GuildBoardCommentDto> comments=guildBoardCommentRepository
+        List<GuildBoardCommentDto> comments = guildBoardCommentRepository
                 .findByBoardOrderByCreatedAtAsc(board)
                 .stream()
                 .map(GuildBoardCommentDto::from)
@@ -155,56 +101,37 @@ public class GuildBoardService {
     }
 
     @Transactional
-    public GuildBoardLikeToggleResponse toggleLike(Long guildId, Long boardId, Member actor){
-        Guild guild=guildRepository.findById(guildId)
-                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+    public GuildBoardLikeToggleResponse toggleLike(Long guildId, Long boardId, Member actor) {
+        Guild guild = getGuild(guildId);
+        GuildMember guildMember = getGuildMember(guild, actor);
+        GuildBoard board = getBoardInGuild(guildId, boardId);
 
-        GuildMember guildMember=guildMemberRepository.findByGuildAndMember(guild, actor)
-                .orElseThrow(ErrorCode.GUILD_MEMBER_NOT_FOUND::throwServiceException);
+        Optional<GuildBoardLike> existingLike = guildBoardLikeRepository.findByGuildMemberAndBoard(guildMember, board);
 
-        GuildBoard board=guildBoardRepository.findById(boardId)
-                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
-
-        if(!board.getGuild().getId().equals(guild.getId())) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
-
-        Optional<GuildBoardLike> existingLike=guildBoardLikeRepository.findByGuildMemberAndBoard(guildMember, board);
-
-            boolean liked;
-        if(existingLike.isPresent()){
+        boolean liked;
+        if (existingLike.isPresent()) {
             guildBoardLikeRepository.delete(existingLike.get());
             board.decreaseLike();
-            liked=false;
-        }else{
-            GuildBoardLike like=GuildBoardLike.builder()
+            liked = false;
+        } else {
+            guildBoardLikeRepository.save(GuildBoardLike.builder()
                     .guildMember(guildMember)
                     .board(board)
-                    .build();
-            guildBoardLikeRepository.save(like);
+                    .build());
             board.increaseLike();
-            liked=true;
+            liked = true;
         }
 
-        return GuildBoardLikeToggleResponse.of(liked,board.getLikeCount());
+        return GuildBoardLikeToggleResponse.of(liked, board.getLikeCount());
     }
 
     @Transactional
-    public GuildBoardCommentCreateResponse createComment(Long guildId, Long boardId, GuildBoardCommentCreateRequest request, Member actor){
-        Guild guild = guildRepository.findById(guildId)
-                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+    public GuildBoardCommentCreateResponse createComment(Long guildId, Long boardId, GuildBoardCommentCreateRequest request, Member actor) {
+        Guild guild = getGuild(guildId);
+        GuildBoard board = getBoardInGuild(guildId, boardId);
+        GuildMember guildMember = getGuildMember(guild, actor);
 
-        GuildBoard board = guildBoardRepository.findById(boardId)
-                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
-
-        if(!board.getGuild().getId().equals(guild.getId())) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
-
-        GuildMember guildMember=guildMemberRepository.findByGuildAndMember(guild,actor)
-                .orElseThrow(ErrorCode.GUILD_MEMBER_NOT_FOUND::throwServiceException);
-
-        GuildBoardComment comment=GuildBoardComment.builder()
+        GuildBoardComment comment = GuildBoardComment.builder()
                 .board(board)
                 .author(guildMember)
                 .comment(request.comment())
@@ -216,55 +143,90 @@ public class GuildBoardService {
     }
 
     @Transactional
-    public void updateComment(Long guildId, Long boardId, Long commentId, GuildBoardCommentUpdateRequest request, Member actor){
-        Guild guild=guildRepository.findById(guildId)
-                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+    public void updateComment(Long guildId, Long boardId, Long commentId, GuildBoardCommentUpdateRequest request, Member actor) {
+        GuildBoard board = getBoardInGuild(guildId, boardId);
+        GuildBoardComment comment = getComment(commentId);
 
-        GuildBoard board=guildBoardRepository.findById(boardId)
-                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
-
-        if(!board.getGuild().getId().equals(guild.getId())) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
-
-        GuildBoardComment comment = guildBoardCommentRepository.findById(commentId)
-                .orElseThrow(() -> ErrorCode.GUILD_BOARD_COMMENT_NOT_FOUND.throwServiceException());
-
-        if(!comment.getBoard().getId().equals(board.getId())){
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
-
-        if(!comment.getAuthor().getMember().getId().equals(actor.getId())){
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
+        validateCommentBelongsToBoard(comment, board);
+        validateAuthor(comment, actor);
 
         comment.update(request.comment());
     }
 
     @Transactional
     public void deleteComment(Long guildId, Long boardId, Long commentId, Member actor) {
-        Guild guild = guildRepository.findById(guildId)
-                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+        GuildBoard board = getBoardInGuild(guildId, boardId);
+        GuildBoardComment comment = getComment(commentId);
 
-        GuildBoard board = guildBoardRepository.findById(boardId)
-                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
-
-        if (!board.getGuild().getId().equals(guild.getId())) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
-
-        GuildBoardComment comment = guildBoardCommentRepository.findById(commentId)
-                .orElseThrow(() -> ErrorCode.GUILD_BOARD_COMMENT_NOT_FOUND.throwServiceException());
-
-        if (!comment.getBoard().getId().equals(board.getId())) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
-
-        if (!comment.getAuthor().getMember().getId().equals(actor.getId())) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
+        validateCommentBelongsToBoard(comment, board);
+        validateAuthor(comment, actor);
 
         guildBoardCommentRepository.delete(comment);
     }
 
+
+    private Guild getGuild(Long guildId) {
+        return guildRepository.findById(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+    }
+
+    private GuildMember getGuildMember(Guild guild, Member actor) {
+        return guildMemberRepository.findByGuildAndMember(guild, actor)
+                .orElseThrow(ErrorCode.GUILD_MEMBER_NOT_FOUND::throwServiceException);
+    }
+
+    private GuildBoard getBoardInGuild(Long guildId, Long boardId) {
+        GuildBoard board = guildBoardRepository.findById(boardId)
+                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
+
+        if (!board.getGuild().getId().equals(guildId)) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        return board;
+    }
+
+    private GuildBoardComment getComment(Long commentId) {
+        return guildBoardCommentRepository.findById(commentId)
+                .orElseThrow(ErrorCode.GUILD_BOARD_COMMENT_NOT_FOUND::throwServiceException);
+    }
+
+    private void validateAuthor(GuildBoard board, Member actor) {
+        if (!board.getAuthor().getMember().getId().equals(actor.getId())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+    }
+
+    private void validateAuthor(GuildBoardComment comment, Member actor) {
+        if (!comment.getAuthor().getMember().getId().equals(actor.getId())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+    }
+
+    private void validateCommentBelongsToBoard(GuildBoardComment comment, GuildBoard board) {
+        if (!comment.getBoard().getId().equals(board.getId())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+    }
+
+    private void validateNoticePermission(BoardTag tag, GuildMember guildMember) {
+        if (tag == BoardTag.NOTICE && !guildMember.getGuildRole().isManagerOrLeader()) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+    }
+
+    private Page<GuildBoard> switchBoardSearch(BoardTag tag, String keyword, Pageable pageable, Guild guild) {
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+
+        if (tag != null && hasKeyword) {
+            return guildBoardRepository.findByGuildAndTagAndTitleContaining(guild, tag, keyword, pageable);
+        } else if (tag != null) {
+            return guildBoardRepository.findByGuildAndTag(guild, tag, pageable);
+        } else if (hasKeyword) {
+            return guildBoardRepository.findByGuildAndTitleContaining(guild, keyword, pageable);
+        } else {
+            return guildBoardRepository.findByGuild(guild, pageable);
+        }
+    }
 }
+
