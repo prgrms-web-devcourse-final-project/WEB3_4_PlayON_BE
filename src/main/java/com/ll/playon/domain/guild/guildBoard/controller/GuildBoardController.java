@@ -4,6 +4,7 @@ import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCreateRequest
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardUpdateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardCreateResponse;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardDetailResponse;
+import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardLikeToggleResponse;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardSummaryResponse;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardSortType;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
@@ -86,6 +87,16 @@ public class GuildBoardController {
     ){
         Member actor = userContext.getActor();
         GuildBoardDetailResponse response=guildBoardService.getBoardDetail(guildId, boardId,actor);
+        return RsData.success(HttpStatus.OK, response);
+    }
+
+    @PostMapping("/{guildId}/board/{boardId}/like")
+    public RsData<GuildBoardLikeToggleResponse> toggleLike(
+            @PathVariable Long guildId,
+            @PathVariable Long boardId
+    ){
+        Member actor= userContext.getActor();
+        GuildBoardLikeToggleResponse response=guildBoardService.toggleLike(guildId, boardId, actor);
         return RsData.success(HttpStatus.OK, response);
     }
 }

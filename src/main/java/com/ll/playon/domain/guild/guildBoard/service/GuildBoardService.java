@@ -7,10 +7,13 @@ import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCreateRequest
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardUpdateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardCreateResponse;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardDetailResponse;
+import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardLikeToggleResponse;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardSummaryResponse;
 import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
+import com.ll.playon.domain.guild.guildBoard.entity.GuildBoardLike;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
 import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardCommentRepository;
+import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardLikeRepository;
 import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
@@ -20,8 +23,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +35,7 @@ public class GuildBoardService {
     private final GuildMemberRepository guildMemberRepository;
     private final GuildBoardRepository guildBoardRepository;
     private final GuildBoardCommentRepository guildBoardCommentRepository;
+    private final GuildBoardLikeRepository guildBoardLikeRepository;
 
     public Page<GuildBoardSummaryResponse> getBoardList(Long guildId, BoardTag tag, Pageable pageable) {
         Guild guild = guildRepository.findById(guildId)
@@ -136,5 +142,40 @@ public class GuildBoardService {
                 .toList();
 
         return GuildBoardDetailResponse.from(board, comments);
+    }
+
+    @Transactional
+    public GuildBoardLikeToggleResponse toggleLike(Long guildId, Long boardId, Member actor){
+        Guild guild=guildRepository.findById(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        GuildMember guildMember=guildMemberRepository.findByGuildAndMember(guild, actor)
+                .orElseThrow(ErrorCode.GUILD_MEMBER_NOT_FOUND::throwServiceException);
+
+        GuildBoard board=guildBoardRepository.findById(boardId)
+                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
+
+        if(!board.getGuild().getId().equals(guild.getId())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        Optional<GuildBoardLike> existingLike=guildBoardLikeRepository.findByGuildMemberAndBoard(guildMember, board);
+
+            boolean liked;
+        if(existingLike.isPresent()){
+            guildBoardLikeRepository.delete(existingLike.get());
+            board.decreaseLike();
+            liked=false;
+        }else{
+            GuildBoardLike like=GuildBoardLike.builder()
+                    .guildMember(guildMember)
+                    .board(board)
+                    .build();
+            guildBoardLikeRepository.save(like);
+            board.increaseLike();
+            liked=true;
+        }
+
+        return GuildBoardLikeToggleResponse.of(liked,board.getLikeCount());
     }
 }
