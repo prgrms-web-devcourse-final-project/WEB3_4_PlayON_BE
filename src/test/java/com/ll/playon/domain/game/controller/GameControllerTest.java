@@ -136,16 +136,16 @@ public class GameControllerTest {
     @Test
     @DisplayName("게임 상세 정보 조회 성공")
     void getGameDetailSuccess() throws Exception {
-//        mvc.perform(get("/api/games/{appid}/details", game.getAppid())
-//                        .param("partyPage.page", "0")
-//                        .param("partyPage.size", "3")
-//                        .param("logPage.page", "0")
-//                        .param("logPage.size", "3"))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.data.game.appid").value(game.getAppid()))
-//                .andExpect(jsonPath("$.data.game.name").value(game.getName()))
-//                .andExpect(jsonPath("$.data.partyList").isArray())
-//                .andExpect(jsonPath("$.data.partyLogList").isArray());
+        mvc.perform(get("/api/games/{appid}/details", game.getAppid())
+                        .param("partyPage.page", "0")
+                        .param("partyPage.size", "3")
+                        .param("logPage.page", "0")
+                        .param("logPage.size", "3"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.game.appid").value(game.getAppid()))
+                .andExpect(jsonPath("$.data.game.name").value(game.getName()))
+                .andExpect(jsonPath("$.data.partyList").isArray())
+                .andExpect(jsonPath("$.data.partyLogList").isArray());
     }
 
     @Test
@@ -186,10 +186,10 @@ public class GameControllerTest {
                 .maximum(5)
                 .build());
 
-//        mvc.perform(get("/api/games/{appid}/party", game.getAppid()))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.data.items").isArray())
-//                .andExpect(jsonPath("$.data.items[0].name").value("Test Party"));
+        mvc.perform(get("/api/games/{appid}/party", game.getAppid()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items").isArray())
+                .andExpect(jsonPath("$.data.items[0].name").value("Test Party"));
     }
 
     @Test
@@ -225,10 +225,10 @@ public class GameControllerTest {
                 .content("Enjoyed it")
                 .build());
 
-//        mvc.perform(get("/api/games/{appid}/logs", game.getAppid()))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.data.items").isArray())
-//                .andExpect(jsonPath("$.data.items[0].partyId").value(party.getId()));
+        mvc.perform(get("/api/games/{appid}/logs", game.getAppid()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items").isArray())
+                .andExpect(jsonPath("$.data.items[0].partyId").value(party.getId()));
     }
 
     @Test

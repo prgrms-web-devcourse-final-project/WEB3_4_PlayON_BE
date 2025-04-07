@@ -1,5 +1,6 @@
 package com.ll.playon.domain.party.party.repository;
 
+import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
@@ -190,8 +191,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             """)
     List<PartyMember> findPartyMembersByPartyIds(@Param("partyIds") List<Long> partyIds);
 
-    @Query("SELECT p FROM Party p WHERE p.game = :gameId")
-    Page<Party> findByGameId(@Param("gameId") Long gameId, Pageable partyPageable);
+    Page<Party> findByGame(SteamGame game, Pageable pageable);
 
 
     @Query("""

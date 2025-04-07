@@ -122,8 +122,8 @@ public class GameService {
         SteamGame game = gameRepository.findSteamGameByAppid(appid)
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
-        Page<Party> partyPage = partyRepository.findByGameId(game.getId(), partyPageable);
-        Page<PartyLog> logPage = partyLogRepository.findByPartyGameId(game.getId(), logPageable);
+        Page<Party> partyPage = partyRepository.findByGame(game, partyPageable);
+        Page<PartyLog> logPage = partyLogRepository.findByPartyGame(game, logPageable);
 
         return GameDetailWithPartyResponse.from(
                 game,
@@ -151,7 +151,7 @@ public class GameService {
         SteamGame game = gameRepository.findSteamGameByAppid(appid)
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
-        Page<Party> page = partyRepository.findByGameId(game.getId(), pageable);
+        Page<Party> page = partyRepository.findByGame(game, pageable);
         return new PageDto<>(page.map(PartySummaryResponse::from));
     }
 
@@ -160,7 +160,7 @@ public class GameService {
         SteamGame game = gameRepository.findSteamGameByAppid(appid)
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
-        Page<PartyLog> page = partyLogRepository.findByPartyGameId(game.getId(), pageable);
+        Page<PartyLog> page = partyLogRepository.findByPartyGame(game, pageable);
         return new PageDto<>(page.map(PartyLogSummaryResponse::from));
     }
 
