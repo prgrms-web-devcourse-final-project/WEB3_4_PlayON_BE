@@ -1,6 +1,6 @@
-package com.ll.playon.domain.game.game.batch.config;
+package com.ll.playon.domain.game.batch.config;
 
-import com.ll.playon.domain.game.game.batch.processor.SteamGameProcessor;
+import com.ll.playon.domain.game.batch.processor.SteamGameProcessor;
 import com.ll.playon.domain.game.game.dto.SteamCsvDto;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import lombok.RequiredArgsConstructor;

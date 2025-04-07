@@ -214,4 +214,13 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
     List<Party> findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtDescCreatedAtDesc(PartyStatus partyStatus,
                                                                                      Pageable pageable);
 
+    @Query("""
+        SELECT p
+        FROM Party p
+        WHERE p.id IN :partyIds
+          AND p.publicFlag = TRUE
+          AND p.partyStatus = 'COMPLETED'
+        ORDER BY p.createdAt DESC
+    """)
+    List<Party> findPublicCompletedPartiesIn(@Param("partyIds") List<Long> partyIds, Pageable pageable);
 }

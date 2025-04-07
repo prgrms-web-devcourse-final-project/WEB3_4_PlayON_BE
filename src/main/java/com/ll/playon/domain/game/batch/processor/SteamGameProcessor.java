@@ -1,4 +1,4 @@
-package com.ll.playon.domain.game.game.batch.processor;
+package com.ll.playon.domain.game.batch.processor;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

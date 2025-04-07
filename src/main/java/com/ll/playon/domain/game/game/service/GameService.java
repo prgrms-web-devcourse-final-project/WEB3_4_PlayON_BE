@@ -1,6 +1,7 @@
 package com.ll.playon.domain.game.game.service;
 
 import com.ll.playon.domain.game.game.dto.GameListResponse;
+import com.ll.playon.domain.game.game.dto.response.GetRecommendedGameResponse;
 import com.ll.playon.domain.game.game.dto.request.GameSearchCondition;
 import com.ll.playon.domain.game.game.dto.response.*;
 import com.ll.playon.domain.game.game.entity.SteamGame;
@@ -12,6 +13,7 @@ import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
 import com.ll.playon.domain.party.party.entity.Party;
+import com.ll.playon.domain.party.party.repository.PartyMemberRepository;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.partyLog.entity.PartyLog;
 import com.ll.playon.domain.party.partyLog.repository.PartyLogRepository;
@@ -20,6 +22,7 @@ import com.ll.playon.global.steamAPI.SteamAPI;
 import com.ll.playon.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +44,7 @@ public class GameService {
 
     private final static int TOP_FIVE = 5;
     private final WeeklyGameRepository weeklyGameRepository;
+    private final PartyMemberRepository partyMemberRepository;
 
     public List<GameListResponse> makeGameListWithGenre(List<SteamGame> gameList, SteamGenre preferredGenre) {
         return makeGameList(gameList, preferredGenre);
@@ -171,6 +175,47 @@ public class GameService {
                 .map(gameMap::get)
                 .filter(Objects::nonNull)
                 .map(GetWeeklyPopularGameResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetRecommendedGameResponse> recommendGamesForMember(Long myMemberId, int limit) {
+
+        // 내가 참여한 파티들
+        List<Long> myPartyIds = partyMemberRepository.findPartyIdsByMemberId(myMemberId);
+        if (myPartyIds.isEmpty()) {
+            return List.of();
+        }
+
+        // 그 파티에서 같이한 멤버
+        List<Long> friendMemberIds = partyMemberRepository.findMemberIdsInPartiesExceptMe(myPartyIds, myMemberId);
+        if (friendMemberIds.isEmpty()) {
+            return List.of();
+        }
+
+        // 그 멤버들이 참여한 파티 중 내가 참여한 파티 제외
+        List<Long> friendPartyIds = partyMemberRepository.findPartyIdsByMembersExceptPartyIds(friendMemberIds, myPartyIds);
+        if (friendPartyIds.isEmpty()) {
+            return List.of();
+        }
+
+        // 공개 + 완료 파티를 최신순으로 limit개
+        List<Party> parties = partyRepository.findPublicCompletedPartiesIn(friendPartyIds, PageRequest.of(0, limit*4));
+        if (parties.isEmpty()) {
+            return List.of();
+        }
+
+        // TODO: distinct() -> equals() 구현 필요
+        return parties.stream()
+                .map(Party::getGame)
+                .collect(Collectors.toMap(
+                        SteamGame::getAppid,
+                        GetRecommendedGameResponse::from,
+                        (existing, replacement) -> existing
+                ))
+                .values()
+                .stream()
+                .limit(limit)
                 .toList();
     }
 }

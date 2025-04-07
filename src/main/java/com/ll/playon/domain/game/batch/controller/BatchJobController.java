@@ -1,4 +1,4 @@
-package com.ll.playon.domain.game.game.batch.controller;
+package com.ll.playon.domain.game.batch.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;

@@ -11,6 +11,7 @@ import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
 import com.ll.playon.standard.page.dto.PageDto;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -92,7 +93,15 @@ public class GameController {
     }
 
     @GetMapping("/popular")
+    @Operation(summary = "유저가 많이 선택한 게임")
     public RsData<List<GetWeeklyPopularGameResponse>> popularGames() {
         return RsData.success(HttpStatus.OK, gameService.getWeeklyPopularGames(LocalDate.now().with(DayOfWeek.MONDAY)));
     }
+
+    @GetMapping("/recommend/friends")
+    @Operation(summary = "최근 함께 파티한 유저의 게임")
+    public RsData<List<GetRecommendedGameResponse>> recommendGames(@RequestParam(defaultValue = "4") int count) {
+        return RsData.success(HttpStatus.OK, gameService.recommendGamesForMember(userContext.getActor().getId(), count));
+    }
+
 }

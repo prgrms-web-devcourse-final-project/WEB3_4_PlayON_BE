@@ -5,11 +5,11 @@ import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.response.*;
 import com.ll.playon.domain.guild.guild.service.GuildService;
-import com.ll.playon.domain.member.entity.Member;
-import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.global.response.RsData;
+import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.validation.GlobalValidation;
 import com.ll.playon.standard.page.dto.PageDto;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,33 +23,33 @@ import java.util.List;
 public class GuildController {
 
     private final GuildService guildService;
-    private final MemberRepository memberRepository;
+    private final UserContext userContext;
 
     @PostMapping
     public RsData<PostGuildResponse> addGuild(@RequestBody @Valid PostGuildRequest request) {
-        return RsData.success(HttpStatus.CREATED, guildService.createGuild(request, getActor()));
+        return RsData.success(HttpStatus.CREATED, guildService.createGuild(request, userContext.getActor()));
     }
 
     @PutMapping("/{guildId}")
     public RsData<PutGuildResponse> updateGuild(@PathVariable Long guildId,
                                                 @RequestBody @Valid PutGuildRequest request) {
-        return RsData.success(HttpStatus.OK, guildService.modifyGuild(guildId, request, getActor()));
+        return RsData.success(HttpStatus.OK, guildService.modifyGuild(guildId, request, userContext.getActor()));
     }
 
     @DeleteMapping("/{guildId}")
     public RsData<String> deleteGuild(@PathVariable Long guildId) {
-        guildService.deleteGuild(guildId, getActor());
+        guildService.deleteGuild(guildId, userContext.getActor());
         return RsData.success(HttpStatus.OK, "ok");
     }
 
     @GetMapping("/{guildId}")
     public RsData<GetGuildDetailResponse> getGuildDetail(@PathVariable Long guildId) {
-        return RsData.success(HttpStatus.OK, guildService.getGuildDetail(guildId, getActor()));
+        return RsData.success(HttpStatus.OK, guildService.getGuildDetail(guildId, userContext.getActor()));
     }
 
 //    @GetMapping("/{guildId}/members")
 //    public RsData<PageDto<GuildMemberDto>> getGuildMembers(@PathVariable Long guildId, Pageable pageable) {
-//        return RsData.success(HttpStatus.OK, guildService.getGuildMembers(guildId, getActor(), pageable));
+//        return RsData.success(HttpStatus.OK, guildService.getGuildMembers(guildId, userContext.getActor(), pageable));
 //    }
 
     @GetMapping
@@ -70,11 +70,8 @@ public class GuildController {
     }
 
     @GetMapping("/recommend")
+    @Operation(summary = "특정 게임으로 길드 조회")
     public RsData<List<GetRecommendGuildResponse>> getRecommendGuild(@RequestParam(defaultValue = "5") int count, @RequestParam long appid) {
         return RsData.success(HttpStatus.OK, guildService.getRecommendedGuildsByGame(count, appid));
-    }
-    private Member getActor() {
-        // TODO: 개발 테스트용
-        return memberRepository.findById(1L).get();
     }
 }
