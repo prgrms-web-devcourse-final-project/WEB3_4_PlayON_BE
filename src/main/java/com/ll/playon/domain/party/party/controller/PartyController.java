@@ -8,6 +8,7 @@ import com.ll.playon.domain.party.party.dto.response.GetAllPendingMemberResponse
 import com.ll.playon.domain.party.party.dto.response.GetPartyDetailResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyMainResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyResponse;
+import com.ll.playon.domain.party.party.dto.response.GetPartyResultResponse;
 import com.ll.playon.domain.party.party.dto.response.PostPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.PutPartyResponse;
 import com.ll.playon.domain.party.party.service.PartyService;
@@ -47,7 +48,7 @@ public class PartyController {
     public RsData<PostPartyResponse> createParty(@RequestBody @Valid PostPartyRequest postPartyRequest) {
         // TODO : 추후 롤백
 //        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.findById(6L);
 
         return RsData.success(HttpStatus.CREATED, this.partyService.createParty(actor, postPartyRequest));
     }
@@ -66,20 +67,45 @@ public class PartyController {
         // TODO : 추후 롤백
 //        정책 고민 (회원만 조회 가능하게 할 것인지)
 //        Member actor = this.userContext.getActor();
+        Member actor = this.userContext.findById(5L);
+
         GlobalValidation.checkPageSize(pageSize);
 
         return RsData.success(HttpStatus.OK,
-                new PageDto<>(this.partyService.getAllParties(page, pageSize, orderBy, partyAt, getAllPartiesRequest)));
+                new PageDto<>(this.partyService.getAllFilteredParties(actor, page, pageSize, orderBy, partyAt,
+                        getAllPartiesRequest)));
     }
 
-    @GetMapping("/main")
-    @Operation(summary = "파티 메인용 리스트 조회")
-    public RsData<GetPartyMainResponse> getPartyMain(@RequestParam(defaultValue = "2") int limit) {
+    @GetMapping("/{partyId}/result")
+    @Operation(summary = "파티 결과 조회")
+    public RsData<GetPartyResultResponse> getPartyResult(@PathVariable long partyId) {
+        // TODO : 추후 롤백
+//        정책 고민 (회원만 조회 가능하게 할 것인지)
+//        Member actor = this.userContext.getActor();
+//        Member actor = this.userContext.findById(5L);
+
+        return RsData.success(HttpStatus.OK, this.partyService.getPartyResult(partyId));
+    }
+
+    @GetMapping("/main/pending")
+    @Operation(summary = "메인용 진행 예정 리스트 조회")
+    public RsData<GetPartyMainResponse> getPendingPartyMain(@RequestParam(defaultValue = "2") int limit) {
+        // TODO : 추후 롤백
+//        정책 고민 (회원만 조회 가능하게 할 것인지)
+//        Member actor = this.userContext.getActor();
+//        Member actor = this.userContext.findById(5L);
+
+        return RsData.success(HttpStatus.OK, this.partyService.getPendingPartyMain(limit));
+    }
+
+    @GetMapping("/main/completed")
+    @Operation(summary = "메인용 종료된 파티 리스트 조회")
+    public RsData<GetPartyMainResponse> getCompletedPartyMain(@RequestParam(defaultValue = "3") int limit) {
         // TODO : 추후 롤백
 //        정책 고민 (회원만 조회 가능하게 할 것인지)
 //        Member actor = this.userContext.getActor();
 
-        return RsData.success(HttpStatus.OK, this.partyService.getPartyMain(limit));
+        return RsData.success(HttpStatus.OK, this.partyService.getCompletedPartyMain(limit));
     }
 
     @GetMapping("/{partyId}")

@@ -16,6 +16,9 @@ public record PutPartyResponse(
         @NonNull
         String description,
 
+        @NonNull
+        String headerImage,
+
         boolean isPublic,
 
         int minimum,
@@ -28,10 +31,11 @@ public record PutPartyResponse(
     public PutPartyResponse(Party party) {
         this(
                 party.getId(),
-                party.getGame(),
+                party.getGame().getId(),
                 party.getName(),
                 party.getDescription(),
-                party.isPublic(),
+                party.getGame().getHeaderImage() != null ? party.getGame().getHeaderImage() : "",
+                party.isPublicFlag(),
                 party.getMinimum(),
                 party.getMaximum(),
                 PartyTagResponse.fromList(party.getPartyTags())

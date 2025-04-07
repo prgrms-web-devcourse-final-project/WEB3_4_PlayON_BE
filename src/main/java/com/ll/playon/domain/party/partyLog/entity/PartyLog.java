@@ -1,6 +1,7 @@
 package com.ll.playon.domain.party.partyLog.entity;
 
 import com.ll.playon.domain.party.party.entity.PartyMember;
+import com.ll.playon.domain.party.partyLog.dto.request.PutPartyLogRequest;
 import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,5 +37,10 @@ public class PartyLog extends BaseTime {
     public void delete() {
         this.partyMember.setPartyLog(null);
         this.partyMember = null;
+    }
+
+    public void update(PutPartyLogRequest request) {
+        this.comment = request.comment();
+        this.content = request.content();
     }
 }
