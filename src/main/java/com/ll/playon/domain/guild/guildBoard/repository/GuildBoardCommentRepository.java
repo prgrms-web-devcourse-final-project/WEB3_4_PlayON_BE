@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface GuildBoardCommentRepository extends JpaRepository<GuildBoardComment, Long> {
-    List<GuildBoardComment> findByBoardOrderByCreatedAtAsc(GuildBoard board);
+//    List<GuildBoardComment> findByBoardOrderByCreatedAtAsc(GuildBoard board);
+    int countByBoard(GuildBoard board);
 }

@@ -9,5 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface GuildBoardRepository extends JpaRepository<GuildBoard, Long> {
     Page<GuildBoard> findByGuild(Guild guild, Pageable pageable);
-    Page<GuildBoard> findByGuildTag(Guild guild, BoardTag tag, Pageable pageable);
+    Page<GuildBoard> findByGuildAndTag(Guild guild, BoardTag tag, Pageable pageable);
 }
