@@ -66,4 +66,22 @@ public class GuildBoardService {
 
         return GuildBoardCreateResponse.from(board.getId());
     }
+
+    public void deleteBoard(Long guildId, Long boardId, Member actor) {
+        Guild guild=guildRepository.findById(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        GuildBoard board=guildBoardRepository.findById(boardId)
+                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
+
+        if(!board.getGuild().getId().equals(guild.getId())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        if(!board.getAuthor().getMember().getId().equals(actor.getId())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        guildBoardRepository.delete(board);
+    }
 }

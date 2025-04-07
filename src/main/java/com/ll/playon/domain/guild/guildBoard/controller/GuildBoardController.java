@@ -54,4 +54,14 @@ public class GuildBoardController {
         GuildBoardCreateResponse response = guildBoardService.createBoard(guildId, request, actor);
         return RsData.success(HttpStatus.CREATED, response);
     }
+
+    @DeleteMapping("/{guildId}/board/{boardId}")
+    public RsData<String> deleteBoard(
+            @PathVariable Long guildId,
+            @PathVariable Long boardId
+    ) {
+        Member actor = userContext.getActor();
+        guildBoardService.deleteBoard(guildId, boardId, actor);
+        return RsData.success(HttpStatus.OK, "삭제되었습니다.");
+    }
 }
