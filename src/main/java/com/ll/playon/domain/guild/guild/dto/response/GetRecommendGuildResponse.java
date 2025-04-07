@@ -10,16 +10,18 @@ public record GetRecommendGuildResponse(
         String description,
         String guildImg,
         int memberCount,
-        List<GuildTagResponse> tags
+        List<String> tags
 ) {
-    public static GetPopularGuildResponse from(Guild guild) {
-        return new GetPopularGuildResponse(
+    public static GetRecommendGuildResponse from(Guild guild) {
+        return new GetRecommendGuildResponse(
                 guild.getId(),
                 guild.getName(),
                 guild.getDescription(),
                 guild.getGuildImg(),
                 guild.getMembers().size(),
-                GuildTagResponse.fromList(guild.getGuildTags())
+                guild.getGuildTags().stream()
+                        .map(tag -> tag.getValue().getKoreanValue())
+                        .toList()
         );
     }
 }

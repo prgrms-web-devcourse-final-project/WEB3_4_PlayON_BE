@@ -5,7 +5,10 @@ import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.service.GameService;
-import com.ll.playon.domain.member.dto.*;
+import com.ll.playon.domain.member.dto.GetMembersResponse;
+import com.ll.playon.domain.member.dto.MemberDetailDto;
+import com.ll.playon.domain.member.dto.MemberProfileResponse;
+import com.ll.playon.domain.member.dto.ProfileMemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
@@ -15,8 +18,10 @@ import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
@@ -246,13 +251,12 @@ public class MemberService {
                 .toList();
     }
 
-    public List<GameListResponse> getOwnedGamesByMember(Member actor) {
-        List<Long> ownedGames = memberSteamDataRepository.findAllByMemberId(actor.getId()).stream()
-                .map(MemberSteamData::getAppId).toList();
+    @Transactional(readOnly = true)
+    public List<GameListResponse> getOwnedGamesByMember(int count, Member actor) {
 
-        List<SteamGame> steamGames = gameRepository.findAllByAppidIn(ownedGames);
+        List<Long> ownedGames = memberSteamDataRepository.findAppIdsByMemberId(actor.getId(), PageRequest.of(0, count));
 
-        return steamGames.stream()
+        return gameRepository.findAllByAppidIn(ownedGames).stream()
                 .map(game -> GameListResponse.builder()
                         .appid(game.getAppid())
                         .name(game.getName())
