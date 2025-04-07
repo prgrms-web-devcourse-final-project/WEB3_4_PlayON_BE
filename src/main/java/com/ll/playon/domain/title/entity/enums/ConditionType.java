@@ -1,0 +1,17 @@
+package com.ll.playon.domain.title.entity.enums;
+
+public enum ConditionType {
+    REGISTERED,
+    STEAM_GAME_COUNT,
+    PARTY_JOIN_COUNT,
+    PARTY_CREATE_COUNT,
+    PARTY_TIME_ACCUMULATED,
+    PARTY_LOG_WRITE_COUNT,
+    MVP_VOTE_GIVEN,
+    MVP_VOTE_RECEIVED,
+    GUILD_CREATE,
+    GUILD_POST_COUNT,
+    GUILD_COMMENT_COUNT,
+    BOARD_POST_COUNT,
+    BOARD_COMMENT_COUNT
+}
