@@ -51,9 +51,14 @@ public class SteamAPI {
 
     public List<Long> getUserGames(Long steamId) {
         SteamGameResponse steamGameResponse = steamApiClient.getPlayerOwnedGames(apikey, String.valueOf(steamId));
-        return steamGameResponse.getResponse().getGames().stream()
-                .map(game -> Long.valueOf(game.getAppId()))
-                .toList();
+        try {
+            return steamGameResponse.getResponse().getGames().stream()
+                    .map(game -> Long.valueOf(game.getAppId()))
+                    .toList();
+        } catch (NullPointerException exception) {
+            // 스팀 계정의 공개 상태 문제로 소유 게임 정보를 불러 올 수 없는 경우
+            return new ArrayList<>();
+        }
     }
 
     public SteamGenre getPreferredGenre(List<Long> userGames) {
