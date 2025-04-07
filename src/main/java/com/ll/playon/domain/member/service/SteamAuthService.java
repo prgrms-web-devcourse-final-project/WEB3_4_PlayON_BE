@@ -47,7 +47,6 @@ public class SteamAuthService {
 
     private String buildValidationRequest(Map<String, String> params) {
         params.put("openid.mode", "check_authentication");
-        params.put("openid.return_to", "http://localhost:8080/api/auth/steam/callback/signup");
 
         return params.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
