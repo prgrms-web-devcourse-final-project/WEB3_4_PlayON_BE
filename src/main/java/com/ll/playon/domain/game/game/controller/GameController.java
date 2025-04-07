@@ -100,7 +100,7 @@ public class GameController {
 
     @GetMapping("/recommend/friends")
     @Operation(summary = "최근 함께 파티한 유저의 게임")
-    public RsData<List<GetRecommendedGameResponse>> recommendGames(@RequestParam int count) {
+    public RsData<List<GetRecommendedGameResponse>> recommendGames(@RequestParam(defaultValue = "4") int count) {
         return RsData.success(HttpStatus.OK, gameService.recommendGamesForMember(userContext.getActor().getId(), count));
     }
 
