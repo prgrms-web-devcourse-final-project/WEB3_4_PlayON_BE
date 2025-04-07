@@ -35,16 +35,17 @@ public class GuildBoardController {
     public RsData<Page<GuildBoardSummaryResponse>> getBoards(
             @PathVariable Long guildId,
             @RequestParam(required = false) BoardTag tag,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "LATEST") BoardSortType sort,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int pageSize
+            @RequestParam(defaultValue = "8") int pageSize
     ) {
         if (pageSize < 1 || pageSize > 100) {
             throw ErrorCode.PAGE_SIZE_LIMIT_EXCEEDED.throwServiceException();
         }
 
         Pageable pageable = PageRequest.of(page, pageSize, sort.getSort());
-        Page<GuildBoardSummaryResponse> result = guildBoardService.getBoardList(guildId, tag, pageable);
+        Page<GuildBoardSummaryResponse> result = guildBoardService.getBoardList(guildId, tag, keyword, pageable);
 
         return RsData.success(HttpStatus.OK, result);
     }
@@ -121,5 +122,16 @@ public class GuildBoardController {
         Member actor = userContext.getActor();
         guildBoardService.updateComment(guildId, boardId, commentId, request, actor);
         return RsData.success(HttpStatus.OK, "수정되었습니다.");
+    }
+
+    @DeleteMapping("/{guildId}/board/{boardId}/comments/{commentId}")
+    public RsData<String> deleteComment(
+            @PathVariable Long guildId,
+            @PathVariable Long boardId,
+            @PathVariable Long commentId
+    ) {
+        Member actor = userContext.getActor();
+        guildBoardService.deleteComment(guildId, boardId, commentId, actor);
+        return RsData.success(HttpStatus.OK, "삭제되었습니다.");
     }
 }

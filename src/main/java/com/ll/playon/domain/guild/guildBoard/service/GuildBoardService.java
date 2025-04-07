@@ -37,13 +37,23 @@ public class GuildBoardService {
     private final GuildBoardCommentRepository guildBoardCommentRepository;
     private final GuildBoardLikeRepository guildBoardLikeRepository;
 
-    public Page<GuildBoardSummaryResponse> getBoardList(Long guildId, BoardTag tag, Pageable pageable) {
+    public Page<GuildBoardSummaryResponse> getBoardList(Long guildId, BoardTag tag, String keyword, Pageable pageable) {
         Guild guild = guildRepository.findById(guildId)
                 .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
 
-        Page<GuildBoard> boards = (tag != null)
-                ? guildBoardRepository.findByGuildAndTag(guild, tag, pageable)
-                : guildBoardRepository.findByGuild(guild, pageable);
+        Page<GuildBoard> boards;
+
+        boolean hasKeyword = (keyword != null && !keyword.trim().isEmpty());
+
+        if (tag != null && hasKeyword) {
+            boards = guildBoardRepository.findByGuildAndTagAndTitleContaining(guild, tag, keyword, pageable);
+        } else if (tag != null) {
+            boards = guildBoardRepository.findByGuildAndTag(guild, tag, pageable);
+        } else if (hasKeyword) {
+            boards = guildBoardRepository.findByGuildAndTitleContaining(guild, keyword, pageable);
+        } else {
+            boards = guildBoardRepository.findByGuild(guild, pageable);
+        }
 
         return boards.map(board -> {
             int commentCount = guildBoardCommentRepository.countByBoard(board);
@@ -230,4 +240,31 @@ public class GuildBoardService {
 
         comment.update(request.comment());
     }
+
+    @Transactional
+    public void deleteComment(Long guildId, Long boardId, Long commentId, Member actor) {
+        Guild guild = guildRepository.findById(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        GuildBoard board = guildBoardRepository.findById(boardId)
+                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
+
+        if (!board.getGuild().getId().equals(guild.getId())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        GuildBoardComment comment = guildBoardCommentRepository.findById(commentId)
+                .orElseThrow(() -> ErrorCode.GUILD_BOARD_COMMENT_NOT_FOUND.throwServiceException());
+
+        if (!comment.getBoard().getId().equals(board.getId())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        if (!comment.getAuthor().getMember().getId().equals(actor.getId())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        guildBoardCommentRepository.delete(comment);
+    }
+
 }
