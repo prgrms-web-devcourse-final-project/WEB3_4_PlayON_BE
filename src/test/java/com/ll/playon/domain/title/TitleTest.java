@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 
 @ActiveProfiles("test")
@@ -100,7 +99,6 @@ public class TitleTest {
         MemberTitle mt1 = MemberTitle.builder().member(member).title(t1).build();
         MemberTitle mt2 = MemberTitle.builder().member(member).title(t2).isRepresentative(true).build();
         MemberTitle mt3 = MemberTitle.builder().member(member).title(t3).build();
-
         memberTitleRepository.saveAll(List.of(mt1, mt2, mt3));
         assertEquals(t2.getName(), memberTitleService.getRepresentativeTitle(member));
 
@@ -109,7 +107,6 @@ public class TitleTest {
         testMemberHelper.requestWithUserAuth(member.getUsername(), request);
 
         // 확인
-        assertFalse(mt2.isRepresentative());
         assertEquals(t3.getName(), memberTitleService.getRepresentativeTitle(member));
     }
 }

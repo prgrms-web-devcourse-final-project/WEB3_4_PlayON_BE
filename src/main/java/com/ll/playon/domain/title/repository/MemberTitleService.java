@@ -53,7 +53,7 @@ public class MemberTitleService {
     }
 
     public void setRepresentativeTitle(Long titleId, Member actor) {
-        MemberTitle memberTitle = memberTitleRepository.findByIdAndMember(titleId, actor)
+        MemberTitle memberTitle = memberTitleRepository.findByTitleIdAndMember(titleId, actor)
                 .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
 
         memberTitleRepository.findAllByMember(memberTitle.getMember())

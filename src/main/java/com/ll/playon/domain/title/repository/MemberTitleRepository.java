@@ -15,5 +15,5 @@ public interface MemberTitleRepository extends JpaRepository<MemberTitle, Long> 
 
     Optional<MemberTitle> findByMemberAndIsRepresentativeTrue(Member member);
 
-    Optional<MemberTitle> findByIdAndMember(Long titleId, Member actor);
+    Optional<MemberTitle> findByTitleIdAndMember(Long titleId, Member actor);
 }

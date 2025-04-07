@@ -98,9 +98,11 @@ public class Member {
     private SteamGenre preferredGenre; // TODO : 선호 장르 여러개 넣고 싶은데 일단 1개만
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<MemberTitle> memberTitles = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<MemberStat> statItems = new ArrayList<>();
 
     public Member(long id, String username, Role role) {

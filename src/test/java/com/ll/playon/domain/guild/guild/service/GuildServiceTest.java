@@ -14,6 +14,7 @@ import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.exceptions.ServiceException;
 import com.ll.playon.global.type.TagType;
@@ -55,6 +56,9 @@ class GuildServiceTest {
 
     @Mock
     private GameRepository gameRepository;
+
+    @Mock
+    private TitleEvaluator titleEvaluator;
 
     private Member mockMember;
 

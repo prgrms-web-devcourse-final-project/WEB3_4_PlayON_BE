@@ -24,5 +24,6 @@ public class Title extends BaseEntity {
     private int conditionValue;
 
     @OneToMany(mappedBy = "title", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<MemberTitle> memberTitles = new ArrayList<>();
 }
