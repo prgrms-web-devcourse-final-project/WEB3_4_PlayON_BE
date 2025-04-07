@@ -13,7 +13,7 @@ import lombok.*;
 @AllArgsConstructor
 public class MemberStat extends BaseEntity {
     @ManyToOne
-    @JoinColumn(name = "member_id", unique = true)
+    @JoinColumn(name = "member_id")
     private Member member;
 
     @Enumerated(EnumType.STRING)
