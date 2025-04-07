@@ -14,6 +14,7 @@ import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.exceptions.ServiceException;
 import com.ll.playon.global.type.TagType;
@@ -56,6 +57,9 @@ class GuildServiceTest {
     @Mock
     private GameRepository gameRepository;
 
+    @Mock
+    private TitleEvaluator titleEvaluator;
+
     private Member mockMember;
 
     @BeforeEach
@@ -68,7 +72,7 @@ class GuildServiceTest {
     void createGuild_fail_duplicate() {
         //given
         PostGuildRequest request = new PostGuildRequest(
-                "중복용", "소개글", 10, true, 3L, "imgUrl", null
+                "중복용", "소개글", 10, true, 730L, "imgUrl", null
         );
 
         when(guildRepository.existsByName("중복용")).thenReturn(true);
@@ -83,32 +87,6 @@ class GuildServiceTest {
         //then
 
     }
-
-//    @Test
-//    @DisplayName("길드 수정 성공")
-//    void modifyGuild_success() {
-//        // given
-//        Guild guild = createGuild("기존길드", true);
-//        GuildMember guildMember = createGuildMember(guild, GuildRole.LEADER);
-//        PutGuildRequest request = createPutGuildRequest("수정된이름");
-//
-//        when(guildRepository.findByIdAndIsDeletedFalse(anyLong())).thenReturn(Optional.of(guild));
-//        when(guildMemberRepository.findByGuildAndMember(guild, mockMember)).thenReturn(Optional.of(guildMember));
-//        when(guildRepository.existsByName("수정된이름")).thenReturn(false);
-//
-//        // when
-//        PutGuildResponse response = guildService.modifyGuild(1L, request, mockMember);
-//
-//        // then
-//        assertThat(response.name()).isEqualTo("수정된이름");
-//        assertThat(guild.getDescription()).isEqualTo("수정된소개");
-//        assertThat(guild.getMaxMembers()).isEqualTo(15);
-//        assertThat(guild.isPublic()).isFalse();
-//        assertThat(guild.getGuildImg()).isEqualTo("new-img.png");
-//
-//        verify(guildRepository).findByIdAndIsDeletedFalse(1L);
-//        verify(guildRepository).save(any());
-//    }
 
     @Test
     @DisplayName("길드 수정 실패 - 권한 없음")
@@ -368,7 +346,7 @@ class GuildServiceTest {
                 "소개글",
                 10,
                 true,
-                1L,
+                730L,
                 "imgUrl",
                 getGuildTagRequests()
         );
@@ -379,7 +357,7 @@ class GuildServiceTest {
                 name,
                 "수정된소개",
                 15,
-                1L,
+                730L,
                 false,
                 "new-img.png",
                 getGuildTagRequests()

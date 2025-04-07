@@ -1,16 +1,17 @@
 package com.ll.playon.domain.game.game.controller;
 
+import com.ll.playon.domain.game.game.dto.GameListResponse;
 import com.ll.playon.domain.game.game.dto.request.GameSearchCondition;
 import com.ll.playon.domain.game.game.dto.response.*;
 import com.ll.playon.domain.game.game.entity.SteamGame;
-import com.ll.playon.domain.game.game.dto.GameListResponse;
 import com.ll.playon.domain.game.game.service.GameService;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
-import com.ll.playon.global.steamAPI.SteamAPI;
 import com.ll.playon.global.security.UserContext;
+import com.ll.playon.global.steamAPI.SteamAPI;
 import com.ll.playon.standard.page.dto.PageDto;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,11 +20,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -92,5 +92,16 @@ public class GameController {
         return RsData.success(HttpStatus.OK, gameService.getGamePartyLogs(appid, pageable));
     }
 
+    @GetMapping("/popular")
+    @Operation(summary = "유저가 많이 선택한 게임")
+    public RsData<List<GetWeeklyPopularGameResponse>> popularGames() {
+        return RsData.success(HttpStatus.OK, gameService.getWeeklyPopularGames(LocalDate.now().with(DayOfWeek.MONDAY)));
+    }
+
+    @GetMapping("/recommend/friends")
+    @Operation(summary = "최근 함께 파티한 유저의 게임")
+    public RsData<List<GetRecommendedGameResponse>> recommendGames(@RequestParam(defaultValue = "4") int count) {
+        return RsData.success(HttpStatus.OK, gameService.recommendGamesForMember(userContext.getActor().getId(), count));
+    }
 
 }

@@ -26,6 +26,9 @@ public enum ErrorCode {
     S3_OBJECT_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "S3 오브젝트 제거에 실패하였습니다."),
     S3_OBJECT_GET_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "S3 오브젝트 호출에 실패하였습니다."),
 
+    // 이미지
+    IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "이미지를 찾을 수 없습니다."),
+
     // Filtering
     PAGE_SIZE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "pageSize는 1에서 100 사이로 입력해주세요."),
 
@@ -88,7 +91,10 @@ public enum ErrorCode {
 
     // Tag
     TAG_TYPE_CONVERT_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "태그 타입 변환에 실패하였습니다."),
-    TAG_VALUE_CONVERT_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "태그 이름 변환에 실패하였습니다.");
+    TAG_VALUE_CONVERT_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "태그 이름 변환에 실패하였습니다."),
+
+    // Title
+    TITLE_NOT_FOUND(HttpStatus.NOT_FOUND, "칭호를 찾지 못했습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

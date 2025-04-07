@@ -41,9 +41,8 @@ public class Guild extends BaseTime {
     @Builder.Default
     private boolean isPublic = true;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "game_id")
+    @JoinColumn(name = "appid")
     private SteamGame game;
 
     @Column(name = "guild_img")

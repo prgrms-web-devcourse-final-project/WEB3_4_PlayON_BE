@@ -1,6 +1,7 @@
 package com.ll.playon.domain.party.party.controller;
 
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.domain.party.party.dto.request.GetAllPartiesRequest;
 import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
 import com.ll.playon.domain.party.party.dto.request.PutPartyRequest;
@@ -8,9 +9,13 @@ import com.ll.playon.domain.party.party.dto.response.GetAllPendingMemberResponse
 import com.ll.playon.domain.party.party.dto.response.GetPartyDetailResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyMainResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyResponse;
+import com.ll.playon.domain.party.party.dto.response.GetPartyResultResponse;
 import com.ll.playon.domain.party.party.dto.response.PostPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.PutPartyResponse;
+import com.ll.playon.domain.party.party.dto.response.*;
 import com.ll.playon.domain.party.party.service.PartyService;
+import com.ll.playon.domain.title.entity.enums.ConditionType;
+import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.validation.GlobalValidation;
@@ -18,21 +23,13 @@ import com.ll.playon.standard.page.dto.PageDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -41,13 +38,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class PartyController {
     private final PartyService partyService;
     private final UserContext userContext;
+    private final TitleEvaluator titleEvaluator;
+    private final MemberService memberService;
 
     @PostMapping
     @Operation(summary = "파티 생성")
     public RsData<PostPartyResponse> createParty(@RequestBody @Valid PostPartyRequest postPartyRequest) {
         // TODO : 추후 롤백
 //        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.findById(6L);
 
         return RsData.success(HttpStatus.CREATED, this.partyService.createParty(actor, postPartyRequest));
     }
@@ -66,20 +65,45 @@ public class PartyController {
         // TODO : 추후 롤백
 //        정책 고민 (회원만 조회 가능하게 할 것인지)
 //        Member actor = this.userContext.getActor();
+        Member actor = this.userContext.findById(5L);
+
         GlobalValidation.checkPageSize(pageSize);
 
         return RsData.success(HttpStatus.OK,
-                new PageDto<>(this.partyService.getAllParties(page, pageSize, orderBy, partyAt, getAllPartiesRequest)));
+                new PageDto<>(this.partyService.getAllFilteredParties(actor, page, pageSize, orderBy, partyAt,
+                        getAllPartiesRequest)));
     }
 
-    @GetMapping("/main")
-    @Operation(summary = "파티 메인용 리스트 조회")
-    public RsData<GetPartyMainResponse> getPartyMain(@RequestParam(defaultValue = "2") int limit) {
+    @GetMapping("/{partyId}/result")
+    @Operation(summary = "파티 결과 조회")
+    public RsData<GetPartyResultResponse> getPartyResult(@PathVariable long partyId) {
+        // TODO : 추후 롤백
+//        정책 고민 (회원만 조회 가능하게 할 것인지)
+//        Member actor = this.userContext.getActor();
+//        Member actor = this.userContext.findById(5L);
+
+        return RsData.success(HttpStatus.OK, this.partyService.getPartyResult(partyId));
+    }
+
+    @GetMapping("/main/pending")
+    @Operation(summary = "메인용 진행 예정 리스트 조회")
+    public RsData<GetPartyMainResponse> getPendingPartyMain(@RequestParam(defaultValue = "2") int limit) {
+        // TODO : 추후 롤백
+//        정책 고민 (회원만 조회 가능하게 할 것인지)
+//        Member actor = this.userContext.getActor();
+//        Member actor = this.userContext.findById(5L);
+
+        return RsData.success(HttpStatus.OK, this.partyService.getPendingPartyMain(limit));
+    }
+
+    @GetMapping("/main/completed")
+    @Operation(summary = "메인용 종료된 파티 리스트 조회")
+    public RsData<GetPartyMainResponse> getCompletedPartyMain(@RequestParam(defaultValue = "3") int limit) {
         // TODO : 추후 롤백
 //        정책 고민 (회원만 조회 가능하게 할 것인지)
 //        Member actor = this.userContext.getActor();
 
-        return RsData.success(HttpStatus.OK, this.partyService.getPartyMain(limit));
+        return RsData.success(HttpStatus.OK, this.partyService.getCompletedPartyMain(limit));
     }
 
     @GetMapping("/{partyId}")
@@ -134,6 +158,9 @@ public class PartyController {
         Member actor = this.userContext.findById(5L);
 
         this.partyService.approveParticipation(actor, partyId, memberId);
+
+        // 파티 참여 칭호
+        titleEvaluator.check(ConditionType.PARTY_JOIN_COUNT, memberService.findById(memberId).get());
     }
 
     @DeleteMapping("/{partyId}/members/{memberId}")

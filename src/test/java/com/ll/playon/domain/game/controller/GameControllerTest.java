@@ -1,5 +1,11 @@
 package com.ll.playon.domain.game.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.ll.playon.domain.game.game.controller.GameController;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.repository.GameRepository;
@@ -8,13 +14,16 @@ import com.ll.playon.domain.member.TestMemberHelper;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
+import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.party.partyLog.entity.PartyLog;
 import com.ll.playon.domain.party.partyLog.repository.PartyLogRepository;
-import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.global.openFeign.SteamStoreClient;
 import com.ll.playon.global.openFeign.dto.GameItem;
 import com.ll.playon.global.openFeign.dto.SteamSearchResponse;
 import jakarta.transaction.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,26 +36,24 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
 public class GameControllerTest {
 
-    @Autowired private MockMvc mvc;
-    @Autowired private GameRepository gameRepository;
-    @Autowired private PartyRepository partyRepository;
-    @Autowired private PartyLogRepository partyLogRepository;
-    @Autowired private GuildRepository guildRepository;
-    @Autowired private TestMemberHelper testMemberHelper;
+    @Autowired
+    private MockMvc mvc;
+    @Autowired
+    private GameRepository gameRepository;
+    @Autowired
+    private PartyRepository partyRepository;
+    @Autowired
+    private PartyLogRepository partyLogRepository;
+    @Autowired
+    private GuildRepository guildRepository;
+    @Autowired
+    private TestMemberHelper testMemberHelper;
 
     @MockitoBean
     private SteamStoreClient mockSteamStoreClient;
@@ -66,7 +73,7 @@ public class GameControllerTest {
                 .releaseDate(LocalDate.of(2023, 1, 1))
                 .headerImage("image.jpg")
                 .shortDescription("Short desc")
-                .aboutTheGame("About the game")
+                .aboutTheGame("About the gameId")
                 .requiredAge(19)
                 .website("http://test.com")
                 .isWindowsSupported(true)
@@ -171,10 +178,10 @@ public class GameControllerTest {
     @DisplayName("게임별 파티 목록 조회 성공")
     void getGamePartiesSuccess() throws Exception {
         Party party = partyRepository.save(Party.builder()
-                .game(game.getId())
+                .game(game)
                 .name("Test Party")
                 .partyAt(LocalDateTime.now().plusDays(1))
-                .isPublic(true)
+                .publicFlag(true)
                 .minimum(1)
                 .maximum(5)
                 .build());
@@ -196,10 +203,10 @@ public class GameControllerTest {
     @DisplayName("게임별 파티 로그 조회 성공")
     void getGamePartyLogsSuccess() throws Exception {
         Party party = partyRepository.save(Party.builder()
-                .game(game.getId())
+                .game(game)
                 .name("Logged Party")
                 .partyAt(LocalDateTime.now().minusDays(1))
-                .isPublic(true)
+                .publicFlag(true)
                 .minimum(1)
                 .maximum(4)
                 .build());
@@ -214,7 +221,7 @@ public class GameControllerTest {
 
         PartyLog log = partyLogRepository.save(PartyLog.builder()
                 .partyMember(member)
-                .comment("Good game")
+                .comment("Good gameId")
                 .content("Enjoyed it")
                 .build());
 

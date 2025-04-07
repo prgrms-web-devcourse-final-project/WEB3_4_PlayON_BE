@@ -1,4 +1,4 @@
-package com.ll.playon.domain.game.game.batch.processor;
+package com.ll.playon.domain.game.batch.processor;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -122,12 +122,19 @@ public class SteamGameProcessor implements ItemProcessor<SteamCsvDto, SteamGame>
             }
         }
 
+        int requiredAge = 0;
+        if (dto.getRequiredAge() >= 18) {
+            requiredAge = 18;
+        } else if (dto.getRequiredAge() >= 15) {
+            requiredAge = 15;
+        }
+
         SteamGame game = SteamGame.builder()
                 .appid(dto.getAppid())
                 .name(dto.getName())
                 .releaseDate(LocalDate.parse(dto.getReleaseDate()))
                 .headerImage(dto.getHeaderImage())
-                .requiredAge(dto.getRequiredAge())
+                .requiredAge(requiredAge)
                 .aboutTheGame(dto.getAboutTheGame())
                 .shortDescription(dto.getShortDescription())
                 .website(dto.getWebsite())

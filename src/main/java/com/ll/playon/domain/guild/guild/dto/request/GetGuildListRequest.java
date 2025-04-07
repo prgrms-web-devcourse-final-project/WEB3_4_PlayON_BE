@@ -14,6 +14,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class GetGuildListRequest {
         private String name;
-        private List<Long> gameIds = new ArrayList<>();
+        private List<Long> appids = new ArrayList<>();
         private Map<String, List<String>> tags = new HashMap<>();
 }

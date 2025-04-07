@@ -16,6 +16,8 @@ import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.title.entity.enums.ConditionType;
+import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
@@ -39,6 +41,7 @@ public class GuildService {
     private final GuildMemberRepository guildMemberRepository;
     private final GuildMemberRepositoryCustom guildMemberRepositoryCustom;
     private final GameRepository gameRepository;
+    private final TitleEvaluator titleEvaluator;
 
     @Transactional
     public PostGuildResponse createGuild(PostGuildRequest request, Member owner) {
@@ -46,7 +49,7 @@ public class GuildService {
             ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
 
-        SteamGame game = gameRepository.findById(request.gameId())
+        SteamGame game = gameRepository.findByAppid(request.appid())
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
         Guild guild = guildRepository.save(Guild.createFrom(request, owner, game));
@@ -59,6 +62,9 @@ public class GuildService {
                 .guildRole(GuildRole.LEADER)
                 .build();
         guildMemberRepository.save(guildMember);
+
+        // 길드 생성 칭호
+        titleEvaluator.check(ConditionType.GUILD_CREATE, owner);
 
         return PostGuildResponse.from(guild);
     }
@@ -74,7 +80,7 @@ public class GuildService {
             throw ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
 
-        SteamGame game = gameRepository.findById(request.gameId())
+        SteamGame game = gameRepository.findByAppid(request.appid())
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
         guild.updateFromRequest(request, game);
@@ -181,5 +187,13 @@ public class GuildService {
         if (!guildMember.getGuildRole().isManagerOrLeader()) {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetRecommendGuildResponse> getRecommendedGuildsByGame(int count, long appid) {
+        return guildRepository.findTopNByGameAppid(appid, PageRequest.of(0, count))
+                .stream()
+                .map(GetRecommendGuildResponse::from)
+                .toList();
     }
 }
