@@ -4,6 +4,7 @@ import com.ll.playon.domain.game.game.entity.WeeklyPopularGame;
 import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +12,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
@@ -32,9 +32,8 @@ public class GameScheduler {
     public void updatePopularGames(LocalDateTime fromDate, LocalDateTime toDate, LocalDate weekStart) {
         final int limit = 3;
 
-        List<Map<String, Object>> result = partyRepository.findTopGamesByPartyLastWeek(fromDate, toDate, limit);
-
-        List<WeeklyPopularGame> list = result.stream()
+        List<WeeklyPopularGame> list = partyRepository.findTopGamesByPartyLastWeek(fromDate, toDate, PageRequest.of(0, limit))
+                .stream()
                 .map(row -> WeeklyPopularGame.builder()
                         .gameId(((Number) row.get("gameId")).longValue())
                         .playCount(((Number) row.get("playCount")).longValue())
