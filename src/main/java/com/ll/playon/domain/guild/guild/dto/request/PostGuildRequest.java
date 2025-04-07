@@ -18,7 +18,7 @@ public record PostGuildRequest(
 
         boolean isPublic,
 
-        Long gameId,
+        Long appid,
 
         @NotBlank(message = "길드 대표 이미지는 필수입니다.")
         String guildImg,

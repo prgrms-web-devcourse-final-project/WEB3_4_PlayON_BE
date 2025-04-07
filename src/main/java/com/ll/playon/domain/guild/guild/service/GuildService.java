@@ -49,7 +49,7 @@ public class GuildService {
             ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
 
-        SteamGame game = gameRepository.findById(request.gameId())
+        SteamGame game = gameRepository.findByAppid(request.appid())
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
         Guild guild = guildRepository.save(Guild.createFrom(request, owner, game));
@@ -80,7 +80,7 @@ public class GuildService {
             throw ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
 
-        SteamGame game = gameRepository.findById(request.gameId())
+        SteamGame game = gameRepository.findByAppid(request.appid())
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
         guild.updateFromRequest(request, game);

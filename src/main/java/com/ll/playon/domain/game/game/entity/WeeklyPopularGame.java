@@ -20,17 +20,12 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WeeklyPopularGame extends BaseEntity {
-    @Column(name = "game_id")
-    private Long gameId;
+    @Column(name = "appid")
+    private Long appid;
 
     @Column(name = "play_count")
     private Long playCount;
 
     @Column(name = "week_start_date")
     private LocalDate weekStartDate;
-
-    // TODO: 파티 게임 연결 후 사용
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "gameId", referencedColumnName = "id", insertable = false, updatable = false)
-//    private SteamGame steamGame;
 }

@@ -195,13 +195,13 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
 
     @Query("""
-    SELECT p.game.id AS gameId, COUNT(p) AS playCount
-    FROM Party p
-    WHERE p.createdAt >= :fromDate
-      AND p.createdAt < :toDate
-    GROUP BY p.game.id
-    ORDER BY playCount DESC
-""")
+        SELECT p.game.appid AS appid, COUNT(p) AS playCount
+        FROM Party p
+        WHERE p.createdAt >= :fromDate
+          AND p.createdAt < :toDate
+        GROUP BY p.game.appid
+        ORDER BY playCount DESC
+    """)
     List<Map<String, Object>> findTopGamesByPartyLastWeek(
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate,
