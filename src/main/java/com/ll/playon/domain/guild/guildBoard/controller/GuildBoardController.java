@@ -1,11 +1,9 @@
 package com.ll.playon.domain.guild.guildBoard.controller;
 
+import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCommentCreateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCreateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardUpdateRequest;
-import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardCreateResponse;
-import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardDetailResponse;
-import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardLikeToggleResponse;
-import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardSummaryResponse;
+import com.ll.playon.domain.guild.guildBoard.dto.response.*;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardSortType;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
 import com.ll.playon.domain.guild.guildBoard.service.GuildBoardService;
@@ -98,5 +96,16 @@ public class GuildBoardController {
         Member actor= userContext.getActor();
         GuildBoardLikeToggleResponse response=guildBoardService.toggleLike(guildId, boardId, actor);
         return RsData.success(HttpStatus.OK, response);
+    }
+
+    @PostMapping("/{guildId}/board/{boardId}/comments")
+    public RsData<GuildBoardCommentCreateResponse> createComment(
+            @PathVariable Long guildId,
+            @PathVariable Long boardId,
+            @RequestBody @Valid GuildBoardCommentCreateRequest request
+    ) {
+        Member actor = userContext.getActor();
+        GuildBoardCommentCreateResponse response = guildBoardService.createComment(guildId, boardId, request, actor);
+        return RsData.success(HttpStatus.CREATED, response);
     }
 }

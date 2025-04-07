@@ -3,13 +3,12 @@ package com.ll.playon.domain.guild.guildBoard.service;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guildBoard.dto.GuildBoardCommentDto;
+import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCommentCreateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCreateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardUpdateRequest;
-import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardCreateResponse;
-import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardDetailResponse;
-import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardLikeToggleResponse;
-import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardSummaryResponse;
+import com.ll.playon.domain.guild.guildBoard.dto.response.*;
 import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
+import com.ll.playon.domain.guild.guildBoard.entity.GuildBoardComment;
 import com.ll.playon.domain.guild.guildBoard.entity.GuildBoardLike;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
 import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardCommentRepository;
@@ -177,5 +176,31 @@ public class GuildBoardService {
         }
 
         return GuildBoardLikeToggleResponse.of(liked,board.getLikeCount());
+    }
+
+    @Transactional
+    public GuildBoardCommentCreateResponse createComment(Long guildId, Long boardId, GuildBoardCommentCreateRequest request, Member actor){
+        Guild guild = guildRepository.findById(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        GuildBoard board = guildBoardRepository.findById(boardId)
+                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
+
+        if(!board.getGuild().getId().equals(guild.getId())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        GuildMember guildMember=guildMemberRepository.findByGuildAndMember(guild,actor)
+                .orElseThrow(ErrorCode.GUILD_MEMBER_NOT_FOUND::throwServiceException);
+
+        GuildBoardComment comment=GuildBoardComment.builder()
+                .board(board)
+                .author(guildMember)
+                .comment(request.comment())
+                .build();
+
+        guildBoardCommentRepository.save(comment);
+
+        return GuildBoardCommentCreateResponse.from(comment);
     }
 }
