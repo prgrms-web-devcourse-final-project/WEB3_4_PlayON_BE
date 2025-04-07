@@ -227,8 +227,7 @@ public class BaseInitData {
             return;
         }
 
-        List<Long> gameIds = List.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L);
-        List<SteamGame> games = gameRepository.findAllByIdIn(gameIds);
+        List<Long> gameIds = List.of(1L, 2L, 3L);
 
         List<LocalDate> weeks = List.of(
                 LocalDate.of(2025, 3, 24),
@@ -237,14 +236,10 @@ public class BaseInitData {
         );
 
         Random random = new Random();
-        int gameIndex = 0;
-
         for (LocalDate week : weeks) {
             for (int i = 0; i < 3; i++) {
-                SteamGame game = games.get(gameIndex++);
-
                 WeeklyPopularGame popularGame = WeeklyPopularGame.builder()
-                        .gameId(game.getId())
+                        .gameId(gameIds.get(i))
                         .playCount(10 + random.nextLong(20)) // 10 ~ 29 랜덤
                         .weekStartDate(week)
                         .build();
