@@ -188,4 +188,12 @@ public class GuildService {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<GetRecommendGuildResponse> getRecommendedGuildsByGame(int count, long appid) {
+        return guildRepository.findTopNByGameAppid(appid, PageRequest.of(0, count))
+                .stream()
+                .map(GetRecommendGuildResponse::from)
+                .toList();
+    }
 }

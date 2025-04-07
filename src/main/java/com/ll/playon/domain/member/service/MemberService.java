@@ -5,6 +5,7 @@ import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.service.GameService;
+import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
 import com.ll.playon.domain.member.dto.GetMembersResponse;
 import com.ll.playon.domain.member.dto.MemberDetailDto;
 import com.ll.playon.domain.member.dto.MemberProfileResponse;
@@ -20,8 +21,10 @@ import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
@@ -43,6 +46,7 @@ public class MemberService {
     private final GameService gameService;
     private final GameRepository gameRepository;
     private final TitleEvaluator titleEvaluator;
+    private final WeeklyGameRepository weeklyGameRepository;
 
     public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
@@ -260,6 +264,34 @@ public class MemberService {
         return memberRepository.findByNickname(nickname).stream()
                 .map(member ->
                         new GetMembersResponse(member.getSteamId(), member.getUsername(), member.getProfileImg()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GameListResponse> getOwnedGamesByMember(int count, Member actor) {
+
+        List<Long> ownedGames = memberSteamDataRepository.findAppIdsByMemberId(actor.getId(), PageRequest.of(0, count));
+
+        if (ownedGames.isEmpty()) {
+            // 보유 게임이 없으면 임의의 게임 필요
+            return toGameListResponse(List.of(730L, 578080L, 359550L));
+        }
+
+        return toGameListResponse(ownedGames);
+    }
+
+    private List<GameListResponse> toGameListResponse(List<Long> appIds) {
+        return gameRepository.findAllByAppidIn(appIds).stream()
+                .map(game -> GameListResponse.builder()
+                        .appid(game.getAppid())
+                        .name(game.getName())
+                        .headerImage(game.getHeaderImage())
+                        .gameGenres(
+                                game.getGenres().stream()
+                                        .map(SteamGenre::getName)
+                                        .toList()
+                        )
+                        .build())
                 .toList();
     }
 }
