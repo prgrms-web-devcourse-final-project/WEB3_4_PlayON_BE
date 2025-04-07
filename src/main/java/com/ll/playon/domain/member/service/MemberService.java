@@ -5,10 +5,7 @@ import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.service.GameService;
-import com.ll.playon.domain.member.dto.GetMembersResponse;
-import com.ll.playon.domain.member.dto.MemberDetailDto;
-import com.ll.playon.domain.member.dto.MemberProfileResponse;
-import com.ll.playon.domain.member.dto.ProfileMemberDetailDto;
+import com.ll.playon.domain.member.dto.*;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
@@ -246,6 +243,26 @@ public class MemberService {
         return memberRepository.findByNickname(nickname).stream()
                 .map(member ->
                         new GetMembersResponse(member.getSteamId(), member.getUsername(), member.getProfileImg()))
+                .toList();
+    }
+
+    public List<GameListResponse> getOwnedGamesByMember(Member actor) {
+        List<Long> ownedGames = memberSteamDataRepository.findAllByMemberId(actor.getId()).stream()
+                .map(MemberSteamData::getAppId).toList();
+
+        List<SteamGame> steamGames = gameRepository.findAllByAppidIn(ownedGames);
+
+        return steamGames.stream()
+                .map(game -> GameListResponse.builder()
+                        .appid(game.getAppid())
+                        .name(game.getName())
+                        .headerImage(game.getHeaderImage())
+                        .gameGenres(
+                                game.getGenres().stream()
+                                        .map(SteamGenre::getName)
+                                        .toList()
+                        )
+                        .build())
                 .toList();
     }
 }

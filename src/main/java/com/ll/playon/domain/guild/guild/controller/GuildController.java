@@ -69,6 +69,12 @@ public class GuildController {
         return RsData.success(HttpStatus.OK, guildService.getPopularGuilds(count));
     }
 
+    @GetMapping("/recommend")
+    public RsData<List<GetRecommendGuildResponse>> getRecommendGuild(@RequestParam(defaultValue = "5") int count) {
+
+        return RsData.success(HttpStatus.OK, null);
+    }
+
     private Member getActor() {
         // TODO: 개발 테스트용
         return memberRepository.findById(1L).get();
