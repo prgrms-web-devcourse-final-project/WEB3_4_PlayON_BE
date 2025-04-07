@@ -1,6 +1,7 @@
 package com.ll.playon.domain.guild.guildBoard.controller;
 
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCreateRequest;
+import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardUpdateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardCreateResponse;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardSummaryResponse;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardSortType;
@@ -53,6 +54,17 @@ public class GuildBoardController {
         Member actor = userContext.getActor();
         GuildBoardCreateResponse response = guildBoardService.createBoard(guildId, request, actor);
         return RsData.success(HttpStatus.CREATED, response);
+    }
+
+    @PutMapping("/{guildId}/board/{boardId}")
+    public RsData<String> updateBoard(
+            @PathVariable Long guildId,
+            @PathVariable Long boardId,
+            @RequestBody @Valid GuildBoardUpdateRequest request
+    ){
+        Member actor = userContext.getActor();
+        guildBoardService.updateBoard(guildId, boardId, request, actor);
+        return RsData.success(HttpStatus.OK, "수정되었습니다.");
     }
 
     @DeleteMapping("/{guildId}/board/{boardId}")

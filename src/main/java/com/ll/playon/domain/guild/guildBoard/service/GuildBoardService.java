@@ -3,6 +3,7 @@ package com.ll.playon.domain.guild.guildBoard.service;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCreateRequest;
+import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardUpdateRequest;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardCreateResponse;
 import com.ll.playon.domain.guild.guildBoard.dto.response.GuildBoardSummaryResponse;
 import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
@@ -65,6 +66,29 @@ public class GuildBoardService {
         guildBoardRepository.save(board);
 
         return GuildBoardCreateResponse.from(board.getId());
+    }
+
+    public void updateBoard(Long guildId, Long boardId, GuildBoardUpdateRequest request, Member actor) {
+        Guild guild=guildRepository.findById(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        GuildBoard board=guildBoardRepository.findById(boardId)
+                .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
+
+        if(!board.getGuild().getId().equals(guildId)) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        if(!board.getAuthor().getMember().getId().equals(actor.getId())) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        if (request.tag() == BoardTag.NOTICE &&
+                !board.getAuthor().getGuildRole().isManagerOrLeader()) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        board.update(request.title(), request.content(), request.tag(), request.imageUrl());
     }
 
     public void deleteBoard(Long guildId, Long boardId, Member actor) {
