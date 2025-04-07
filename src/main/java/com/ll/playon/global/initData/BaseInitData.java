@@ -7,6 +7,13 @@ import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
+import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
+import com.ll.playon.domain.guild.guildBoard.entity.GuildBoardComment;
+import com.ll.playon.domain.guild.guildBoard.entity.GuildBoardLike;
+import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
+import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardCommentRepository;
+import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardLikeRepository;
+import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
@@ -48,6 +55,9 @@ public class BaseInitData {
     private final MemberRepository memberRepository;
     private final GuildRepository guildRepository;
     private final GuildMemberRepository guildMemberRepository;
+    private final GuildBoardRepository guildBoardRepository;
+    private final GuildBoardLikeRepository guildBoardLikeRepository;
+    private final GuildBoardCommentRepository guildBoardCommentRepository;
     private final MemberService memberService;
     private final PartyService partyService;
     private final PartyRepository partyRepository;
@@ -446,6 +456,51 @@ public class BaseInitData {
 
                 weeklyGameRepository.save(popularGame);
             }
+        }
+    }
+
+    @Transactional
+    public void makeSampleGuildBoards() {
+        if (guildBoardRepository.count() > 0) return;
+
+        List<Guild> guilds = guildRepository.findAll();
+        if (guilds.isEmpty()) return;
+
+        Guild sampleGuild = guilds.get(0);
+        List<GuildMember> members = guildMemberRepository.findByGuild(sampleGuild);
+        if (members.size() < 3) return;
+
+        GuildMember author = members.get(0);
+        GuildMember commenter = members.get(1);
+        GuildMember liker = members.get(2);
+
+        for (int i = 1; i <= 3; i++) {
+            GuildBoard board = GuildBoard.builder()
+                    .guild(sampleGuild)
+                    .author(author)
+                    .title("샘플 게시글 제목 " + i)
+                    .content("샘플 게시글 내용입니다. " + i)
+                    .tag(i % 3 == 0 ? BoardTag.GAME : i % 2 == 0 ? BoardTag.FREE : BoardTag.NOTICE)
+                    .imageUrl("sample" + i + ".png")
+                    .build();
+
+            guildBoardRepository.save(board);
+
+            GuildBoardComment comment = GuildBoardComment.builder()
+                    .board(board)
+                    .author(commenter)
+                    .comment("샘플 댓글입니다. 게시글 ID: " + board.getId())
+                    .build();
+
+            guildBoardCommentRepository.save(comment);
+
+            GuildBoardLike like = GuildBoardLike.builder()
+                    .guildMember(liker)
+                    .board(board)
+                    .build();
+
+            guildBoardLikeRepository.save(like);
+            board.increaseLike();
         }
     }
 }

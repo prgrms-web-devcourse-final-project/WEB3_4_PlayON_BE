@@ -13,10 +13,8 @@ import java.util.Optional;
 public interface GuildMemberRepository extends JpaRepository<GuildMember, Long> {
 
     Optional<GuildMember> findByGuildAndMember(Guild guild, Member actor);
-
     long countByGuildId(Long guildId);
-
     List<GuildMember> findAllByGuild(Guild guild);
-
     boolean existsByGuildAndMember(Guild guild, Member member);
+    List<GuildMember> findByGuild(Guild guild);
 }
