@@ -24,9 +24,9 @@ public class SteamAuthController {
     private final UserContext userContext;
     private final SteamAuthService steamAuthService;
 
-    private static final String REALM_URL = "http://localhost:8080"; // TODO : 배포시 해당 도메인으로 수정
+    private static final String REALM_URL = "http://localhost:3000"; // TODO : 배포시 해당 도메인으로 수정
     private static final String STEAM_OPENID_URL = "https://steamcommunity.com/openid/login";
-    private static final String RETURN_URL = REALM_URL +"/api/auth/steam/callback";
+    private static final String RETURN_URL = REALM_URL +"/signup/steam";
 
     @GetMapping("/login")
     @Operation(summary = "로그인 : 스팀 로그인 리다이렉트")
