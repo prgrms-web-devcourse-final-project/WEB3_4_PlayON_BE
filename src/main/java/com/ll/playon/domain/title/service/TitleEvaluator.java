@@ -20,13 +20,19 @@ public class TitleEvaluator {
     private final MemberStatRepository memberStatRepository;
 
     public void check(ConditionType conditionType, Member member) {
+        checkLogic(conditionType, member, 1);
+    }
+    public void gameCountCheck(ConditionType conditionType, Member member, int count) {
+        checkLogic(conditionType, member, count);
+    }
+    public void checkLogic(ConditionType conditionType, Member member, int count) {
         // 해당 타입의 칭호 조회 (필요값으로 오름차순 정렬)
         final List<Title> titleList = titleService.findByConditionTypeOrderByConditionValueAsc(conditionType);
 
         // 사용자의 기록 조회, 1회 늘리기
         final MemberStat memberStat = memberStatRepository.findByMemberAndConditionType(member, conditionType)
                         .orElse(MemberStat.builder().member(member).conditionType(conditionType).build());
-        memberStatRepository.save(memberStat.addStat());
+        memberStatRepository.save(memberStat.addStat(count));
 
         // 조건 검사 및 칭호 획득
         for (Title title : titleList) {

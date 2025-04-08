@@ -1,6 +1,5 @@
 package com.ll.playon.domain.member.entity;
 
-import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.member.entity.enums.Gender;
 import com.ll.playon.domain.member.entity.enums.PlayStyle;
 import com.ll.playon.domain.member.entity.enums.Role;
@@ -9,8 +8,6 @@ import com.ll.playon.domain.title.entity.MemberStat;
 import com.ll.playon.domain.title.entity.MemberTitle;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -94,8 +91,7 @@ public class Member {
     @Builder.Default
     private Gender gender = Gender.MALE;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    private SteamGenre preferredGenre; // TODO : 선호 장르 여러개 넣고 싶은데 일단 1개만
+    private String preferredGenre;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

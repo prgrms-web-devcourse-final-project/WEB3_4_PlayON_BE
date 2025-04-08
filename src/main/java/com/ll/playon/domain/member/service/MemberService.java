@@ -147,12 +147,12 @@ public class MemberService {
         List<Long> userGames = steamAPI.getUserGames(steamId);
         if(!userGames.isEmpty()) {
             SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
-            memberRepository.save(newMember.toBuilder().preferredGenre(preferredGenre).build());
+            memberRepository.save(newMember.toBuilder().preferredGenre(preferredGenre.getName()).build());
             saveUserGameList(userGames, newMember);
         }
 
         // 스팀 게임 소유 칭호
-        titleEvaluator.check(ConditionType.STEAM_GAME_COUNT, newMember);
+        titleEvaluator.gameCountCheck(ConditionType.STEAM_GAME_COUNT, newMember, userGames.size());
 
         return newMember;
     }
@@ -198,7 +198,7 @@ public class MemberService {
                     List<Long> userGames = steamAPI.getUserGames(steamId);
                     if(!userGames.isEmpty()) {
                         SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
-                        memberRepository.save(targetMember.toBuilder().preferredGenre(preferredGenre).build());
+                        memberRepository.save(targetMember.toBuilder().preferredGenre(preferredGenre.getName()).build());
                         saveUserGameList(userGames, targetMember);
                     }
 
