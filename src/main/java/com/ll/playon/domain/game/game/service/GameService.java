@@ -8,6 +8,7 @@ import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.scheduler.repository.LongPlaytimeGameRepository;
+import com.ll.playon.domain.game.game.repository.GenreRepository;
 import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
@@ -42,6 +43,7 @@ public class GameService {
     private final MemberRepository memberRepository;
     private final PartyRepository partyRepository;
     private final PartyLogRepository partyLogRepository;
+    private final GenreRepository genreRepository;
 
     private final static int TOP_FIVE = 5;
     private final WeeklyGameRepository weeklyGameRepository;
@@ -108,11 +110,8 @@ public class GameService {
                 .filter(appId -> !ownedGames.contains(appId)).toList();
 
         // 장르 필터링 후 리스트 완성
-        return makeGameListWithGenre(gameRepository.findAllByAppidIn(notOwnedGames), member.getPreferredGenre());
-    }
-
-    public void updateDB(Long appId) {
-
+        SteamGenre preferredGenre = genreRepository.findByName(member.getPreferredGenre()).orElse(null);
+        return makeGameListWithGenre(gameRepository.findAllByAppidIn(notOwnedGames), preferredGenre);
     }
 
     @Transactional(readOnly = true)

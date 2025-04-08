@@ -1,6 +1,5 @@
 package com.ll.playon.domain.member.dto;
 
-import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.member.entity.enums.Gender;
 import com.ll.playon.domain.member.entity.enums.PlayStyle;
 import com.ll.playon.domain.member.entity.enums.SkillLevel;
@@ -16,5 +15,5 @@ public record ProfileMemberDetailDto(
         PlayStyle playStyle,
         SkillLevel skillLevel,
         Gender gender,
-        SteamGenre preferredGenre
+        String preferredGenre
 ){}
