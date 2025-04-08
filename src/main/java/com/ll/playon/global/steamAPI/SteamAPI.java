@@ -67,20 +67,13 @@ public class SteamAPI {
         int count = 0;
 
         for(Long gameId : userGames) {
-            String appId = String.valueOf(gameId);
             if(count++ > MAX_GAMES_TO_ANALYZE) break;
 
-            // TODO : DB 조회로
-            SteamGameDetailResponse response = steamStoreClient.getGameDetail(
-                    Integer.valueOf(appId), "KR", "genres");
-
-            GameDetailWrapper gameDetailWrapper = response.getGames().get(appId);
-            if (gameDetailWrapper == null || !gameDetailWrapper.isSuccess()) continue;
-            if (response.getGames().get(appId).getGameData() == null) continue;
-
-            List<Genre> genres = response.getGames().get(appId).getGameData().getGenres();
-            for (Genre genre : genres) {
-                genreCountMap.put(genre.getDescription(), genreCountMap.getOrDefault(genre.getDescription(), 0) + 1);
+            Optional<SteamGame> steamGameOptional = gameRepository.findByAppid(gameId);
+            if(steamGameOptional.isPresent()) {
+                for (SteamGenre genre : steamGameOptional.get().getGenres()) {
+                    genreCountMap.put(genre.getName(), genreCountMap.getOrDefault(genre.getName(), 0) + 1);
+                }
             }
         }
 

@@ -22,8 +22,8 @@ public class MemberStat extends BaseEntity {
     @Builder.Default
     private int statValue = 0;
 
-    public MemberStat addStat() {
-        this.statValue++;
+    public MemberStat addStat(int count) {
+        this.statValue += count;
         return this;
     }
 }

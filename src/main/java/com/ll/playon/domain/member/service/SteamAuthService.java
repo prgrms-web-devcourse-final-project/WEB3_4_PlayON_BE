@@ -5,6 +5,7 @@ import com.ll.playon.domain.member.dto.MemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.openFeign.SteamOpenIdClient;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ public class SteamAuthService {
     private final MemberService memberService;
     private final SteamOpenIdClient steamOpenIdClient;
 
+    @Transactional
     public MemberDetailDto validateSteamId(Map<String, String> params, String path, Member actor) {
         String requestBody = buildValidationRequest(params);
         String response = steamOpenIdClient.validateSteamId(requestBody);

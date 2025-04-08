@@ -25,7 +25,6 @@ import org.springframework.util.LinkedMultiValueMap;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -101,23 +100,6 @@ public class SteamAuthTest {
                 .thenReturn(fakeSteamGameResponse);
     }
 
-    private void setFakeGenreResponse() {
-        SteamGameDetailResponse fakeSteamGameDetailResponse = new SteamGameDetailResponse();
-        GameDetailWrapper gameDetailWrapper = new GameDetailWrapper();
-        GameDetail gameDetail = new GameDetail();
-        Genre genre = new Genre();
-
-        genre.setId("1");
-        genre.setDescription("Action");
-
-        gameDetail.setGenres(List.of(genre));
-        gameDetailWrapper.setGameData(gameDetail);
-        fakeSteamGameDetailResponse.setGames(Map.of("123", gameDetailWrapper));
-
-        Mockito.when(mockSteamStoreClient.getGameDetail(Mockito.any(),Mockito.any(),Mockito.any()))
-                .thenReturn(fakeSteamGameDetailResponse);
-    }
-
     @Test
     @DisplayName("스팀 로그인 성공 테스트, 스팀 id 123, sampleUser1")
     void test1() throws Exception {
@@ -156,7 +138,6 @@ public class SteamAuthTest {
         setFakeLoginResponse();
         setFakeProfileResponse();
         setFakeGamesResponse();
-        setFakeGenreResponse();
 
         ResultActions resultActions = mvc.perform(
                 get("/api/auth/steam/callback/signup")
@@ -185,7 +166,6 @@ public class SteamAuthTest {
         Mockito.verify(mockSteamOpenIdClient).validateSteamId(Mockito.any());
         Mockito.verify(mockSteamApiClient).getPlayerOwnedGames(eq(apikey),Mockito.any());
         Mockito.verify(mockSteamApiClient).getPlayerSummaries(eq(apikey),Mockito.any());
-        Mockito.verify(mockSteamStoreClient, Mockito.times(3)).getGameDetail(Mockito.any(),Mockito.any(),Mockito.any());
     }
 
     @Test
@@ -228,7 +208,6 @@ public class SteamAuthTest {
         long initCount = memberSteamDataRepository.count();
         setFakeLoginResponse();
         setFakeGamesResponse();
-        setFakeGenreResponse();
 
         MockHttpServletRequestBuilder request = get("/api/auth/steam/callback/link")
                         .params(new LinkedMultiValueMap<>(Collections.singletonMap("openid.mode", List.of("id_res"))))
@@ -245,7 +224,6 @@ public class SteamAuthTest {
 
         Mockito.verify(mockSteamOpenIdClient).validateSteamId(Mockito.any());
         Mockito.verify(mockSteamApiClient).getPlayerOwnedGames(eq(apikey),Mockito.any());
-        Mockito.verify(mockSteamStoreClient, Mockito.times(3)).getGameDetail(Mockito.any(),Mockito.any(),Mockito.any());
     }
 }
 
