@@ -47,7 +47,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Configuration
@@ -261,7 +260,7 @@ public class BaseInitData {
 
         Member noSteamMember = Member.builder()
                 .username("noSteamMember").nickname("noSteamUser").password(passwordEncoder.encode("noSteam123"))
-                .lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
+                .lastLoginAt(LocalDateTime.now()).role(Role.USER).preferredGenre("Adventure").build();
         memberRepository.save(noSteamMember);
 
         Member owner = Member.builder()
@@ -315,17 +314,11 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleGuilds() {
-        if (gameRepository.count() == 0) {
-            return;
-        }
-
-        if (guildRepository.count() != 0) {
-            return;
-        }
+        if (guildRepository.count() != 0) return;
 
         List<Member> members = memberRepository.findAll().stream()
                 .limit(3)
-                .collect(Collectors.toList());
+                .toList();
 
         List<Long> gameAppIds = List.of(1L, 2L, 3L); // 샘플 SteamGame ID들
         List<SteamGame> games = gameRepository.findAllByAppidIn(gameAppIds);
