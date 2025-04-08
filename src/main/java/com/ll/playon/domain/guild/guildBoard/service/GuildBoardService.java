@@ -128,7 +128,6 @@ public class GuildBoardService {
         return GuildBoardLikeToggleResponse.of(liked, board.getLikeCount());
     }
 
-
     @Transactional
     public GuildBoardCommentCreateResponse createComment(Long guildId, Long boardId, GuildBoardCommentCreateRequest request, Member actor) {
         Guild guild = getGuild(guildId);
@@ -146,7 +145,6 @@ public class GuildBoardService {
 
         return GuildBoardCommentCreateResponse.from(comment);
     }
-
 
     @Transactional
     public void updateComment(Long guildId, Long boardId, Long commentId, GuildBoardCommentUpdateRequest request, Member actor) {
@@ -235,3 +233,4 @@ public class GuildBoardService {
         }
     }
 }
+

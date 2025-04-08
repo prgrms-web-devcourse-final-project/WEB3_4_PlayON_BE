@@ -94,14 +94,20 @@ public class GameController {
 
     @GetMapping("/popular")
     @Operation(summary = "유저가 많이 선택한 게임")
-    public RsData<List<GetWeeklyPopularGameResponse>> popularGames() {
+    public RsData<List<GetWeeklyPopularGameResponse>> getWeeklyPopularGames() {
         return RsData.success(HttpStatus.OK, gameService.getWeeklyPopularGames(LocalDate.now().with(DayOfWeek.MONDAY)));
     }
 
     @GetMapping("/recommend/friends")
     @Operation(summary = "최근 함께 파티한 유저의 게임")
-    public RsData<List<GetRecommendedGameResponse>> recommendGames(@RequestParam(defaultValue = "4") int count) {
-        return RsData.success(HttpStatus.OK, gameService.recommendGamesForMember(userContext.getActor().getId(), count));
+    public RsData<List<GetRecommendedGameResponse>> getFriendRecommendedGames() {
+        return RsData.success(HttpStatus.OK, gameService.recommendGamesForMember(userContext.getActor().getId()));
+    }
+
+    @GetMapping("/recommend/playtime/top")
+    @Operation(summary = "플레이타임 긴 게임")
+    public RsData<List<GetRecommendedGameResponse>> getTopPlaytimeGames() {
+        return RsData.success(HttpStatus.OK, gameService.getTopPlaytimeGames(LocalDate.now().with(DayOfWeek.MONDAY)));
     }
 
 }

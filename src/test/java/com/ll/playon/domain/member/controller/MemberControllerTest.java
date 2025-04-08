@@ -246,7 +246,7 @@ public class MemberControllerTest {
                 .andExpect(jsonPath("$.data.ownedGames[0].appid").exists())
                 .andExpect(jsonPath("$.data.ownedGames[0].name").exists())
                 .andExpect(jsonPath("$.data.ownedGames[0].headerImage").exists())
-                .andExpect(jsonPath("$.data.ownedGames[0].gameGenres").exists());
+                .andExpect(jsonPath("$.data.ownedGames[0].genres").exists());
     }
 
     @Test

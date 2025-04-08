@@ -11,8 +11,7 @@ import java.util.List;
 @Entity
 @Table(name = "steam_game", indexes = {
         @Index(name = "idx_game_appid", columnList = "appid"),
-        @Index(name = "idx_game_name", columnList = "name"),
-        @Index(name = "idx_game_genre", columnList = "id, genre_name")
+        @Index(name = "idx_game_name", columnList = "name")
 })
 @Getter
 @Setter

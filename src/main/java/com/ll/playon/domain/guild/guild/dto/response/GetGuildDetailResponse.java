@@ -15,8 +15,8 @@ public record GetGuildDetailResponse(
         boolean isPublic,
         String guildImg,
         LocalDateTime createdAt,
-        List<GuildTagResponse> tags,
-        GuildRole myRole
+        GuildRole myRole,
+        List<String> tags
 ) {
     public static GetGuildDetailResponse from(Guild guild, GuildRole myRole) {
         return new GetGuildDetailResponse(
@@ -28,8 +28,11 @@ public record GetGuildDetailResponse(
                 guild.isPublic(),
                 guild.getGuildImg(),
                 guild.getCreatedAt(),
-                GuildTagResponse.fromList(guild.getGuildTags()),
-                myRole
+                myRole,
+                guild.getGuildTags().stream()
+                        .map(tag -> tag.getValue().getKoreanValue())
+                        .toList()
+
         );
     }
 }

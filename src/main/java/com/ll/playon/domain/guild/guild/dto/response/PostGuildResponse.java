@@ -13,7 +13,7 @@ public record PostGuildResponse(
         boolean isPublic,
         String guildImg,
         LocalDateTime createdAt,
-        List<GuildTagResponse> tags
+        List<String> tags
 ) {
     public static PostGuildResponse from(Guild guild) {
         return new PostGuildResponse(
@@ -24,7 +24,9 @@ public record PostGuildResponse(
                 guild.isPublic(),
                 guild.getGuildImg(),
                 guild.getCreatedAt(),
-                GuildTagResponse.fromList(guild.getGuildTags())
+                guild.getGuildTags().stream()
+                        .map(tag -> tag.getValue().getKoreanValue())
+                        .toList()
         );
     }
 }
