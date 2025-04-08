@@ -231,8 +231,4 @@ public class GameService {
                 .map(GetRecommendedGameResponse::from)
                 .toList();
     }
-
-    public void linkSteamGames(Member actor) {
-
-    }
 }
