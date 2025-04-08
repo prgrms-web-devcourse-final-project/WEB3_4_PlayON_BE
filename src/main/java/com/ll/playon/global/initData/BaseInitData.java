@@ -6,6 +6,16 @@ import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
+import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
+import com.ll.playon.domain.guild.guildBoard.entity.GuildBoardComment;
+import com.ll.playon.domain.guild.guildBoard.entity.GuildBoardLike;
+import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
+import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardCommentRepository;
+import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardLikeRepository;
+import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardRepository;
+import com.ll.playon.domain.guild.guildJoinRequest.entity.GuildJoinRequest;
+import com.ll.playon.domain.guild.guildJoinRequest.enums.ApprovalState;
+import com.ll.playon.domain.guild.guildJoinRequest.repository.GuildJoinRequestRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
@@ -46,6 +56,10 @@ public class BaseInitData {
     private final MemberRepository memberRepository;
     private final GuildRepository guildRepository;
     private final GuildMemberRepository guildMemberRepository;
+    private final GuildJoinRequestRepository guildJoinRequestRepository;
+    private final GuildBoardRepository guildBoardRepository;
+    private final GuildBoardCommentRepository guildBoardCommentRepository;
+    private final GuildBoardLikeRepository guildBoardLikeRepository;
     private final MemberService memberService;
     private final PartyService partyService;
     private final PartyRepository partyRepository;
@@ -68,6 +82,8 @@ public class BaseInitData {
             self.makeSampleGuilds();
             self.makeSampleWeeklyPopularGames();
             self.makeSampleParties();
+            self.makeSampleGuildJoinRequests();
+            self.makeSampleGuildBoards();
         };
     }
 
@@ -530,4 +546,98 @@ public class BaseInitData {
             }
         }
     }
+
+    @Transactional
+    public void makeSampleGuildJoinRequests() {
+        if (guildJoinRequestRepository.count() > 0) return;
+
+        List<Guild> guilds = guildRepository.findAll();
+        List<Member> members = memberRepository.findAll();
+
+        // 이미 길드에 속해있지 않은 멤버만 선택 (가입 요청 가능한 멤버들)
+        List<Member> candidates = members.stream()
+                .filter(member -> guildMemberRepository.findAllByMember(member).isEmpty())
+                .limit(5) // 최대 5명만 예시로
+                .toList();
+
+        Random random = new Random();
+
+        for (Member member : candidates) {
+            Guild targetGuild = guilds.get(random.nextInt(guilds.size()));
+
+            GuildJoinRequest request = GuildJoinRequest.builder()
+                    .guild(targetGuild)
+                    .member(member)
+                    .approvalState(ApprovalState.PENDING)
+                    .build();
+
+            guildJoinRequestRepository.save(request);
+        }
+    }
+
+    @Transactional
+    public void makeSampleGuildBoards() {
+        if (guildBoardRepository.count() > 0) return;
+
+        List<Guild> guilds = guildRepository.findAll();
+        Random random = new Random();
+
+        for (Guild guild : guilds) {
+            List<GuildMember> guildMembers = guildMemberRepository.findAllByGuild(guild);
+
+            if (guildMembers.isEmpty()) continue;
+
+            int boardCount = 2 + random.nextInt(2); // 2~3개 생성
+
+            for (int i = 0; i < boardCount; i++) {
+                GuildMember author = guildMembers.get(random.nextInt(guildMembers.size()));
+
+                // 태그를 NOTICE로 줄 확률 (30%), 리더/매니저가 아닌 경우 강제로 FREE
+                boolean isNotice = random.nextInt(100) < 30;
+                BoardTag tag = (isNotice && author.getGuildRole().isManagerOrLeader()) ? BoardTag.NOTICE : BoardTag.FREE;
+
+                String title = (tag == BoardTag.NOTICE ? "[공지] " : "") + "샘플 게시글 " + UUID.randomUUID().toString().substring(0, 5);
+                String content = "샘플 내용입니다.\n테스트용입니다.";
+
+                GuildBoard board = GuildBoard.builder()
+                        .guild(guild)
+                        .author(author)
+                        .title(title)
+                        .content(content)
+                        .tag(tag)
+                        .imageUrl(null)
+                        .build();
+
+                guildBoardRepository.save(board);
+
+                // 댓글 (0~2개)
+                int commentCount = random.nextInt(3);
+                for (int j = 0; j < commentCount; j++) {
+                    GuildMember commenter = guildMembers.get(random.nextInt(guildMembers.size()));
+                    GuildBoardComment comment = GuildBoardComment.builder()
+                            .author(commenter)
+                            .comment("샘플 댓글 " + (j + 1))
+                            .build();
+                    board.addComment(comment);
+                    guildBoardCommentRepository.save(comment);
+                }
+
+                // 좋아요 (0~2개)
+                List<GuildMember> likers = guildMembers.stream()
+                        .limit(random.nextInt(3))
+                        .toList();
+
+                for (GuildMember liker : likers) {
+                    GuildBoardLike like = GuildBoardLike.builder()
+                            .guildMember(liker)
+                            .build();
+                    board.addLike(like);
+                    guildBoardLikeRepository.save(like);
+                    board.increaseLike();
+                }
+            }
+        }
+}
+
+
 }

@@ -62,6 +62,10 @@ public class GameControllerTest {
     void setup() {
         game = gameRepository.findByAppid(1L).get();
     }
+    @BeforeEach
+    void cleanUp() {
+        partyRepository.deleteAll();
+    }
 
     private void setFakeRakingResponse() {
         SteamSearchResponse fakeResponse = new SteamSearchResponse();
