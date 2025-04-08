@@ -20,8 +20,8 @@ public class GuildScheduler {
     private final WeeklyPopularGuildRepository weeklyPopularGuildRepository;
     private final GuildBoardRepository guildBoardRepository;
 
-//    @Scheduled(cron = "0 0 3 * * MON") // 매주 월요일 03:00
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 3 * * MON") // 매주 월요일 03:00
+//    @Scheduled(cron = "0 * * * * *")
     public void updateWeeklyGuildStats() {
         LocalDate weekStart = LocalDate.now().with(DayOfWeek.MONDAY);
         LocalDateTime fromDate = weekStart.minusWeeks(1).atStartOfDay(); // 지난주

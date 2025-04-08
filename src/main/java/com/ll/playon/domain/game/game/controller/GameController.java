@@ -107,4 +107,6 @@ public class GameController {
         return RsData.success(HttpStatus.OK, gameService.getTopPlaytimeGames(LocalDate.now().with(DayOfWeek.MONDAY)));
     }
 
+
+
 }
