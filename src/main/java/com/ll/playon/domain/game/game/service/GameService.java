@@ -79,6 +79,7 @@ public class GameService {
     }
 
     // 메인 페이지에 보여줄 스팀 랭킹
+    @Transactional
     public List<GameListResponse>  getGameRanking() {
         final List<Long> steamRankingIds = steamAPI.getSteamRanking();
         final List<SteamGame> gameList = new ArrayList<>();
@@ -96,6 +97,7 @@ public class GameService {
     }
 
     // 메인 페이지에 보여줄 사용자 게임 추천
+    @Transactional(readOnly = true)
     public List<GameListResponse> getGameRecommendations(Member actor) {
         Member member = memberRepository.findById(actor.getId())
                 .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
@@ -228,5 +230,9 @@ public class GameService {
                 .map(gameMap::get)
                 .map(GetRecommendedGameResponse::from)
                 .toList();
+    }
+
+    public void linkSteamGames(Member actor) {
+
     }
 }
