@@ -11,5 +11,5 @@ public class GameListResponse{
     private final Long appid;
     private final String name;
     private final String headerImage;
-    private final List<String> gameGenres;
+    private final List<String> genres;
 }

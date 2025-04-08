@@ -286,7 +286,7 @@ public class MemberService {
                         .appid(game.getAppid())
                         .name(game.getName())
                         .headerImage(game.getHeaderImage())
-                        .gameGenres(
+                        .genres(
                                 game.getGenres().stream()
                                         .map(SteamGenre::getName)
                                         .toList()
