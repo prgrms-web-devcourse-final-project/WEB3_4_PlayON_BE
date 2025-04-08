@@ -9,6 +9,4 @@ import java.util.List;
 public interface GuildBoardCommentRepository extends JpaRepository<GuildBoardComment, Long> {
     List<GuildBoardComment> findByBoardOrderByCreatedAtAsc(GuildBoard board);
     int countByBoard(GuildBoard board);
-
-    List<GuildBoardComment> comment(String comment);
 }

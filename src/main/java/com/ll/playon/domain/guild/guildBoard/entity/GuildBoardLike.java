@@ -25,4 +25,9 @@ public class GuildBoardLike {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id", nullable = false)
     private GuildBoard board;
+
+    public void setBoard(GuildBoard board) {
+        this.board = board;
+        board.getLikes().add(this);
+    }
 }

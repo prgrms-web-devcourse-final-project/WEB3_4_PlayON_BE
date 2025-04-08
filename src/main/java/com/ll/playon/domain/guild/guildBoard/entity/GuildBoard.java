@@ -74,4 +74,14 @@ public class GuildBoard extends BaseTime {
         this.tag = tag;
         this.imageUrl = imageUrl;
     }
+
+    public void addComment(GuildBoardComment comment) {
+        comments.add(comment);
+        comment.setBoard(this);
+    }
+
+    public void addLike(GuildBoardLike like) {
+        likes.add(like);
+        like.setBoard(this);
+    }
 }

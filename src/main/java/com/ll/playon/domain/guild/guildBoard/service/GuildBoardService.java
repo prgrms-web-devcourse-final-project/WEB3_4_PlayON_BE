@@ -114,16 +114,20 @@ public class GuildBoardService {
             board.decreaseLike();
             liked = false;
         } else {
-            guildBoardLikeRepository.save(GuildBoardLike.builder()
+            GuildBoardLike like = GuildBoardLike.builder()
                     .guildMember(guildMember)
-                    .board(board)
-                    .build());
+                    .build();
+
+            board.addLike(like);
+
+            guildBoardLikeRepository.save(like);
             board.increaseLike();
             liked = true;
         }
 
         return GuildBoardLikeToggleResponse.of(liked, board.getLikeCount());
     }
+
 
     @Transactional
     public GuildBoardCommentCreateResponse createComment(Long guildId, Long boardId, GuildBoardCommentCreateRequest request, Member actor) {
@@ -132,15 +136,17 @@ public class GuildBoardService {
         GuildMember guildMember = getGuildMember(guild, actor);
 
         GuildBoardComment comment = GuildBoardComment.builder()
-                .board(board)
                 .author(guildMember)
                 .comment(request.comment())
                 .build();
+
+        board.addComment(comment);
 
         guildBoardCommentRepository.save(comment);
 
         return GuildBoardCommentCreateResponse.from(comment);
     }
+
 
     @Transactional
     public void updateComment(Long guildId, Long boardId, Long commentId, GuildBoardCommentUpdateRequest request, Member actor) {
