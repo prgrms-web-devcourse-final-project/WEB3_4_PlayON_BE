@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
+import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
+import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
 import com.ll.playon.domain.guild.guildMember.dto.request.*;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
@@ -243,4 +245,29 @@ class GuildMemberControllerTest {
                 .andExpect(status().isForbidden())
                 .andExpect(content().string("길드 권한이 없습니다."));
     }
+
+    @Test
+    @DisplayName("멤버 조회 시 게시글 수 postCount 포함 - 성공")
+    void getMembers_withPostCount_success() throws Exception {
+        // given
+        loginAs(manager);
+
+        // 게시글을 작성한 멤버 추가 (예: leader가 글 3개)
+        GuildMember leaderGm = guildMemberRepository.findByGuildAndMember(guild, leader).orElseThrow();
+        for (int i = 0; i < 3; i++) {
+            guild.getBoards().add(GuildBoard.builder()
+                    .guild(guild)
+                    .author(leaderGm)
+                    .title("제목" + i)
+                    .content("내용" + i)
+                    .tag(BoardTag.FREE)
+                    .build());
+        }
+
+        mockMvc.perform(get("/api/guilds/{guildId}/members", guild.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[?(@.memberId == %d)].postCount".formatted(leader.getId())).value(3));
+    }
+
+
 }
