@@ -9,9 +9,12 @@ import com.ll.playon.domain.guild.guildBoard.enums.BoardSortType;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
 import com.ll.playon.domain.guild.guildBoard.service.GuildBoardService;
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.image.type.ImageType;
+import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
+import com.ll.playon.global.validation.FileValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,6 +25,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.net.URL;
+
 @Tag(name = "Guild Board", description = "길드 게시판 관련 기능")
 @RestController
 @RequestMapping("/api/guilds")
@@ -30,6 +36,20 @@ public class GuildBoardController {
 
     private final GuildBoardService guildBoardService;
     private final UserContext userContext;
+    private final S3Service s3Service;
+
+    @GetMapping("/board/image-upload-url")
+    @Operation(summary = "길드 게시판 이미지 업로드용 Presigned URL 발급")
+    public RsData<URL> getBoardImageUploadUrl(@RequestParam String fileType) {
+        FileValidator.validateFileType(fileType);
+
+        long timestamp = Instant.now().getEpochSecond();
+
+        URL presignedUrl = s3Service.generatePresignedUrl(ImageType.BOARD, timestamp, fileType);
+
+        return RsData.success(HttpStatus.OK, presignedUrl);
+    }
+
 
     @GetMapping("/{guildId}/board")
     @Operation(summary = "길드 게시글 목록 조회")
