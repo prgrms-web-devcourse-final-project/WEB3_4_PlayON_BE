@@ -66,6 +66,10 @@ public enum ErrorCode {
     CANNOT_DELEGATE_TO_SINGLE_MANAGER(HttpStatus.BAD_REQUEST, "운영진이 2명 이상일 때만 권한 위임이 가능합니다."),
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "해당 멤버를 찾을 수 없습니다."),
 
+    // GuildBoard
+    GUILD_BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
+    GUILD_BOARD_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
+
     // Party
     IS_ALREADY_REQUEST_PARTY(HttpStatus.FORBIDDEN, "파티 신청이 진행 중입니다."),
     PARTY_NOT_FOUND(HttpStatus.NOT_FOUND, "파티가 존재하지 않습니다."),
