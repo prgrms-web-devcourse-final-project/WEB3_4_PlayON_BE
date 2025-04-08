@@ -34,7 +34,7 @@ public class SteamGame extends BaseTime {
     @Column(name = "required_age")
     private Integer requiredAge;
 
-    @Column(name = "about_the_game", columnDefinition = "TEXT")
+    @Column(name = "about_the_game", columnDefinition = "LONGTEXT")
     private String aboutTheGame;
 
     @Column(name = "short_description", columnDefinition = "TEXT")
