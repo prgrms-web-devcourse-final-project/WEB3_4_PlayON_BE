@@ -12,5 +12,5 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findTop10ByReceiverIdOrderByCreatedAtDesc(Long memberId);
 
     // 요약용 : 안 읽은 알림 수 카운트
-    long countByReceiverIdAndReadFalse(Long receiverId);
+    long countByReceiverIdAndIsReadFalse(Long receiverId);
 }

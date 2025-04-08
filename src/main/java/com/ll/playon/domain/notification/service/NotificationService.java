@@ -79,7 +79,7 @@ public class NotificationService {
     @Transactional(readOnly = true)
     public NotificationSummaryResponse getNotificationSummary(Long memberId) {
         List<Notification> latest = notificationRepository.findTop10ByReceiverIdOrderByCreatedAtDesc(memberId);
-        long unreadCount = notificationRepository.countByReceiverIdAndReadFalse(memberId);
+        long unreadCount = notificationRepository.countByReceiverIdAndIsReadFalse(memberId);
 
         return NotificationSummaryResponse.of(latest, unreadCount);
     }
