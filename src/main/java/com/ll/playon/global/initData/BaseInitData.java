@@ -2,7 +2,7 @@ package com.ll.playon.global.initData;
 
 import com.ll.playon.domain.game.game.entity.*;
 import com.ll.playon.domain.game.game.repository.GameRepository;
-import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
+import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;

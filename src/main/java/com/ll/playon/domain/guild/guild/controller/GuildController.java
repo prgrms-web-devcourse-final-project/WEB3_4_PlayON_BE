@@ -20,7 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URL;
+import java.time.DayOfWeek;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "Guild", description = "길드 기능")
@@ -89,8 +91,8 @@ public class GuildController {
 
     @GetMapping("/popular")
     @Operation(summary = "인기 길드 조회")
-    public RsData<List<GetPopularGuildResponse>> getPopularGuilds(@RequestParam(defaultValue = "10") int count) {
-        return RsData.success(HttpStatus.OK, guildService.getPopularGuilds(count));
+    public RsData<List<GetPopularGuildResponse>> getPopularGuilds() {
+        return RsData.success(HttpStatus.OK, guildService.getPopularGuilds(LocalDate.now().with(DayOfWeek.MONDAY)));
     }
 
     @GetMapping("/recommend")

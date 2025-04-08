@@ -5,7 +5,7 @@ import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.service.GameService;
-import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
+import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.member.dto.GetMembersResponse;
 import com.ll.playon.domain.member.dto.MemberDetailDto;
 import com.ll.playon.domain.member.dto.MemberProfileResponse;

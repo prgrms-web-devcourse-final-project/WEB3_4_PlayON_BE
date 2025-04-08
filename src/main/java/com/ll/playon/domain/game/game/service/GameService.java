@@ -7,9 +7,9 @@ import com.ll.playon.domain.game.game.dto.response.*;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
-import com.ll.playon.domain.game.scheduler.repository.LongPlaytimeGameRepository;
+import com.ll.playon.domain.game.game.repository.LongPlaytimeGameRepository;
 import com.ll.playon.domain.game.game.repository.GenreRepository;
-import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
+import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.repository.MemberRepository;
@@ -171,7 +171,6 @@ public class GameService {
 
         return gameIds.stream()
                 .map(gameMap::get)
-                .filter(Objects::nonNull)
                 .map(GetWeeklyPopularGameResponse::from)
                 .toList();
     }
@@ -221,9 +220,7 @@ public class GameService {
     @Transactional(readOnly = true)
     public List<GetRecommendedGameResponse> getTopPlaytimeGames(LocalDate week) {
         List<Long> appIds = longPlaytimeGameRepository.findAppIdsByWeek(week);
-
         List<SteamGame> games = gameRepository.findAllByIdIn(appIds);
-
         Map<Long, SteamGame> gameMap = games.stream()
                 .collect(Collectors.toMap(SteamGame::getId, g -> g));
 

@@ -1,9 +1,9 @@
-package com.ll.playon.domain.game.scheduler.scheduler;
+package com.ll.playon.domain.game.game.scheduler;
 
 import com.ll.playon.domain.game.game.entity.LongPlaytimeGame;
 import com.ll.playon.domain.game.game.entity.WeeklyPopularGame;
-import com.ll.playon.domain.game.scheduler.repository.LongPlaytimeGameRepository;
-import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
+import com.ll.playon.domain.game.game.repository.LongPlaytimeGameRepository;
+import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -39,12 +39,11 @@ public class GameScheduler {
         List<WeeklyPopularGame> list = partyRepository.findTopGamesByPartyLastWeek(fromDate, toDate, PageRequest.of(0, limit))
                 .stream()
                 .map(row -> WeeklyPopularGame.builder()
-                        .appid((Long) row.get("appid"))
-                        .playCount((Long) row.get("playCount"))
+                        .appid(row.getAppid())
+                        .playCount(row.getPlayCount())
                         .weekStartDate(weekStart)
                         .build())
                 .toList();
-
         weeklyGameRepository.saveAll(list);
     }
 
@@ -53,12 +52,11 @@ public class GameScheduler {
         List<LongPlaytimeGame> list = partyRepository.findTopGamesByPlaytimeLastWeek(fromDate, toDate, PageRequest.of(0, limit))
                 .stream()
                 .map(row -> LongPlaytimeGame.builder()
-                        .appid((Long) row.get("appid"))
-                        .totalPlaytime(((Number) row.get("playtime")).longValue())
+                        .appid(row.getAppid())
+                        .totalPlaytime(row.getPlaytime())
                         .weekStartDate(weekStart)
                         .build())
                 .toList();
-
         longPlaytimeGameRepository.saveAll(list);
     }
 }

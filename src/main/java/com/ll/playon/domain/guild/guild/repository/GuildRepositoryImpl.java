@@ -4,6 +4,7 @@ import com.ll.playon.domain.guild.guild.dto.request.GetGuildListRequest;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.QGuild;
 import com.ll.playon.domain.guild.guild.entity.QGuildTag;
+import com.ll.playon.domain.guild.guildBoard.entity.QGuildBoard;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import com.querydsl.core.BooleanBuilder;
@@ -29,6 +30,7 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
     public Page<Guild> searchGuilds(GetGuildListRequest req, Pageable pageable, String sort) {
         QGuild guild = QGuild.guild;
         QGuildTag guildTag = QGuildTag.guildTag;
+        QGuildBoard board = QGuildBoard.guildBoard;
 
         BooleanBuilder builder = new BooleanBuilder()
                 .and(guild.isDeleted.isFalse())  // 삭제된 길드 제외
@@ -68,14 +70,19 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
             }
         }
 
+// 정렬 분기 처리
+        boolean isActivitySort = sort.equals("activity");
+
         List<Guild> content = queryFactory
-                .selectDistinct(guild)
+                .select(guild)
                 .from(guild)
                 .leftJoin(guild.guildTags, guildTag)
+                .leftJoin(guild.boards, board)
                 .where(builder)
+                .groupBy(guild.id)
+                .orderBy(getSort(sort, guild, board))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(getSort(sort, guild))
                 .fetch();
 
         long total = Optional.ofNullable(
@@ -90,12 +97,11 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
         return new PageImpl<>(content, pageable, total);
     }
 
-    private OrderSpecifier<?>[] getSort(String sort, QGuild guild) {
+    private OrderSpecifier<?> getSort(String sort, QGuild guild, QGuildBoard board) {
         return switch (sort) {
-            // TODO: activity 활동 많은 순 구현 필요(일주일당 게시글 많은 순)
-            case "members" -> new OrderSpecifier[]{guild.maxMembers.desc()};
-//            case "activity" -> new OrderSpecifier[]{guild.id.desc()};
-            default -> new OrderSpecifier[]{guild.createdAt.desc()}; // 최신순 기본
+            case "members" -> guild.maxMembers.desc(); // 멤버 많은 순
+            case "activity" -> board.id.count().desc(); // 게시글 많은 순
+            default -> guild.createdAt.desc(); // 최신순
         };
     }
 }

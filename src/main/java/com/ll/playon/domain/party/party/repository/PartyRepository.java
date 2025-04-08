@@ -1,6 +1,8 @@
 package com.ll.playon.domain.party.party.repository;
 
 import com.ll.playon.domain.game.game.entity.SteamGame;
+import com.ll.playon.domain.game.game.projection.TopPartyGameProjection;
+import com.ll.playon.domain.game.game.projection.TopPlaytimeGameProjection;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
@@ -13,7 +15,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 public interface PartyRepository extends JpaRepository<Party, Long> {
 
@@ -193,21 +194,6 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
     Page<Party> findByGame(SteamGame game, Pageable pageable);
 
-
-    @Query("""
-        SELECT p.game.appid AS appid, COUNT(p) AS playCount
-        FROM Party p
-        WHERE p.createdAt >= :fromDate
-          AND p.createdAt < :toDate
-        GROUP BY p.game.appid
-        ORDER BY playCount DESC
-    """)
-    List<Map<String, Object>> findTopGamesByPartyLastWeek(
-            @Param("fromDate") LocalDateTime fromDate,
-            @Param("toDate") LocalDateTime toDate,
-            Pageable pageable
-    );
-
     List<Party> findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtAscCreatedAtDesc(PartyStatus partyStatus,
                                                                                     Pageable pageable);
 
@@ -215,28 +201,44 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
                                                                                      Pageable pageable);
 
     @Query("""
-        SELECT p
-        FROM Party p
-        WHERE p.id IN :partyIds
-          AND p.publicFlag = TRUE
-          AND p.partyStatus = 'COMPLETED'
-        ORDER BY p.createdAt DESC
-    """)
+                SELECT p
+                FROM Party p
+                WHERE p.id IN :partyIds
+                  AND p.publicFlag = TRUE
+                  AND p.partyStatus = 'COMPLETED'
+                ORDER BY p.createdAt DESC
+            """)
     List<Party> findPublicCompletedPartiesIn(@Param("partyIds") List<Long> partyIds, Pageable pageable);
 
+    @Query("""
+                SELECT p.game.appid AS appid, COUNT(p) AS playCount
+                FROM Party p
+                WHERE p.createdAt >= :fromDate
+                  AND p.createdAt < :toDate
+                GROUP BY p.game.appid
+                ORDER BY playCount DESC
+            """)
+    List<TopPartyGameProjection> findTopGamesByPartyLastWeek(
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            Pageable pageable
+    );
+
     @Query(value = """
-    SELECT p.game_id AS appid,
-           SUM(TIMESTAMPDIFF(SECOND, p.party_at, p.ended_at)) / 3600 AS playtime
-    FROM party p
-    WHERE p.party_at >= :fromDate
-      AND p.party_at < :toDate
-      AND p.is_public = true
-      AND p.party_status = 'COMPLETED'
-      AND p.ended_at IS NOT NULL
-    GROUP BY p.game_id
-    ORDER BY playtime DESC
-    """,
-            countQuery = "SELECT COUNT(*) FROM party p",
+                SELECT p.game_id AS appid,
+                       SUM(TIMESTAMPDIFF(SECOND, p.party_at, p.ended_at)) / 3600 AS playtime
+                FROM party p
+                WHERE p.party_at >= :fromDate AND p.party_at < :toDate
+                  AND p.is_public = true
+                  AND p.party_status = 'COMPLETED'
+                  AND p.ended_at IS NOT NULL
+                GROUP BY p.game_id
+                ORDER BY playtime DESC
+            """,
             nativeQuery = true)
-    List<Map<String, Object>> findTopGamesByPlaytimeLastWeek(@Param("fromDate") LocalDateTime fromDate, @Param("toDate") LocalDateTime toDate, Pageable pageable);
+    List<TopPlaytimeGameProjection> findTopGamesByPlaytimeLastWeek(
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            Pageable pageable
+    );
 }
