@@ -144,15 +144,7 @@ public class MemberService {
                 .build();
         memberRepository.save(newMember);
 
-        List<Long> userGames = steamAPI.getUserGames(steamId);
-        if(!userGames.isEmpty()) {
-            SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
-            memberRepository.save(newMember.toBuilder().preferredGenre(preferredGenre.getName()).build());
-            saveUserGameList(userGames, newMember);
-        }
-
-        // 스팀 게임 소유 칭호
-        titleEvaluator.gameCountCheck(ConditionType.STEAM_GAME_COUNT, newMember, userGames.size());
+        getUserGamesAndCheckGenres(newMember);
 
         return newMember;
     }
@@ -195,16 +187,27 @@ public class MemberService {
                     targetMember.setSteamId(steamId);
                     memberRepository.save(targetMember);
 
-                    List<Long> userGames = steamAPI.getUserGames(steamId);
-                    if(!userGames.isEmpty()) {
-                        SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
-                        memberRepository.save(targetMember.toBuilder().preferredGenre(preferredGenre.getName()).build());
-                        saveUserGameList(userGames, targetMember);
-                    }
+                    getUserGamesAndCheckGenres(targetMember);
 
                     return targetMember;
                 })
                 .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
+    }
+
+    public void getUserGamesAndCheckGenres(Member member) {
+        int before = member.getGames().size();
+
+        List<Long> userGames = steamAPI.getUserGames(member.getSteamId());
+        if(!userGames.isEmpty()) {
+            SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
+            memberRepository.save(member.toBuilder().preferredGenre(preferredGenre.getName()).build());
+            saveUserGameList(userGames, member);
+        }
+
+        int after = userGames.size();
+
+        // 스팀 게임 소유 칭호
+        titleEvaluator.gameCountCheck(ConditionType.STEAM_GAME_COUNT, member, after - before);
     }
 
     public void modifyMember(MemberDetailDto req, Member actor) {

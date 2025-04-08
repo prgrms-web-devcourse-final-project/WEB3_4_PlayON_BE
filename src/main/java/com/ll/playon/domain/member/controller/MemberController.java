@@ -2,7 +2,9 @@ package com.ll.playon.domain.member.controller;
 
 import com.ll.playon.domain.game.game.dto.GameListResponse;
 import com.ll.playon.domain.member.dto.*;
+import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.service.MemberService;
+import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -62,6 +65,7 @@ public class MemberController {
     }
 
     @GetMapping("/nickname")
+    @Operation(summary = "닉네임으로 사용자 리스트 조회")
     public RsData<List<GetMembersResponse>> getMembersByNickname(@RequestParam String nickname) {
         return RsData.success(HttpStatus.OK, memberService.findByNickname(nickname));
     }
@@ -70,5 +74,14 @@ public class MemberController {
     @Operation(summary = "사용자의 보유게임 조회")
     public RsData<List<GameListResponse>> getMembersByGame(@RequestParam(defaultValue = "3") int count) {
         return RsData.success(HttpStatus.OK, memberService.getOwnedGamesByMember(count, userContext.getActor()));
+    }
+
+    @PostMapping("/steamLink")
+    @Operation(summary = "사용자의 보유게임 갱신")
+    public RsData<String> linkSteamGames() {
+        Member actor = userContext.getActor();
+        if(ObjectUtils.isEmpty(actor)) throw ErrorCode.UNAUTHORIZED.throwServiceException();
+        memberService.getUserGamesAndCheckGenres(actor);
+        return RsData.success(HttpStatus.OK, "성공");
     }
 }

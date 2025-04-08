@@ -8,6 +8,7 @@ import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.repository.MemberStatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class TitleEvaluator {
     public void gameCountCheck(ConditionType conditionType, Member member, int count) {
         checkLogic(conditionType, member, count);
     }
+    @Transactional
     public void checkLogic(ConditionType conditionType, Member member, int count) {
         // 해당 타입의 칭호 조회 (필요값으로 오름차순 정렬)
         final List<Title> titleList = titleService.findByConditionTypeOrderByConditionValueAsc(conditionType);
