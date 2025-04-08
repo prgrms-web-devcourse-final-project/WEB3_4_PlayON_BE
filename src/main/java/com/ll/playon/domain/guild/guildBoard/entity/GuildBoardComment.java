@@ -30,4 +30,9 @@ public class GuildBoardComment extends BaseTime {
     public void update(String newComment) {
         this.comment = newComment;
     }
+
+    public void setBoard(GuildBoard board) {
+        this.board = board;
+        board.getComments().add(this);
+    }
 }

@@ -195,10 +195,14 @@ public class GuildBoardControllerTest {
 
     private GuildBoardComment saveComment(String content) {
         GuildMember gm = guildMemberRepository.findByGuildAndMember(guild, member).orElseThrow();
-        return guildBoardCommentRepository.save(GuildBoardComment.builder()
-                .board(board)
+
+        GuildBoardComment comment = GuildBoardComment.builder()
                 .author(gm)
                 .comment(content)
-                .build());
+                .build();
+
+        board.addComment(comment);
+
+        return guildBoardCommentRepository.save(comment);
     }
 }
