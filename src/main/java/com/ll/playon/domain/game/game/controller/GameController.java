@@ -55,6 +55,7 @@ public class GameController {
     }
 
     @GetMapping("/{appid}/details")
+    @Operation(summary = "게임 상세 정보 및 파티/로그 목록 조회")
     public RsData<GameDetailWithPartyResponse> getGameDetail(
             @PathVariable Long appid,
             @Qualifier("partyPage") @PageableDefault(size = 3) Pageable partyPageable,
@@ -64,6 +65,7 @@ public class GameController {
     }
 
     @GetMapping("/list")
+    @Operation(summary = "필터 조건에 맞는 게임 목록 조회")
     public RsData<PageDto<GameSummaryResponse>> getFilteredGames(
             @ModelAttribute GameSearchCondition condition,
             @PageableDefault(size = 12) Pageable pageable
@@ -72,11 +74,13 @@ public class GameController {
     }
 
     @GetMapping("/search")
+    @Operation(summary = "게임 키워드 자동완성")
     public RsData<List<GameAutoCompleteResponse>> searchGameByKeyword(@RequestParam String keyword) {
         return RsData.success(HttpStatus.OK, gameService.autoCompleteGames(keyword));
     }
 
     @GetMapping("/{appid}/party")
+    @Operation(summary = "게임 관련 파티 목록 조회")
     public RsData<PageDto<PartySummaryResponse>> getGameParties(
             @PathVariable Long appid,
             @PageableDefault(size = 12, sort = "partyAt") Pageable pageable
@@ -85,6 +89,7 @@ public class GameController {
     }
 
     @GetMapping("/{appid}/logs")
+    @Operation(summary = "게임 관련 파티 로그 목록 조회")
     public RsData<PageDto<PartyLogSummaryResponse>> getGamePartyLogs(
             @PathVariable Long appid,
             @PageableDefault(size = 12, sort="createdAt", direction = Sort.Direction.DESC) Pageable pageable

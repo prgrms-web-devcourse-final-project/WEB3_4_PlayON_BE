@@ -2,6 +2,7 @@ package com.ll.playon.domain.guild.guildMember.service;
 
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
+import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardRepository;
 import com.ll.playon.domain.guild.guildMember.dto.request.*;
 import com.ll.playon.domain.guild.guildMember.dto.response.GuildMemberResponse;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
@@ -23,6 +24,7 @@ public class GuildMemberService {
     private final GuildRepository guildRepository;
     private final MemberRepository memberRepository;
     private final GuildMemberRepository guildMemberRepository;
+    private final GuildBoardRepository guildBoardRepository;
 
     @Transactional(readOnly = true)
     public List<GuildMemberResponse> getAllGuildMembers(Long guildId, Member actor) {
@@ -30,8 +32,10 @@ public class GuildMemberService {
         validateManagerAccess(guild, actor);
 
         return guildMemberRepository.findAllByGuild(guild).stream()
-                .map(GuildMemberResponse::from)
-                    // TODO: 게시판 기능이 추가되면 실제 게시글 수를 여기에 조회해서 넘기기
+                .map(gm -> {
+                    int postCount = guildBoardRepository.countByAuthor(gm);
+                    return GuildMemberResponse.from(gm, postCount);
+                })
                 .toList();
     }
 

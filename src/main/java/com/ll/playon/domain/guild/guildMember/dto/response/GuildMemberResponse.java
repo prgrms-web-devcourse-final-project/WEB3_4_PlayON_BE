@@ -13,9 +13,9 @@ public record GuildMemberResponse(
         GuildRole guildRole,
         LocalDateTime joinedAt,
         LocalDateTime lastLoginAt,
-        int postCount // TODO: 길드 게시판 구현 후 멤버별 글 갯수 집계 예정
+        int postCount
 ) {
-    public static GuildMemberResponse from(GuildMember guildMember) {
+    public static GuildMemberResponse from(GuildMember guildMember, int postCount) {
         Member member = guildMember.getMember();
         return new GuildMemberResponse(
                 member.getId(),
@@ -24,8 +24,7 @@ public record GuildMemberResponse(
                 guildMember.getGuildRole(),
                 guildMember.getCreatedAt(),
                 member.getLastLoginAt(),
-                0 // TODO: 게시글 개수 조회 로직 필요
+                postCount
         );
     }
 }
-
