@@ -50,9 +50,11 @@ public class GuildBoard extends BaseTime {
     private String imageUrl;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<GuildBoardComment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<GuildBoardLike> likes = new ArrayList<>();
 
 
