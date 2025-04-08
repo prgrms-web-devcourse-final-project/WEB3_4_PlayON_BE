@@ -70,7 +70,7 @@ public class GameService {
                     .appid(game.getAppid())
                     .name(game.getName())
                     .headerImage(game.getHeaderImage())
-                    .gameGenres(genres)
+                    .genres(genres)
                     .build());
         }
         return responses;
@@ -169,7 +169,7 @@ public class GameService {
     @Transactional(readOnly = true)
     public List<GetWeeklyPopularGameResponse> getWeeklyPopularGames(LocalDate week) {
         List<Long> gameIds = weeklyGameRepository.findTopGameIdsByWeek(week);
-        List<SteamGame> games = gameRepository.findAllByIdIn(gameIds);
+        List<SteamGame> games = gameRepository.findAllByAppidIn(gameIds);
         Map<Long, SteamGame> gameMap = games.stream()
                 .collect(Collectors.toMap(SteamGame::getAppid, g -> g));
 
