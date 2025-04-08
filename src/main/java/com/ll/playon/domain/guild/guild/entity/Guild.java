@@ -64,9 +64,9 @@ public class Guild extends BaseTime {
 
     public void softDelete() {
         this.isDeleted = true;
-        this.members.clear();
         this.name = "DELETED_" + UUID.randomUUID();
         this.description = "DELETED";
+        this.guildImg = "DELETED";
     }
 
     public void updateFromRequest(PutGuildRequest request, SteamGame game) {
