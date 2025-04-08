@@ -37,11 +37,13 @@ public class GameController {
     private final UserContext userContext;
 
     @GetMapping("/ranking")
+    @Operation(summary = "스팀 인기게임 TOP5")
     public RsData<List<GameListResponse>> getSteamGameTopFive() {
         return RsData.success(HttpStatus.OK, gameService.getGameRanking());
     }
 
     @GetMapping("/recommend")
+    @Operation(summary = "사용자 선호장르 인기게임 추천")
     public RsData<List<GameListResponse>> getRecommendedGames() {
         Member actor = userContext.getActor();
         if(ObjectUtils.isEmpty(actor)) throw ErrorCode.UNAUTHORIZED.throwServiceException();

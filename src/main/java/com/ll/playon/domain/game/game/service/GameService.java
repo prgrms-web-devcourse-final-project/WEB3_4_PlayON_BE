@@ -50,7 +50,7 @@ public class GameService {
     private final PartyMemberRepository partyMemberRepository;
     private final LongPlaytimeGameRepository longPlaytimeGameRepository;
 
-    public List<GameListResponse> makeGameListWithGenre(List<SteamGame> gameList, SteamGenre preferredGenre) {
+    public List<GameListResponse> makeGameListWithGenre(List<SteamGame> gameList, String preferredGenre) {
         return makeGameList(gameList, preferredGenre);
     }
 
@@ -58,7 +58,7 @@ public class GameService {
         return makeGameList(gameList, null);
     }
 
-    public List<GameListResponse> makeGameList(List<SteamGame> gameList, SteamGenre preferredGenre) {
+    public List<GameListResponse> makeGameList(List<SteamGame> gameList, String preferredGenre) {
         final List<GameListResponse> responses = new ArrayList<>();
 
         for (SteamGame game : gameList) {
@@ -66,7 +66,7 @@ public class GameService {
                     .map(SteamGenre::getName)
                     .toList();
 
-            if(preferredGenre != null && !genres.contains(preferredGenre.getName())) continue;
+            if(preferredGenre != null && !genres.contains(preferredGenre)) continue;
 
             responses.add(GameListResponse.builder()
                     .appid(game.getAppid())
@@ -85,11 +85,9 @@ public class GameService {
 
         int count = 1;
         for (Long id : steamRankingIds) {
-            if(count == TOP_FIVE) break;
+            if(count > TOP_FIVE) break;
 
-            Optional<SteamGame> steamGameOptional = gameRepository.findByAppid(id);
-            if(steamGameOptional.isEmpty()) continue;
-            gameList.add(steamGameOptional.get());
+            gameList.add(steamAPI.fetchOrCreateGameDetail(id));
 
             count++;
         }
@@ -110,8 +108,7 @@ public class GameService {
                 .filter(appId -> !ownedGames.contains(appId)).toList();
 
         // 장르 필터링 후 리스트 완성
-        SteamGenre preferredGenre = genreRepository.findByName(member.getPreferredGenre()).orElse(null);
-        return makeGameListWithGenre(gameRepository.findAllByAppidIn(notOwnedGames), preferredGenre);
+        return makeGameListWithGenre(gameRepository.findAllByAppidIn(notOwnedGames), member.getPreferredGenre());
     }
 
     @Transactional(readOnly = true)

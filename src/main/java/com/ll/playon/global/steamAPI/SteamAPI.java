@@ -14,6 +14,7 @@ import com.ll.playon.global.openFeign.dto.gameDetail.Screenshot;
 import com.ll.playon.global.openFeign.dto.gameDetail.SteamGameDetailResponse2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -89,7 +90,7 @@ public class SteamAPI {
     public List<Long> getSteamRanking() {
         final List<Long> result = new ArrayList<>();
 
-        final List<GameItem> list = steamStoreClient.getGameRanking().getItems().stream().limit(10).toList();
+        final List<GameItem> list = steamStoreClient.getGameRanking().getItems().stream().toList();
 
         for (GameItem game : list) {
             String img = game.getLogo();
@@ -99,6 +100,7 @@ public class SteamAPI {
             int endIndex = img.indexOf("/", startIndex);
             String appId = img.substring(startIndex, endIndex);
 
+            fetchOrCreateGameDetail(Long.valueOf(appId));
             result.add(Long.valueOf(appId));
         }
         return result;
@@ -144,8 +146,11 @@ public class SteamAPI {
                 .map(Screenshot::getPath_full).toList();
 
         // movie, 리스트로
-        List<String> movieList = gameData.getMovies().stream()
-                .map(movie -> movie.getMp4().getMax()).toList();
+        List<String> movieList = new ArrayList<>();
+        if(!ObjectUtils.isEmpty(gameData.getMovies())){
+            movieList = gameData.getMovies().stream()
+                    .map(movie -> movie.getMp4().getMax()).toList();
+        }
 
         // genre, 리스트로
         List<SteamGenre> genreList = gameData.getGenres().stream()
