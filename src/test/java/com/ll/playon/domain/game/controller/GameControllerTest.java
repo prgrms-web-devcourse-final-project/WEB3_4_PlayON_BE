@@ -1,11 +1,5 @@
 package com.ll.playon.domain.game.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.ll.playon.domain.game.game.controller.GameController;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.repository.GameRepository;
@@ -21,9 +15,6 @@ import com.ll.playon.global.openFeign.SteamStoreClient;
 import com.ll.playon.global.openFeign.dto.GameItem;
 import com.ll.playon.global.openFeign.dto.SteamSearchResponse;
 import jakarta.transaction.Transactional;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,6 +26,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -62,28 +60,7 @@ public class GameControllerTest {
 
     @BeforeEach
     void setup() {
-        partyLogRepository.deleteAll();
-        partyRepository.deleteAll();
-        guildRepository.deleteAll();
-        gameRepository.deleteAll();
-
-        game = gameRepository.save(SteamGame.builder()
-                .appid(12345L)
-                .name("Test Game")
-                .releaseDate(LocalDate.of(2023, 1, 1))
-                .headerImage("image.jpg")
-                .shortDescription("Short desc")
-                .aboutTheGame("About the gameId")
-                .requiredAge(19)
-                .website("http://test.com")
-                .isWindowsSupported(true)
-                .isMacSupported(true)
-                .isLinuxSupported(false)
-                .isSinglePlayer(true)
-                .isMultiPlayer(true)
-                .developers("Dev")
-                .publishers("Pub")
-                .build());
+        game = gameRepository.findByAppid(1L).get();
     }
 
     private void setFakeRakingResponse() {
@@ -92,10 +69,10 @@ public class GameControllerTest {
         GameItem game2 = new GameItem();
 
         game1.setName("Counter-Strike 2");
-        game1.setLogo("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/header.jpg");
+        game1.setLogo("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1/header.jpg");
 
         game2.setName("Dota 2");
-        game2.setLogo("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/570/header.jpg");
+        game2.setLogo("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2/header.jpg");
 
         fakeResponse.setDesc("");
         fakeResponse.setItems(List.of(game1, game2));
@@ -168,10 +145,10 @@ public class GameControllerTest {
     @DisplayName("게임 자동완성 검색 성공")
     void autoCompleteSuccess() throws Exception {
         mvc.perform(get("/api/games/search")
-                        .param("keyword", "Test"))
+                        .param("keyword", "sample"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data[0].name").value("Test Game"));
+                .andExpect(jsonPath("$.data[0].name").value("sampleGame1"));
     }
 
     @Test
