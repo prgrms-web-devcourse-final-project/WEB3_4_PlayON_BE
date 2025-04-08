@@ -9,20 +9,20 @@ import com.ll.playon.domain.guild.guildBoard.enums.BoardSortType;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
 import com.ll.playon.domain.guild.guildBoard.service.GuildBoardService;
 import com.ll.playon.domain.member.entity.Member;
-import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Guild Board", description = "길드 게시판 관련 기능")
 @RestController
 @RequestMapping("/api/guilds")
 @RequiredArgsConstructor
@@ -32,6 +32,7 @@ public class GuildBoardController {
     private final UserContext userContext;
 
     @GetMapping("/{guildId}/board")
+    @Operation(summary = "길드 게시글 목록 조회")
     public RsData<Page<GuildBoardSummaryResponse>> getBoards(
             @PathVariable Long guildId,
             @RequestParam(required = false) BoardTag tag,
@@ -51,6 +52,7 @@ public class GuildBoardController {
     }
 
     @PostMapping("/{guildId}/board")
+    @Operation(summary = "길드 게시글 작성")
     public RsData<GuildBoardCreateResponse> createBoard(
             @PathVariable Long guildId,
             @RequestBody @Valid GuildBoardCreateRequest request
@@ -61,6 +63,7 @@ public class GuildBoardController {
     }
 
     @PutMapping("/{guildId}/board/{boardId}")
+    @Operation(summary = "길드 게시글 수정")
     public RsData<String> updateBoard(
             @PathVariable Long guildId,
             @PathVariable Long boardId,
@@ -72,6 +75,7 @@ public class GuildBoardController {
     }
 
     @DeleteMapping("/{guildId}/board/{boardId}")
+    @Operation(summary = "길드 게시글 삭제")
     public RsData<String> deleteBoard(
             @PathVariable Long guildId,
             @PathVariable Long boardId
@@ -82,26 +86,29 @@ public class GuildBoardController {
     }
 
     @GetMapping("/{guildId}/board/{boardId}")
+    @Operation(summary = "길드 게시글 상세 조회")
     public RsData<GuildBoardDetailResponse> getBoardDetail(
             @PathVariable Long guildId,
             @PathVariable Long boardId
     ){
         Member actor = userContext.getActor();
-        GuildBoardDetailResponse response=guildBoardService.getBoardDetail(guildId, boardId,actor);
+        GuildBoardDetailResponse response = guildBoardService.getBoardDetail(guildId, boardId, actor);
         return RsData.success(HttpStatus.OK, response);
     }
 
     @PostMapping("/{guildId}/board/{boardId}/like")
+    @Operation(summary = "게시글 좋아요 토글")
     public RsData<GuildBoardLikeToggleResponse> toggleLike(
             @PathVariable Long guildId,
             @PathVariable Long boardId
     ){
-        Member actor= userContext.getActor();
-        GuildBoardLikeToggleResponse response=guildBoardService.toggleLike(guildId, boardId, actor);
+        Member actor = userContext.getActor();
+        GuildBoardLikeToggleResponse response = guildBoardService.toggleLike(guildId, boardId, actor);
         return RsData.success(HttpStatus.OK, response);
     }
 
     @PostMapping("/{guildId}/board/{boardId}/comments")
+    @Operation(summary = "게시글 댓글 작성")
     public RsData<GuildBoardCommentCreateResponse> createComment(
             @PathVariable Long guildId,
             @PathVariable Long boardId,
@@ -113,6 +120,7 @@ public class GuildBoardController {
     }
 
     @PutMapping("/{guildId}/board/{boardId}/comments/{commentId}")
+    @Operation(summary = "게시글 댓글 수정")
     public RsData<String> updateComment(
             @PathVariable Long guildId,
             @PathVariable Long boardId,
@@ -125,6 +133,7 @@ public class GuildBoardController {
     }
 
     @DeleteMapping("/{guildId}/board/{boardId}/comments/{commentId}")
+    @Operation(summary = "게시글 댓글 삭제")
     public RsData<String> deleteComment(
             @PathVariable Long guildId,
             @PathVariable Long boardId,

@@ -6,12 +6,15 @@ import com.ll.playon.domain.guild.guildMember.service.GuildMemberService;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Guild Member", description = "길드 멤버 관련 기능")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/guilds")
@@ -21,12 +24,14 @@ public class GuildMemberController {
     private final UserContext userContext;
 
     @GetMapping("/{guildId}/members")
+    @Operation(summary = "길드 멤버 조회")
     public RsData<List<GuildMemberResponse>> getGuildMembers(@PathVariable Long guildId) {
         Member actor = userContext.getActor();
         return RsData.success(HttpStatus.OK, guildMemberService.getAllGuildMembers(guildId, actor));
     }
 
     @DeleteMapping("/{guildId}/members/leave")
+    @Operation(summary = "길드 탈퇴")
     public RsData<String> leaveGuild(@PathVariable Long guildId,
                                      @RequestBody(required = false) LeaveGuildRequest request) {
         Member actor = userContext.getActor();
@@ -35,6 +40,7 @@ public class GuildMemberController {
     }
 
     @PutMapping("/{guildId}/managers")
+    @Operation(summary = "길드 운영진 권한 부여")
     public RsData<String> assignManager(@PathVariable Long guildId,
                                         @RequestBody AssignManagerRequest request) {
         Member actor = userContext.getActor();
@@ -43,6 +49,7 @@ public class GuildMemberController {
     }
 
     @DeleteMapping("/{guildId}/managers")
+    @Operation(summary = "길드 운영진 권한 회수")
     public RsData<String> revokeManager(@PathVariable Long guildId,
                                         @RequestBody RevokeManagerRequest request) {
         Member actor = userContext.getActor();
@@ -51,6 +58,7 @@ public class GuildMemberController {
     }
 
     @DeleteMapping("/{guildId}/members")
+    @Operation(summary = "길드 멤버 강제 퇴출")
     public RsData<String> expelMember(@PathVariable Long guildId,
                                       @RequestBody ExpelMemberRequest request) {
         Member actor = userContext.getActor();
@@ -59,6 +67,7 @@ public class GuildMemberController {
     }
 
     @PostMapping("/{guildId}/invite")
+    @Operation(summary = "길드 멤버 초대")
     public RsData<String> inviteMember(@PathVariable Long guildId,
                                        @RequestBody InviteMemberRequest request) {
         Member actor = userContext.getActor();
