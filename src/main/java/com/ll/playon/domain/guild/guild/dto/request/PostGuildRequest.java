@@ -20,7 +20,6 @@ public record PostGuildRequest(
 
         Long appid,
 
-        @NotBlank(message = "길드 대표 이미지는 필수입니다.")
         String guildImg,
 
         @NotNull(message = "태그 정보들을 입력해주세요.")

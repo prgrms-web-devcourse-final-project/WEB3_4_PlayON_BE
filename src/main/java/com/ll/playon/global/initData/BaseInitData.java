@@ -68,7 +68,7 @@ public class BaseInitData {
             self.makeSampleUsers();
             self.makeSampleGuilds();
             self.makeSampleWeeklyPopularGames();
-//            self.makeSampleParties();
+            self.makeSampleParties();
         };
     }
 

@@ -2,11 +2,12 @@ package com.ll.playon.domain.image.repository;
 
 import com.ll.playon.domain.image.entity.Image;
 import com.ll.playon.domain.image.type.ImageType;
-import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface ImageRepository extends JpaRepository<Image, Long> {
     List<Image> findAllByImageTypeAndReferenceId(ImageType imageType, long referenceId);
@@ -36,7 +37,7 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
             AND i.imageUrl = :imageUrl
             """
     )
-    long deleteByReferenceIdAndImageUrl(
+    int deleteByReferenceIdAndImageUrl(
             @Param("imageType") ImageType imageType,
             @Param("referenceId") long referenceId,
             @Param("imageUrl") String imageUrl);
