@@ -1,7 +1,6 @@
 package com.ll.playon.global.initData;
 
-import com.ll.playon.domain.game.game.entity.SteamGame;
-import com.ll.playon.domain.game.game.entity.WeeklyPopularGame;
+import com.ll.playon.domain.game.game.entity.*;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.scheduler.repository.WeeklyGameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
@@ -64,12 +63,102 @@ public class BaseInitData {
     @Bean
     public ApplicationRunner baseInitDataApplicationRunner() {
         return args -> {
+            self.makeSampleGames();
             self.makeTitles();
             self.makeSampleUsers();
             self.makeSampleGuilds();
             self.makeSampleWeeklyPopularGames();
-//            self.makeSampleParties();
+            self.makeSampleParties();
         };
+    }
+
+    @Transactional
+    public void makeSampleGames() {
+        if(gameRepository.count() > 0 ) return;
+
+        SteamGame game1 = SteamGame.builder()
+                .name("sampleGame1")
+                .appid(1L)
+                .releaseDate(LocalDate.now())
+                .headerImage("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
+                .requiredAge(0)
+                .developers("sample")
+                .publishers("sample")
+                .aboutTheGame("샘플 게임 데이터입니다.")
+                .shortDescription("샘플 게임 데이터입니다.")
+                .isSinglePlayer(true)
+                .isMultiPlayer(true)
+                .build();
+        SteamImage img1 = SteamImage.builder()
+                .game(game1)
+                .screenshot("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
+                .build();
+        game1.getScreenshots().add(img1);
+        SteamMovie m1 = SteamMovie.builder()
+                .game(game1)
+                .movie("http://video.akamai.steamstatic.com/store_trailers/257118552/movie_max.mp4?t=1742961813")
+                .build();
+        game1.getMovies().add(m1);
+        SteamGenre steamGenre = SteamGenre.builder()
+                .name("Action")
+                .build();
+        steamGenre.getGames().add(game1);
+        game1.getGenres().add(steamGenre);
+        gameRepository.save(game1);
+
+        SteamGame game2 = SteamGame.builder()
+                .name("sampleGame2")
+                .appid(2L)
+                .releaseDate(LocalDate.now())
+                .headerImage("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
+                .requiredAge(0)
+                .developers("sample")
+                .publishers("sample")
+                .aboutTheGame("샘플 게임 데이터입니다.")
+                .shortDescription("샘플 게임 데이터입니다.")
+                .isSinglePlayer(true)
+                .isMultiPlayer(true)
+                .build();
+        SteamImage img2 = SteamImage.builder()
+                .game(game2)
+                .screenshot("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
+                .build();
+        game2.getScreenshots().add(img2);
+        SteamMovie m2 = SteamMovie.builder()
+                .game(game2)
+                .movie("http://video.akamai.steamstatic.com/store_trailers/257118552/movie_max.mp4?t=1742961813")
+                .build();
+        game2.getMovies().add(m2);
+        steamGenre.getGames().add(game2);
+        game2.getGenres().add(steamGenre);
+        gameRepository.save(game2);
+
+        SteamGame game3 = SteamGame.builder()
+                .name("sampleGame3")
+                .appid(3L)
+                .releaseDate(LocalDate.now())
+                .headerImage("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
+                .requiredAge(0)
+                .developers("sample")
+                .publishers("sample")
+                .aboutTheGame("샘플 게임 데이터입니다.")
+                .shortDescription("샘플 게임 데이터입니다.")
+                .isSinglePlayer(true)
+                .isMultiPlayer(true)
+                .build();
+        SteamImage img3 = SteamImage.builder()
+                .game(game3)
+                .screenshot("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
+                .build();
+        game3.getScreenshots().add(img3);
+        SteamMovie m3 = SteamMovie.builder()
+                .game(game3)
+                .movie("http://video.akamai.steamstatic.com/store_trailers/257118552/movie_max.mp4?t=1742961813")
+                .build();
+        game3.getMovies().add(m3);
+        steamGenre.getGames().add(game3);
+        game3.getGenres().add(steamGenre);
+        gameRepository.save(game3);
     }
 
     @Transactional
@@ -140,7 +229,7 @@ public class BaseInitData {
                 .steamId(123L).username("sampleUser1").nickname("sampleUser1").lastLoginAt(LocalDateTime.now())
                 .role(Role.USER).build();
         memberRepository.save(sampleMember1);
-        List<Long> gameAppIds = Arrays.asList(730L, 570L);
+        List<Long> gameAppIds = Arrays.asList(1L, 2L, 3L);
         memberService.saveUserGameList(gameAppIds, sampleMember1);
 
         Member sampleMember2 = Member.builder()
@@ -222,7 +311,7 @@ public class BaseInitData {
                 .limit(3)
                 .collect(Collectors.toList());
 
-        List<Long> gameAppIds = List.of(252490L, 570L, 730L); // 샘플 SteamGame ID들
+        List<Long> gameAppIds = List.of(1L, 2L, 3L); // 샘플 SteamGame ID들
         List<SteamGame> games = gameRepository.findAllByAppidIn(gameAppIds);
 
         List<String> guildNames = List.of(
@@ -427,7 +516,7 @@ public class BaseInitData {
             return;
         }
 
-        List<Long> gameAppIds = List.of(252490L, 570L, 730L);
+        List<Long> gameAppIds = List.of(1L, 2L, 3L);
 
         List<LocalDate> weeks = List.of(
                 LocalDate.of(2025, 3, 24),

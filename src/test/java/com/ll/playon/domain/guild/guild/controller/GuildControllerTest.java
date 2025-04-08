@@ -37,7 +37,7 @@ class GuildControllerTest {
                             "description": "길드 생성 테스트",
                             "maxMembers": 3,
                             "isPublic": true,
-                            "appid": 730,
+                            "appid": 1,
                             "guildImg": "a.png",
                             "tags": [
                                 {
