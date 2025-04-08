@@ -12,6 +12,7 @@ import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildMemberRepositoryCustom;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
+import com.ll.playon.domain.guild.guild.repository.WeeklyPopularGuildRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
@@ -25,7 +26,6 @@ import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import com.ll.playon.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,11 +33,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GuildService {
@@ -48,6 +49,7 @@ public class GuildService {
     private final GameRepository gameRepository;
     private final TitleEvaluator titleEvaluator;
     private final ImageService imageService;
+    private final WeeklyPopularGuildRepository weeklyPopularGuildRepository;
 
     @Transactional
     public PostGuildResponse createGuild(PostGuildRequest request, Member owner) {
@@ -171,11 +173,15 @@ public class GuildService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetPopularGuildResponse> getPopularGuilds(int count) {
-        // TODO: 게시판 생성 후 적용. 현재 임시로 최근 생성 순으로 정렬
-        List<Guild> guilds = guildRepository.findAllByIsDeletedFalseOrderByCreatedAtDesc(PageRequest.of(0, count));
+    public List<GetPopularGuildResponse> getPopularGuilds(LocalDate week) {
+        List<Long> guildIds = weeklyPopularGuildRepository.findGuildIdsByWeek(week); // 이번주 인기 길드번호
+        List<Guild> guilds = guildRepository.findAllById(guildIds); // 실제 길드
 
-        return guilds.stream()
+        Map<Long, Guild> guildMap = guilds.stream()
+                .collect(Collectors.toMap(Guild::getId, g -> g)); // 순위 순서에 맞게
+
+        return guildIds.stream()
+                .map(guildMap::get)
                 .map(GetPopularGuildResponse::from)
                 .toList();
     }
