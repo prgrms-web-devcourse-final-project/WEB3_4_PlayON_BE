@@ -23,17 +23,18 @@ public class Notification extends BaseTime {
     @Column(nullable = false)
     private NotificationType type;
 
-    @Column(nullable = false)
+    @Column(name = "is_read", nullable = false)
     @Builder.Default
-    private boolean read = false;
+    private boolean isRead = false;
+
 
     @URL
     private String redirectUrl;
 
     // 읽음 상태 변경 메서드
     public void markAsRead() {
-        if (!this.read) {
-            this.read = true;
+        if (!this.isRead) {
+            this.isRead = true;
         }
     }
 
