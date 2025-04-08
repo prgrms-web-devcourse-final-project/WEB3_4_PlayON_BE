@@ -2,9 +2,11 @@
 <configuration>
     <!-- 로그 파일 기본 경로 및 이름 -->
     <property name="LOG_DIR" value="./logs/"/>
+    <property name="PARTY_DELETE_LOG_DIR" value="./logs/event/party/delete"/>
     <property name="LOG_FILE_NAME" value="info/info"/>
     <property name="ERROR_LOG_FILE_NAME" value="error/error"/>
-    <property name="SQL_LOG_FILE_NAME" value="sql/sql"/>
+    <property name="PARTY_DELETE_INFO_LOG_FILE" value="${PARTY_DELETE_LOG_DIR}/info"/>
+    <property name="PARTY_DELETE_ERROR_LOG_FILE" value="${PARTY_DELETE_LOG_DIR}/error"/>
 
     <!-- 콘솔 출력 Appender -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -51,6 +53,42 @@
                 <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
             </encoder>
         </appender>
+
+        <!-- Party Delete INFO 로그 -->
+        <appender name="PARTY_DELETE_INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${PARTY_DELETE_INFO_LOG_FILE}.log</file>
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>ERROR</level>
+                <onMatch>DENY</onMatch>
+                <onMismatch>ACCEPT</onMismatch>
+            </filter>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${PARTY_DELETE_INFO_LOG_FILE}-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>10MB</maxFileSize>
+                <maxHistory>30</maxHistory>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <!-- Party Delete ERROR 로그 -->
+        <appender name="PARTY_DELETE_ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${PARTY_DELETE_ERROR_LOG_FILE}.log</file>
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>ERROR</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </filter>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${PARTY_DELETE_ERROR_LOG_FILE}-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>10MB</maxFileSize>
+                <maxHistory>30</maxHistory>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
     </springProfile>
 
     <!-- INFO, ERROR 로거 -->
@@ -58,6 +96,13 @@
     <logger name="com.ll.playon.global.aspect" level="INFO" additivity="false">
         <appender-ref ref="LOG_FILE"/>
         <appender-ref ref="ERROR_LOG_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- 파티 삭제 이벤트 관련 로거 -->
+    <logger name="com.ll.playon.domain.chat.listener.PartyRoomsDeleteEventListener" level="INFO" additivity="false">
+        <appender-ref ref="PARTY_DELETE_INFO_FILE"/>
+        <appender-ref ref="PARTY_DELETE_ERROR_FILE"/>
         <appender-ref ref="CONSOLE"/>
     </logger>
 

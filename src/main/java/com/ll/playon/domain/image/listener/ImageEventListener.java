@@ -1,10 +1,11 @@
-package com.ll.playon.domain.party.partyLog.listener;
+package com.ll.playon.domain.image.listener;
 
+import com.ll.playon.domain.image.event.ImageDeleteEvent;
 import com.ll.playon.domain.image.service.ImageService;
 import com.ll.playon.domain.image.type.ImageType;
-import com.ll.playon.domain.party.partyLog.event.ImageDeleteEvent;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.exceptions.EventListenerException;
+import com.ll.playon.global.exceptions.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.retry.annotation.Backoff;
@@ -26,12 +27,13 @@ public class ImageEventListener {
     )
     public void handleImageDelete(ImageDeleteEvent event) {
         try {
-            this.imageService.deleteImageById(ImageType.LOG, event.logId());
-            throw new RuntimeException("이벤트 리스너 에러 테스트");
-        } catch (Exception ex) {
+            this.imageService.deleteImageById(ImageType.LOG, event.id());
+        } catch (ServiceException ex) {
             // TODO: 이벤트 실패 시 알람?
             // TODO: 실패한 S3 삭제(처리) 방법 고안
 
+            throw new EventListenerException(ex.getResultCode(), ex.getMsg());
+        } catch (Exception e) {
             throw new EventListenerException(ErrorCode.EVENT_LISTENER_ERROR);
         }
     }

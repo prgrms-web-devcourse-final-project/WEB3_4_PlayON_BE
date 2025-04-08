@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>STOMP Chat 테스트 클라이언트</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        input, button {
+            margin: 5px;
+        }
+
+        #messages {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+<h2>STOMP Chat 테스트 클라이언트</h2>
+
+<label>파티 ID: <input type="number" id="partyId" value="1"/></label><br/>
+<label>사용자 ID: <input type="number" id="userId" value="5"/></label><br/>
+
+<button onclick="enterAndConnect()">입장 + 연결</button>
+<button onclick="disconnect()">연결 해제</button>
+<br/>
+
+<label>메시지: <input type="text" id="messageInput"/></label>
+<button onclick="sendMessage()">보내기</button>
+
+<div id="messages"></div>
+
+<script>
+    let stompClient = null;
+    let userId = null; // 사용자 ID를 전역 변수로 선언
+
+    function enterAndConnect() {
+        const partyId = document.getElementById("partyId").value;
+        userId = document.getElementById("userId").value;  // 사용자 ID를 전역 변수에 할당
+
+        fetch(`http://localhost:8080/api/chat/enter/${partyId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-USER-ID": userId   // 👉 백엔드에서 사용 시 커스텀 헤더로 처리 가능
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                log("✅ 입장 성공: " + JSON.stringify(data));
+                connectStomp(partyId);
+            })
+            .catch(err => {
+                log("❌ 입장 실패: " + err);
+            });
+    }
+
+    function connectStomp(partyId) {
+        const socket = new SockJS("http://localhost:8080/ws");  // WebSocket URL
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            log("🟢 STOMP 연결됨");
+
+            // STOMP 구독
+            stompClient.subscribe(`/topic/chat/party/${partyId}`, function (msg) {
+                log("📥 메시지: " + msg.body);
+            });
+
+            stompClient.subscribe(`/topic/chat/party/${partyId}/members`, function (msg) {
+                log("👥 멤버 갱신: " + msg.body);
+            });
+
+            // 사용자 ID를 헤더에 추가하여 사용자 맞는 권한으로 구독할 수 있도록 설정
+            stompClient.send(`/app/chat.join/${partyId}`, {}, JSON.stringify({ userId: userId }));
+
+        }, function (error) {
+            log("❌ STOMP 연결 실패: " + error);
+        });
+    }
+
+    function disconnect() {
+        const partyId = document.getElementById("partyId").value;
+
+        // 먼저 퇴장 요청
+        fetch(`http://localhost:8080/api/chat/leave/${partyId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-USER-ID": userId
+            }
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("퇴장 실패");
+                log("🚪 퇴장 요청 완료");
+            })
+            .catch(err => {
+                log("❌ 퇴장 요청 실패: " + err);
+            })
+            .finally(() => {
+                // STOMP 연결 해제
+                if (stompClient) {
+                    stompClient.disconnect(() => {
+                        log("🔴 STOMP 연결 해제됨");
+                    });
+                }
+            });
+    }
+
+    function sendMessage() {
+        const partyId = document.getElementById("partyId").value;
+        const message = document.getElementById("messageInput").value;
+
+        if (!stompClient || !stompClient.connected) {
+            log("❌ STOMP 연결이 안 됨! 메시지를 보낼 수 없음.");
+            return;
+        }
+
+        stompClient.send(`/app/chat.send/${partyId}`, {}, message);
+        log("📤 보낸 메시지: " + message);
+    }
+
+    function log(message) {
+        const messagesDiv = document.getElementById("messages");
+        messagesDiv.innerHTML += `<div>${message}</div>`;
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+</script>
+</body>
+</html>

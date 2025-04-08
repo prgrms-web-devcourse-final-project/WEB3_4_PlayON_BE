@@ -16,6 +16,9 @@ public record GetCompletedPartyDto(
         @NotBlank
         String name,
 
+        @NotBlank
+        String gameName,
+
         @NonNull
         String mvpName,
 
@@ -33,9 +36,6 @@ public record GetCompletedPartyDto(
 
         @NonNull
         List<PartyDetailTagDto> partyTags
-
-        // TODO: 1. 스팀 헤더 사진 추가
-        //       2. 채팅 룸 여기에?
 ) {
     public GetCompletedPartyDto(Party party, PartyMember mvp, TotalPlayTimeDto playTime,
                                 List<PartyDetailMemberDto> partyMembers,
@@ -43,6 +43,7 @@ public record GetCompletedPartyDto(
         this(
                 party.getId(),
                 party.getName(),
+                party.getGame().getName(),
                 mvp.getMember().getNickname(),
                 mvp.getMember().getProfileImg(),
                 party.getPartyAt(),

@@ -16,7 +16,7 @@ import com.ll.playon.domain.party.partyLog.dto.response.GetAllPartyLogResponse;
 import com.ll.playon.domain.party.partyLog.dto.response.GetPartyLogResponse;
 import com.ll.playon.domain.party.partyLog.dto.response.PartyLogResponse;
 import com.ll.playon.domain.party.partyLog.entity.PartyLog;
-import com.ll.playon.domain.party.partyLog.event.ImageDeleteEvent;
+import com.ll.playon.domain.image.event.ImageDeleteEvent;
 import com.ll.playon.domain.party.partyLog.mapper.PartyLogMapper;
 import com.ll.playon.domain.party.partyLog.repository.PartyLogRepository;
 import com.ll.playon.domain.party.partyLog.validation.PartyLogValidation;
@@ -156,7 +156,7 @@ public class PartyLogService {
 
         partyLog.delete();
 
-        eventPublisher.publishEvent(new ImageDeleteEvent(logId));
+        this.eventPublisher.publishEvent(new ImageDeleteEvent(logId));
     }
 
     // logId로 PartyLog 조회
