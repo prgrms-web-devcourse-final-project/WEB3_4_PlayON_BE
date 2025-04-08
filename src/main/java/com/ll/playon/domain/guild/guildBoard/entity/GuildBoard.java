@@ -7,6 +7,9 @@ import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Builder
@@ -45,6 +48,13 @@ public class GuildBoard extends BaseTime {
     private int likeCount=0;
 
     private String imageUrl;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GuildBoardComment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GuildBoardLike> likes = new ArrayList<>();
+
 
     public void increaseHit() {
         this.hit++;
