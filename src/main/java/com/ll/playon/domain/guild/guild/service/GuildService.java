@@ -15,6 +15,8 @@ import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
+import com.ll.playon.domain.image.service.ImageService;
+import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.service.TitleEvaluator;
@@ -23,16 +25,19 @@ import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import com.ll.playon.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GuildService {
@@ -42,26 +47,37 @@ public class GuildService {
     private final GuildMemberRepositoryCustom guildMemberRepositoryCustom;
     private final GameRepository gameRepository;
     private final TitleEvaluator titleEvaluator;
+    private final ImageService imageService;
 
     @Transactional
     public PostGuildResponse createGuild(PostGuildRequest request, Member owner) {
+        // 이름 중복 확인
         if (guildRepository.existsByName(request.name())) {
             ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
 
+        // 게임 확인
         SteamGame game = gameRepository.findByAppid(request.appid())
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
+        // 길드 저장
         Guild guild = guildRepository.save(Guild.createFrom(request, owner, game));
 
+        // 태그 설정
         guild.setGuildTags(convertTags(request.tags(), guild));
 
+        // 길드장
         GuildMember guildMember = GuildMember.builder()
                 .guild(guild)
                 .member(owner)
                 .guildRole(GuildRole.LEADER)
                 .build();
         guildMemberRepository.save(guildMember);
+
+        // 이미지 저장
+        if (StringUtils.hasText(request.guildImg())) {
+            imageService.saveImage(ImageType.GUILD, guild.getId(), request.guildImg());
+        }
 
         // 길드 생성 칭호
         titleEvaluator.check(ConditionType.GUILD_CREATE, owner);
@@ -80,12 +96,28 @@ public class GuildService {
             throw ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
 
+        // 게임 확인
         SteamGame game = gameRepository.findByAppid(request.appid())
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
-        guild.updateFromRequest(request, game);
-        guild.getGuildTags().clear();
+        // 기존 이미지 확인 -> 없으면 ""
+        // TODO: 빈 문자열보단 따로 컨트롤하는게 좋아보이는데 논의 필요
+        String currentImgUrl = imageService.getImageById(ImageType.GUILD, guildId);
 
+        // 이미지 수정
+        if (StringUtils.hasText(request.guildImg()) && !request.guildImg().equals(currentImgUrl)) {
+            // 기존 이미지 삭제 image, S3
+            imageService.deleteImagesByIdAndUrl(ImageType.GUILD, guildId, currentImgUrl);
+
+            // 새 이미지 저장
+            imageService.saveImage(ImageType.GUILD, guildId, request.guildImg());
+        }
+
+        // 길드 수정
+        guild.updateFromRequest(request, game);
+
+        // 태그 수정
+        guild.getGuildTags().clear();
         List<GuildTag> guildTags = convertTags(request.tags(), guild);
         guild.getGuildTags().addAll(guildTags);
         guildRepository.save(guild);
@@ -117,13 +149,13 @@ public class GuildService {
     public PageDto<GuildMemberDto> getGuildMembers(Long guildId, Member actor, Pageable pageable) {
         Guild guild = getGuildOrThrow(guildId);
 
-        boolean isPublic = guild.isPublic();
         boolean isMember = guildMemberRepository.findByGuildAndMember(guild, actor).isPresent();
 
         // 비공개 + 멤버X 불가
-        if (!isPublic && !isMember) {
+        if (!guild.isPublic() && !isMember) {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
+
         Page<GuildMember> page = guildMemberRepositoryCustom
                 .findByGuildOrderByRoleAndCreatedAt(guild, pageable);
 
@@ -132,9 +164,8 @@ public class GuildService {
 
     @Transactional(readOnly = true)
     public PageDto<GetGuildListResponse> searchGuilds(int page, int pageSize, String sort, GetGuildListRequest request) {
-        Pageable pageable = PageRequest.of(page, pageSize);
 
-        Page<Guild> guilds = guildRepository.searchGuilds(request, pageable, sort);
+        Page<Guild> guilds = guildRepository.searchGuilds(request, PageRequest.of(page, pageSize), sort);
 
         return new PageDto<>(guilds.map(GetGuildListResponse::from));
     }
@@ -159,7 +190,31 @@ public class GuildService {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
 
+        // 태그 삭제
+        guild.getGuildTags().clear();
+
+        // 멤버 삭제
+        guild.getMembers().clear();
+
+        // 이미지 삭제
+        // TODO: 지금 임시 a.png 저장. 삭제 실패. 실제 S3 연결 후 다시 확인해 볼 것
+//        String imageUrl = imageService.getImageById(ImageType.GUILD, guildId); // "" / 실제 URL
+//        if (StringUtils.hasText(imageUrl)) {
+//            imageService.deleteImagesByIdAndUrl(ImageType.GUILD, guildId, imageUrl);
+//        }
+
+        // 정보 마스킹
         guild.softDelete();
+
+        guildRepository.save(guild); // 명시적으로 저장
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetRecommendGuildResponse> getRecommendedGuildsByGame(int count, long appid) {
+        return guildRepository.findTopNByGameAppid(appid, PageRequest.of(0, count))
+                .stream()
+                .map(GetRecommendGuildResponse::from)
+                .toList();
     }
 
     // 요청으로부터 태그 리스트 생성
@@ -187,13 +242,5 @@ public class GuildService {
         if (!guildMember.getGuildRole().isManagerOrLeader()) {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
-    }
-
-    @Transactional(readOnly = true)
-    public List<GetRecommendGuildResponse> getRecommendedGuildsByGame(int count, long appid) {
-        return guildRepository.findTopNByGameAppid(appid, PageRequest.of(0, count))
-                .stream()
-                .map(GetRecommendGuildResponse::from)
-                .toList();
     }
 }
