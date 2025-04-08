@@ -13,4 +13,10 @@ public class EventListenerException extends RuntimeException {
         this.resultCode = errorCode.getHttpStatus();
         this.msg = errorCode.getMessage();
     }
+
+    public EventListenerException(HttpStatus resultCode, String msg) {
+        super(msg);
+        this.resultCode = resultCode;
+        this.msg = msg;
+    }
 }

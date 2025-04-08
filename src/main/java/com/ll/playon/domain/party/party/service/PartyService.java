@@ -1,5 +1,8 @@
 package com.ll.playon.domain.party.party.service;
 
+import com.ll.playon.domain.chat.entity.PartyRoom;
+import com.ll.playon.domain.chat.mapper.PartyRoomMapper;
+import com.ll.playon.domain.chat.repository.PartyRoomRepository;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.member.entity.Member;
@@ -68,6 +71,7 @@ public class PartyService {
     private final PartyLogService partyLogService;
     private final MemberService memberService;
     private final PartyRepository partyRepository;
+    private final PartyRoomRepository partyRoomRepository;
     private final GameRepository gameRepository;
     private final TitleEvaluator titleEvaluator;
 
@@ -84,8 +88,8 @@ public class PartyService {
 
         party.addPartyMember(PartyMemberMapper.of(actor, PartyRole.OWNER));
 
-        // TODO: 1. Game 헤더 이미지 응답
-        //       2. 파티룸 생성
+        PartyRoom partyRoom = PartyRoomMapper.of(party);
+        this.partyRoomRepository.save(partyRoom);
 
         // 파티 생성 칭호
         titleEvaluator.check(ConditionType.PARTY_CREATE_COUNT, actor);

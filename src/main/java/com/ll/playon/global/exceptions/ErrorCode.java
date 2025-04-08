@@ -85,6 +85,14 @@ public enum ErrorCode {
     PARTY_OWNER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티장이 존재하지 않습니다."),
     PENDING_PARTY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티 참가를 신청한 사용자가 아닙니다."),
 
+    // PartyRoom
+    PARTY_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "파티 채팅방이 존재하지 않습니다."),
+    PARTY_ROOM_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파티 채팅방 제거에 문제가 생겨 모든 채팅방 제거가 불가능합니다."),
+
+    // ChatMember
+    IS_ALREADY_CHAT_MEMBER(HttpStatus.FORBIDDEN, "이미 해당 채팅방에 참여중입니다"),
+    CHAT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 멤버가 존재하지 않습니다."),
+
     // PartyLog
     PARTY_LOG_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 파티 로그를 작성하셨습니다."),
     PARTY_IS_NOT_ENDED(HttpStatus.BAD_REQUEST, "파티가 종료되지 않았습니다."),

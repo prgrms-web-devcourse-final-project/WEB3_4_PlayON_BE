@@ -53,7 +53,7 @@ public class PartyController {
     public RsData<PostPartyResponse> createParty(@RequestBody @Valid PostPartyRequest postPartyRequest) {
         // TODO : 추후 롤백
 //        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(6L);
+        Member actor = this.userContext.findById(5L);
 
         return RsData.success(HttpStatus.CREATED, this.partyService.createParty(actor, postPartyRequest));
     }

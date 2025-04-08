@@ -33,8 +33,7 @@ public record GetPartyResponse(
         @NonNull
         List<PartyDetailTagDto> partyTags
 
-        // TODO: 1. 스팀 게임 헤더 이미지
-        //       2. 스팀 아바타로 변경할지 고려
+        // TODO: 스팀 아바타로 변경할지 고려
 ) {
     public GetPartyResponse(Party party, List<PartyTag> tagDtos, List<PartyMember> memberDtos) {
         this(
