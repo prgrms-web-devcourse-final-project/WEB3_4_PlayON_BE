@@ -77,7 +77,7 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
                 .select(guild)
                 .from(guild)
                 .leftJoin(guild.guildTags, guildTag)
-                .leftJoin(guild.guildBoards, board)
+                .leftJoin(guild.boards, board)
                 .where(builder)
                 .groupBy(guild.id)
                 .orderBy(getSort(sort, guild, board))
