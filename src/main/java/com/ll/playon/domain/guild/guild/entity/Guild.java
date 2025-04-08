@@ -3,6 +3,7 @@ package com.ll.playon.domain.guild.guild.entity;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
+import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.jpa.entity.BaseTime;
@@ -55,6 +56,11 @@ public class Guild extends BaseTime {
     @OneToMany(mappedBy = "guild", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<GuildMember> members = new ArrayList<>();
+
+    @OneToMany(mappedBy = "guild", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<GuildBoard> boards = new ArrayList<>();
+
 
     public void softDelete() {
         this.isDeleted = true;
