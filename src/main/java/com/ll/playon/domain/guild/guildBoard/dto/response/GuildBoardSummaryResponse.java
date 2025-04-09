@@ -1,5 +1,6 @@
 package com.ll.playon.domain.guild.guildBoard.dto.response;
 
+import com.ll.playon.domain.guild.guildBoard.dto.GuildSimpleDto;
 import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
 import lombok.Builder;
@@ -17,7 +18,8 @@ public record GuildBoardSummaryResponse(
         int commentCount,
         int hit,
         String imageUrl,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        GuildSimpleDto guild
 ) {
     public static GuildBoardSummaryResponse from(GuildBoard board, int commentCount) {
         return GuildBoardSummaryResponse.builder()
@@ -31,6 +33,7 @@ public record GuildBoardSummaryResponse(
                 .hit(board.getHit())
                 .imageUrl(board.getImageUrl())
                 .createdAt(board.getCreatedAt())
+                .guild(GuildSimpleDto.from(board.getGuild()))
                 .build();
     }
 }

@@ -1,6 +1,7 @@
 package com.ll.playon.domain.guild.guildBoard.dto.response;
 
 import com.ll.playon.domain.guild.guildBoard.dto.GuildBoardCommentDto;
+import com.ll.playon.domain.guild.guildBoard.dto.GuildSimpleDto;
 import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
 
 import java.util.List;
@@ -14,7 +15,8 @@ public record GuildBoardDetailResponse(
         int likeCount,
         String imageUrl,
         String authorNickname,
-        List<GuildBoardCommentDto> comments
+        List<GuildBoardCommentDto> comments,
+        GuildSimpleDto guild
 ) {
     public static GuildBoardDetailResponse from(GuildBoard board, List<GuildBoardCommentDto> comments) {
         return new GuildBoardDetailResponse(
@@ -26,7 +28,8 @@ public record GuildBoardDetailResponse(
                 board.getLikeCount(),
                 board.getImageUrl(),
                 board.getAuthor().getMember().getNickname(),
-                comments
+                comments,
+                GuildSimpleDto.from(board.getGuild())
         );
     }
 }
