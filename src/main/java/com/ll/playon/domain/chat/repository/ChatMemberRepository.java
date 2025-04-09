@@ -22,7 +22,7 @@ public interface ChatMemberRepository extends JpaRepository<ChatMember, Long> {
     @Query("""
             SELECT new com.ll.playon.domain.chat.dto.ChatMemberCountDto(cm.partyRoom.id, COUNT(cm))
             FROM ChatMember cm
-            WHERE cm.partyRoom.id IN :partyRoomIds
+            WHERE cm.partyRoom.id IN :candidateIds
             GROUP BY cm.partyRoom.id
             """)
     List<ChatMemberCountDto> countByPartyRoomIds(@Param("candidateIds") List<Long> candidateIds);
