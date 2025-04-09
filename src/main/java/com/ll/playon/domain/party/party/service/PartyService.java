@@ -21,7 +21,6 @@ import com.ll.playon.domain.party.party.dto.response.GetPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.GetPartyResultResponse;
 import com.ll.playon.domain.party.party.dto.response.PostPartyResponse;
 import com.ll.playon.domain.party.party.dto.response.PutPartyResponse;
-import com.ll.playon.domain.party.party.dto.response.*;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
@@ -33,11 +32,11 @@ import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.party.party.type.PartyStatus;
 import com.ll.playon.domain.party.party.util.PartySortUtils;
 import com.ll.playon.domain.party.party.validation.PartyMemberValidation;
-import com.ll.playon.domain.title.entity.enums.ConditionType;
-import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.domain.party.party.validation.PartyValidation;
 import com.ll.playon.domain.party.partyLog.dto.response.GetAllPartyLogResponse;
 import com.ll.playon.domain.party.partyLog.service.PartyLogService;
+import com.ll.playon.domain.title.entity.enums.ConditionType;
+import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.global.annotation.PartyOwnerOnly;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.type.TagValue;
@@ -59,10 +58,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -91,10 +86,12 @@ public class PartyService {
         PartyRoom partyRoom = PartyRoomMapper.of(party);
         this.partyRoomRepository.save(partyRoom);
 
+        this.partyRepository.save(party);
+
         // 파티 생성 칭호
         titleEvaluator.check(ConditionType.PARTY_CREATE_COUNT, actor);
 
-        return new PostPartyResponse(this.partyRepository.save(party));
+        return new PostPartyResponse(party);
     }
 
     // 파티 검색 및 조회 (조건 반영)
