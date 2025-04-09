@@ -1,0 +1,67 @@
+name: Deploy Backend to EC2 with Docker
+
+on:
+  push:
+    branches: [ "dev" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Grant execute permission to Gradle
+        run: chmod +x ./gradlew
+
+      - name: Build the application
+        run: ./gradlew clean bootJar
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_IMAGE_NAME }} .
+
+      - name: Save Docker image as tar
+        run: docker save -o image.tar ${{ secrets.DOCKER_IMAGE_NAME }}
+
+      - name: Copy Docker image to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "image.tar"
+          target: "~/app/"
+
+      - name: Copy application-secret.yml to EC2
+        run: echo "${{ secrets.APPLICATION_SECRET_YML }}" > application-secret.yml
+
+      - name: Upload application-secret.yml to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "application-secret.yml"
+          target: "~/app/"
+
+      - name: SSH into EC2 and run Docker container
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/app
+            docker stop playon || true
+            docker rm playon || true
+            docker load -i image.tar
+            docker run -d --name playon \
+              -v $(pwd)/application-secret.yml:/app/application-secret.yml \
+              -p 8080:8080 ${{ secrets.DOCKER_IMAGE_NAME }}
