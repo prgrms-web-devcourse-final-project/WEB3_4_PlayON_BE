@@ -469,11 +469,11 @@ public class BaseInitData {
     private boolean isValidTagValueForType(TagValue tagValue, TagType tagType) {
         return switch (tagType) {
             case PARTY_STYLE ->
-                    tagValue == TagValue.HARDCORE || tagValue == TagValue.CASUAL || tagValue == TagValue.SPEEDRUN
-                    || tagValue == TagValue.COMPLETIONIST;
-            case GAME_SKILL -> tagValue == TagValue.ROTTEN_WATER || tagValue == TagValue.STAGNANT_WATER
-                               || tagValue == TagValue.MUD_WATER || tagValue == TagValue.CLEAN_WATER
-                               || tagValue == TagValue.NEWBIE;
+                    tagValue == TagValue.BEGINNER || tagValue == TagValue.CASUAL || tagValue == TagValue.NORMAL
+                    || tagValue == TagValue.HARDCORE || tagValue == TagValue.EXTREME || tagValue == TagValue.COMPLETIONIST
+                    || tagValue == TagValue.SPEEDRUN;
+            case GAME_SKILL -> tagValue == TagValue.MASTER || tagValue == TagValue.HACKER
+                    || tagValue == TagValue.PRO || tagValue == TagValue.NEWBIE;
             case GENDER -> tagValue == TagValue.MALE || tagValue == TagValue.FEMALE;
             case SOCIALIZING -> tagValue == TagValue.SOCIAL_FRIENDLY || tagValue == TagValue.GAME_ONLY
                                 || tagValue == TagValue.NO_CHAT;
@@ -486,9 +486,10 @@ public class BaseInitData {
 
         Map<TagType, List<TagValue>> tagTypeToValues = Map.of(
                 TagType.PARTY_STYLE,
-                List.of(TagValue.HARDCORE, TagValue.CASUAL, TagValue.SPEEDRUN, TagValue.COMPLETIONIST),
+                List.of(TagValue.BEGINNER, TagValue.CASUAL, TagValue.NORMAL,
+                        TagValue.HARDCORE, TagValue.EXTREME, TagValue.COMPLETIONIST, TagValue.SPEEDRUN),
                 TagType.GAME_SKILL,
-                List.of(TagValue.ROTTEN_WATER, TagValue.STAGNANT_WATER, TagValue.MUD_WATER, TagValue.CLEAN_WATER,
+                List.of(TagValue.MASTER, TagValue.HACKER, TagValue.PRO,
                         TagValue.NEWBIE),
                 TagType.GENDER, List.of(TagValue.MALE, TagValue.FEMALE),
                 TagType.SOCIALIZING, List.of(TagValue.SOCIAL_FRIENDLY, TagValue.GAME_ONLY, TagValue.NO_CHAT)
