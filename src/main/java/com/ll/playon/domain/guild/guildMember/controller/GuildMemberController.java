@@ -4,7 +4,6 @@ import com.ll.playon.domain.guild.guildMember.dto.request.*;
 import com.ll.playon.domain.guild.guildMember.dto.response.GuildInfoResponse;
 import com.ll.playon.domain.guild.guildMember.dto.response.GuildMemberResponse;
 import com.ll.playon.domain.guild.guildMember.service.GuildMemberService;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
@@ -28,10 +27,10 @@ public class GuildMemberController {
 
     @GetMapping("/{guildId}/info")
     @Operation(summary = "길드 관리페이지 길드정보")
-    public ResponseEntity<GuildInfoResponse> getGuildInfo(@PathVariable Long guildId) {
+    public RsData<GuildInfoResponse> getGuildInfo(@PathVariable Long guildId) {
         Member actor = userContext.getActor();
         GuildInfoResponse response = guildMemberService.getGuildInfo(guildId, actor);
-        return ResponseEntity.ok(response);
+        return RsData.success(HttpStatus.OK, response);
     }
 
     @GetMapping("/{guildId}/members")
