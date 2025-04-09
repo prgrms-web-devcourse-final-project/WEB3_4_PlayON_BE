@@ -4,16 +4,15 @@ import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.entity.QGuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
+import com.ll.playon.domain.member.entity.QMember;
+import com.ll.playon.domain.title.entity.QMemberTitle;
+import com.ll.playon.domain.title.entity.QTitle;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -21,40 +20,17 @@ public class GuildMemberRepositoryCustomImpl implements GuildMemberRepositoryCus
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<GuildMember> findByGuildOrderByRoleAndCreatedAt(Guild guild, Pageable pageable) {
-        QGuildMember gm = QGuildMember.guildMember;
-
-        List<GuildMember> content = queryFactory
-                .selectFrom(gm)
-                .where(gm.guild.eq(guild))
-                .orderBy(
-                        new CaseBuilder()
-                                .when(gm.guildRole.eq(GuildRole.LEADER)).then(0)
-                                .when(gm.guildRole.eq(GuildRole.MANAGER)).then(1)
-                                .otherwise(2)
-                                .asc(),
-                        gm.createdAt.desc()
-                )
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
-
-        long total = Optional.ofNullable(
-                queryFactory.select(gm.count())
-                        .from(gm)
-                        .where(gm.guild.eq(guild))
-                        .fetchOne()
-        ).orElse(0L);
-
-        return new PageImpl<>(content, pageable, total);
-    }
-
-    @Override
     public List<GuildMember> findTopNByGuildOrderByRoleAndCreatedAt(Guild guild, int limit) {
         QGuildMember gm = QGuildMember.guildMember;
+        QMember m = QMember.member;
+        QMemberTitle mt = QMemberTitle.memberTitle;
+        QTitle t = QTitle.title;
 
         return queryFactory
                 .selectFrom(gm)
+                .leftJoin(gm.member, m).fetchJoin()
+                .leftJoin(m.memberTitles, mt).fetchJoin()
+                .leftJoin(mt.title, t).fetchJoin()
                 .where(gm.guild.eq(guild))
                 .orderBy(
                         new CaseBuilder()
@@ -65,6 +41,7 @@ public class GuildMemberRepositoryCustomImpl implements GuildMemberRepositoryCus
                         gm.createdAt.desc()
                 )
                 .limit(limit)
+                .distinct()
                 .fetch();
     }
 }

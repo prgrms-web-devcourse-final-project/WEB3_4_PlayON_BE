@@ -2,7 +2,6 @@ package com.ll.playon.domain.guild.guild.service;
 
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.repository.GameRepository;
-import com.ll.playon.domain.guild.guild.dto.GuildMemberDto;
 import com.ll.playon.domain.guild.guild.dto.request.GetGuildListRequest;
 import com.ll.playon.domain.guild.guild.dto.request.GuildTagRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
@@ -165,7 +164,7 @@ public class GuildService {
     }
 
     @Transactional(readOnly = true)
-    public List<GuildMemberDto> getGuildMembers(Long guildId, Member actor) {
+    public List<getGuildMemberResponse> getGuildMembers(Long guildId, Member actor) {
         Guild guild = getGuildOrThrow(guildId);
 
         boolean isMember = guildMemberRepository.findByGuildAndMember(guild, actor).isPresent();
@@ -179,7 +178,7 @@ public class GuildService {
                 .findTopNByGuildOrderByRoleAndCreatedAt(guild, 9);
 
         return members.stream()
-                .map(GuildMemberDto::from)
+                .map(getGuildMemberResponse::from)
                 .toList();
     }
 
