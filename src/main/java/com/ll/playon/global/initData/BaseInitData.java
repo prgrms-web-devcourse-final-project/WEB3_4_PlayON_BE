@@ -5,7 +5,9 @@ import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
+import com.ll.playon.domain.guild.guild.entity.WeeklyPopularGuild;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
+import com.ll.playon.domain.guild.guild.repository.WeeklyPopularGuildRepository;
 import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
 import com.ll.playon.domain.guild.guildBoard.entity.GuildBoardComment;
 import com.ll.playon.domain.guild.guildBoard.entity.GuildBoardLike;
@@ -72,6 +74,8 @@ public class BaseInitData {
     private BaseInitData self;
     @Autowired
     private WeeklyGameRepository weeklyGameRepository;
+    @Autowired
+    private WeeklyPopularGuildRepository weeklyPopularGuildRepository;
 
     @Bean
     public ApplicationRunner baseInitDataApplicationRunner() {
@@ -84,6 +88,7 @@ public class BaseInitData {
             self.makeSampleParties();
             self.makeSampleGuildJoinRequests();
             self.makeSampleGuildBoards();
+            self.makeSampleWeeklyPopularGuild();
         };
     }
 
@@ -521,10 +526,6 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleWeeklyPopularGames() {
-        if (gameRepository.count() == 0) {
-            return;
-        }
-
         if(weeklyGameRepository.count() > 0) {
             return;
         }
@@ -547,6 +548,34 @@ public class BaseInitData {
                         .build();
 
                 weeklyGameRepository.save(popularGame);
+            }
+        }
+    }
+
+    @Transactional
+    public void makeSampleWeeklyPopularGuild() {
+        if(weeklyPopularGuildRepository.count() > 0) {
+            return;
+        }
+
+        List<Long> guild = List.of(1L, 2L, 3L);
+
+        List<LocalDate> weeks = List.of(
+                LocalDate.of(2025, 3, 24),
+                LocalDate.of(2025, 3, 31),
+                LocalDate.of(2025, 4, 7)
+        );
+
+        Random random = new Random();
+        for (LocalDate week : weeks) {
+            for (int i = 0; i < 3; i++) {
+                WeeklyPopularGuild popularGuild = WeeklyPopularGuild.builder()
+                        .guildId(guild.get(i))
+                        .postCount(10 + random.nextLong(20)) // 10 ~ 29 랜덤
+                        .weekStartDate(week)
+                        .build();
+
+                weeklyPopularGuildRepository.save(popularGuild);
             }
         }
     }
