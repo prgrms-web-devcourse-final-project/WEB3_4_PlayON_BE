@@ -48,4 +48,23 @@ public class GuildMemberRepositoryCustomImpl implements GuildMemberRepositoryCus
 
         return new PageImpl<>(content, pageable, total);
     }
+
+    @Override
+    public List<GuildMember> findTopNByGuildOrderByRoleAndCreatedAt(Guild guild, int limit) {
+        QGuildMember gm = QGuildMember.guildMember;
+
+        return queryFactory
+                .selectFrom(gm)
+                .where(gm.guild.eq(guild))
+                .orderBy(
+                        new CaseBuilder()
+                                .when(gm.guildRole.eq(GuildRole.LEADER)).then(0)
+                                .when(gm.guildRole.eq(GuildRole.MANAGER)).then(1)
+                                .otherwise(2)
+                                .asc(),
+                        gm.createdAt.desc()
+                )
+                .limit(limit)
+                .fetch();
+    }
 }
