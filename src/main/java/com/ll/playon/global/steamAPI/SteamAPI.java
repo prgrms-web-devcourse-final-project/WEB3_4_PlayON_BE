@@ -87,8 +87,8 @@ public class SteamAPI {
         return genre.orElseGet(() -> genreRepository.save(SteamGenre.builder().name(preferredGenre).build()));
     }
 
-    public List<Long> getSteamRanking() {
-        final List<Long> result = new ArrayList<>();
+    public List<SteamGame> getSteamRanking() {
+        final List<SteamGame> result = new ArrayList<>();
 
         final List<GameItem> list = steamStoreClient.getGameRanking().getItems().stream().toList();
 
@@ -100,8 +100,7 @@ public class SteamAPI {
             int endIndex = img.indexOf("/", startIndex);
             String appId = img.substring(startIndex, endIndex);
 
-            fetchOrCreateGameDetail(Long.valueOf(appId));
-            result.add(Long.valueOf(appId));
+            result.add(fetchOrCreateGameDetail(Long.valueOf(appId)));
         }
         return result;
     }
@@ -112,6 +111,7 @@ public class SteamAPI {
 
         final SteamGameDetailResponse2 response = steamStoreClient.getGameDetail(String.valueOf(appId));
         final GameDetail2 gameData = response.getGames().get(String.valueOf(appId)).getGameData();
+        if(ObjectUtils.isEmpty(gameData))return null;
 
         // releaseDate, LocalDate 로
         final String dateString = gameData.getRelease_date().getDate();
