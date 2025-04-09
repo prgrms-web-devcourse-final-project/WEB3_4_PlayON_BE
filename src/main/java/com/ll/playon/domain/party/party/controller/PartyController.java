@@ -51,14 +51,11 @@ public class PartyController {
     @PostMapping
     @Operation(summary = "파티 생성")
     public RsData<PostPartyResponse> createParty(@RequestBody @Valid PostPartyRequest postPartyRequest) {
-        // TODO : 추후 롤백
-//        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.getActualActor();
 
         return RsData.success(HttpStatus.CREATED, this.partyService.createParty(actor, postPartyRequest));
     }
 
-    // TODO : 게임 쪽 나오면 게임 쪽 추가
     @PostMapping("/list")
     @Operation(summary = "조건 및 태그에 맞는 파티 리스트 조회")
     public RsData<PageDto<GetPartyResponse>> getAllParties(
@@ -72,7 +69,7 @@ public class PartyController {
         // TODO : 추후 롤백
 //        정책 고민 (회원만 조회 가능하게 할 것인지)
 //        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.getActualActor();
 
         GlobalValidation.checkPageSize(pageSize);
 
@@ -129,7 +126,7 @@ public class PartyController {
                                                 @RequestBody @Valid PutPartyRequest putPartyRequest) {
         // TODO : 추후 롤백
 //        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.getActualActor();
 
         return RsData.success(HttpStatus.OK, this.partyService.updateParty(actor, partyId, putPartyRequest));
     }
@@ -140,7 +137,7 @@ public class PartyController {
     public void deleteParty(@PathVariable long partyId) {
         // TODO : 추후 롤백
 //        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.getActualActor();
 
         this.partyService.deleteParty(actor, partyId);
     }
@@ -151,7 +148,7 @@ public class PartyController {
     public void requestParticipation(@PathVariable long partyId) {
         // TODO : 추후 롤백
 //        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(6L);
+        Member actor = this.userContext.getActualActor();
 
         this.partyService.requestParticipation(actor, partyId);
     }
@@ -162,7 +159,7 @@ public class PartyController {
     public void approveParticipation(@PathVariable long partyId, @PathVariable long memberId) {
         // TODO : 추후 롤백
 //        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.getActualActor();
 
         this.partyService.approveParticipation(actor, partyId, memberId);
 
@@ -176,7 +173,7 @@ public class PartyController {
     public void rejectParticipation(@PathVariable long partyId, @PathVariable long memberId) {
         // TODO : 추후 롤백
 //        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.getActualActor();
 
         this.partyService.rejectParticipation(actor, partyId, memberId);
     }
@@ -186,7 +183,7 @@ public class PartyController {
     public RsData<GetAllPendingMemberResponse> getPartyPendingMembers(@PathVariable long partyId) {
         // TODO : 추후 롤백
 //        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.getActualActor();
 
         return RsData.success(HttpStatus.OK, this.partyService.getPartyPendingMembers(actor, partyId));
     }
@@ -197,7 +194,7 @@ public class PartyController {
     public void inviteParty(@PathVariable long partyId, @PathVariable long memberId) {
         // TODO : 추후 롤백
 //        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.getActualActor();
 
         this.partyService.inviteParty(actor, partyId, memberId);
     }

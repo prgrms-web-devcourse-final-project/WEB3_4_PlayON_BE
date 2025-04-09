@@ -27,8 +27,9 @@ public class ChatController {
     public RsData<GetChatRoomResponse> enterPartyRoom(@PathVariable long partyId,
                                                       @RequestHeader("X-USER-ID") long userId) {
         // TODO: 배포 시 주석 해제, @RequestHeader 삭제
-//        Member actor = this.userContext.getActor();
+//        Member actor = this.userContext.getActualActor();
         Member actor = this.userContext.findById(userId);
+        System.out.println("ACTOR 정보 : " + actor.getId());
 
         return RsData.success(HttpStatus.OK, this.chatService.enterPartyRoom(actor, partyId));
     }

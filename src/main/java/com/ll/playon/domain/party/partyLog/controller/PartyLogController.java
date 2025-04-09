@@ -36,8 +36,7 @@ public class PartyLogController {
     public RsData<PartyLogResponse> createPartyLog(@PathVariable long partyId,
                                                    @RequestBody @Valid PostPartyLogRequest request) {
         // TODO : 추후 롤백
-//        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.getActualActor();
 
         return RsData.success(HttpStatus.CREATED, this.partyLogService.createPartyLog(actor, partyId, request));
     }
@@ -47,8 +46,7 @@ public class PartyLogController {
     @Operation(summary = "스크린샷 URL 저장")
     public void saveImageUrl(@PathVariable long logId, @PathVariable long partyId, @RequestBody String url) {
         // TODO : 추후 롤백
-//        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.getActualActor();
 
         this.partyLogService.saveImageUrl(actor, partyId, logId, url);
     }
@@ -68,8 +66,7 @@ public class PartyLogController {
                                                    @PathVariable long partyId,
                                                    @RequestBody @Valid PutPartyLogRequest request) {
         // TODO : 추후 롤백
-//        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.getActualActor();
 
         return RsData.success(HttpStatus.OK, this.partyLogService.updatePartyLog(actor, partyId, logId, request));
     }
@@ -79,8 +76,7 @@ public class PartyLogController {
     @Operation(summary = "파티 로그 삭제")
     public void deletePartyLog(@PathVariable long logId, @PathVariable long partyId) {
         // TODO : 추후 롤백
-//        Member actor = this.userContext.getActor();
-        Member actor = this.userContext.findById(5L);
+        Member actor = this.userContext.getActualActor();
 
         this.partyLogService.deletePartyLog(actor, partyId, logId);
     }

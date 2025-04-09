@@ -43,9 +43,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,13 +100,16 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleGames() {
-        if(gameRepository.count() > 0 ) return;
+        if (gameRepository.count() > 0) {
+            return;
+        }
 
         SteamGame game1 = SteamGame.builder()
                 .name("sampleGame1")
                 .appid(1L)
                 .releaseDate(LocalDate.now())
-                .headerImage("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
+                .headerImage(
+                        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
                 .requiredAge(0)
                 .developers("sample")
                 .publishers("sample")
@@ -115,7 +120,8 @@ public class BaseInitData {
                 .build();
         SteamImage img1 = SteamImage.builder()
                 .game(game1)
-                .screenshot("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
+                .screenshot(
+                        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
                 .build();
         game1.getScreenshots().add(img1);
         SteamMovie m1 = SteamMovie.builder()
@@ -134,7 +140,8 @@ public class BaseInitData {
                 .name("sampleGame2")
                 .appid(2L)
                 .releaseDate(LocalDate.now())
-                .headerImage("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
+                .headerImage(
+                        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
                 .requiredAge(0)
                 .developers("sample")
                 .publishers("sample")
@@ -145,7 +152,8 @@ public class BaseInitData {
                 .build();
         SteamImage img2 = SteamImage.builder()
                 .game(game2)
-                .screenshot("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
+                .screenshot(
+                        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
                 .build();
         game2.getScreenshots().add(img2);
         SteamMovie m2 = SteamMovie.builder()
@@ -161,7 +169,8 @@ public class BaseInitData {
                 .name("sampleGame3")
                 .appid(3L)
                 .releaseDate(LocalDate.now())
-                .headerImage("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
+                .headerImage(
+                        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
                 .requiredAge(0)
                 .developers("sample")
                 .publishers("sample")
@@ -172,7 +181,8 @@ public class BaseInitData {
                 .build();
         SteamImage img3 = SteamImage.builder()
                 .game(game3)
-                .screenshot("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
+                .screenshot(
+                        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
                 .build();
         game3.getScreenshots().add(img3);
         SteamMovie m3 = SteamMovie.builder()
@@ -187,7 +197,9 @@ public class BaseInitData {
 
     @Transactional
     public void makeTitles() {
-        if(titleRepository.count() > 0) return;
+        if (titleRepository.count() > 0) {
+            return;
+        }
 
         titleRepository.saveAll(List.of(
                 Title.builder().name("튜토리얼 클리어").description("회원 가입을 완료했다.")
@@ -277,6 +289,7 @@ public class BaseInitData {
                 .username("owner")
                 .nickname("owner")
                 .profileImg("")
+                .password(passwordEncoder.encode("owner"))
                 .lastLoginAt(LocalDateTime.now())
                 .role(Role.USER)
                 .build();
@@ -289,6 +302,7 @@ public class BaseInitData {
                 .username("partyOwner")
                 .nickname("partyOwner")
                 .profileImg("")
+                .password(passwordEncoder.encode("partyOwner"))
                 .lastLoginAt(LocalDateTime.now())
                 .role(Role.USER)
                 .build();
@@ -301,6 +315,7 @@ public class BaseInitData {
                 .username("partyOwner2")
                 .nickname("partyOwner2")
                 .profileImg("")
+                .password(passwordEncoder.encode("partyOwner2"))
                 .lastLoginAt(LocalDateTime.now())
                 .role(Role.USER)
                 .build();
@@ -313,6 +328,7 @@ public class BaseInitData {
                 .username("partyMember")
                 .nickname("partyMember")
                 .profileImg("")
+                .password(passwordEncoder.encode("partyMember"))
                 .lastLoginAt(LocalDateTime.now())
                 .role(Role.USER)
                 .build();
@@ -323,7 +339,9 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleGuilds() {
-        if (guildRepository.count() != 0) return;
+        if (guildRepository.count() != 0) {
+            return;
+        }
 
         List<Member> members = memberRepository.findAll().stream()
                 .limit(3)
@@ -475,18 +493,20 @@ public class BaseInitData {
     }
 
     // 특정 TagValue가 TagType에 맞는 값인지 확인하는 메서드
+    private static final Map<TagType, Set<TagValue>> VALID_TAG_VALUE_MAP = Map.of(
+            TagType.PARTY_STYLE, EnumSet.of(
+                    TagValue.BEGINNER, TagValue.CASUAL, TagValue.NORMAL,
+                    TagValue.HARDCORE, TagValue.EXTREME, TagValue.COMPLETIONIST, TagValue.SPEEDRUN),
+            TagType.GAME_SKILL, EnumSet.of(
+                    TagValue.MASTER, TagValue.HACKER, TagValue.PRO, TagValue.NEWBIE),
+            TagType.GENDER, EnumSet.of(
+                    TagValue.MALE, TagValue.FEMALE),
+            TagType.SOCIALIZING, EnumSet.of(
+                    TagValue.SOCIAL_FRIENDLY, TagValue.GAME_ONLY, TagValue.NO_CHAT)
+    );
+
     private boolean isValidTagValueForType(TagValue tagValue, TagType tagType) {
-        return switch (tagType) {
-            case PARTY_STYLE ->
-                    tagValue == TagValue.BEGINNER || tagValue == TagValue.CASUAL || tagValue == TagValue.NORMAL
-                    || tagValue == TagValue.HARDCORE || tagValue == TagValue.EXTREME || tagValue == TagValue.COMPLETIONIST
-                    || tagValue == TagValue.SPEEDRUN;
-            case GAME_SKILL -> tagValue == TagValue.MASTER || tagValue == TagValue.HACKER
-                    || tagValue == TagValue.PRO || tagValue == TagValue.NEWBIE;
-            case GENDER -> tagValue == TagValue.MALE || tagValue == TagValue.FEMALE;
-            case SOCIALIZING -> tagValue == TagValue.SOCIAL_FRIENDLY || tagValue == TagValue.GAME_ONLY
-                                || tagValue == TagValue.NO_CHAT;
-        };
+        return VALID_TAG_VALUE_MAP.getOrDefault(tagType, Collections.emptySet()).contains(tagValue);
     }
 
     private List<GuildTag> createSampleGuildTags(Guild guild) {
@@ -531,7 +551,7 @@ public class BaseInitData {
             return;
         }
 
-        if(weeklyGameRepository.count() > 0) {
+        if (weeklyGameRepository.count() > 0) {
             return;
         }
 
@@ -559,7 +579,9 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleGuildJoinRequests() {
-        if (guildJoinRequestRepository.count() > 0) return;
+        if (guildJoinRequestRepository.count() > 0) {
+            return;
+        }
 
         List<Guild> guilds = guildRepository.findAll();
         List<Member> members = memberRepository.findAll();
@@ -587,7 +609,9 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleGuildBoards() {
-        if (guildBoardRepository.count() > 0) return;
+        if (guildBoardRepository.count() > 0) {
+            return;
+        }
 
         List<Guild> guilds = guildRepository.findAll();
         Random random = new Random();
@@ -595,7 +619,9 @@ public class BaseInitData {
         for (Guild guild : guilds) {
             List<GuildMember> guildMembers = guildMemberRepository.findAllByGuild(guild);
 
-            if (guildMembers.isEmpty()) continue;
+            if (guildMembers.isEmpty()) {
+                continue;
+            }
 
             int boardCount = 2 + random.nextInt(2); // 2~3개 생성
 
@@ -604,9 +630,11 @@ public class BaseInitData {
 
                 // 태그를 NOTICE로 줄 확률 (30%), 리더/매니저가 아닌 경우 강제로 FREE
                 boolean isNotice = random.nextInt(100) < 30;
-                BoardTag tag = (isNotice && author.getGuildRole().isManagerOrLeader()) ? BoardTag.NOTICE : BoardTag.FREE;
+                BoardTag tag =
+                        (isNotice && author.getGuildRole().isManagerOrLeader()) ? BoardTag.NOTICE : BoardTag.FREE;
 
-                String title = (tag == BoardTag.NOTICE ? "[공지] " : "") + "샘플 게시글 " + UUID.randomUUID().toString().substring(0, 5);
+                String title = (tag == BoardTag.NOTICE ? "[공지] " : "") + "샘플 게시글 " + UUID.randomUUID().toString()
+                        .substring(0, 5);
                 String content = "샘플 내용입니다.\n테스트용입니다.";
 
                 GuildBoard board = GuildBoard.builder()
@@ -647,7 +675,7 @@ public class BaseInitData {
                 }
             }
         }
-}
+    }
 
 
 }

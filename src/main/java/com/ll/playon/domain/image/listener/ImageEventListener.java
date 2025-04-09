@@ -25,7 +25,7 @@ public class ImageEventListener {
             maxAttemptsExpression = "#{3}",
             backoff = @Backoff(delay = 2000)
     )
-    public void handleImageDelete(ImageDeleteEvent event) {
+    public void handle(ImageDeleteEvent event) {
         try {
             this.imageService.deleteImageById(ImageType.LOG, event.id());
         } catch (ServiceException ex) {
