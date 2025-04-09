@@ -21,7 +21,7 @@ public record PutGuildRequest(
 
         boolean isPublic,
 
-        String guildImg,
+        String newFileType,
 
         @NotNull(message = "태그 정보들을 입력해주세요.")
         List<GuildTagRequest> tags

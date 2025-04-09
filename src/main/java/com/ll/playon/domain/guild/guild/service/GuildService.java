@@ -2,7 +2,6 @@ package com.ll.playon.domain.guild.guild.service;
 
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.repository.GameRepository;
-import com.ll.playon.domain.guild.guild.dto.GuildMemberDto;
 import com.ll.playon.domain.guild.guild.dto.request.GetGuildListRequest;
 import com.ll.playon.domain.guild.guild.dto.request.GuildTagRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
@@ -25,14 +24,13 @@ import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
+import com.ll.playon.global.validation.FileValidator;
 import com.ll.playon.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -60,6 +58,8 @@ public class GuildService {
             ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
 
+        FileValidator.validateFileType(request.fileType());
+
         // 게임 확인
         SteamGame game = gameRepository.findByAppid(request.appid())
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
@@ -83,7 +83,7 @@ public class GuildService {
 
         return PostGuildResponse.from(
                 guild,
-                s3Service.generatePresignedUrl(ImageType.GUILD, guild.getId(), request.fileType())
+                request.fileType() == null || request.fileType().isBlank() ? null : s3Service.generatePresignedUrl(ImageType.GUILD, guild.getId(), request.fileType())
         );
     }
 
@@ -92,6 +92,7 @@ public class GuildService {
         Guild guild = getGuildOrThrow(guildId);
         GuildMember member = getGuildMemberOrThrow(guild, actor);
         validateIsManager(member);
+        FileValidator.validateFileType(request.newFileType());
 
         if (!guild.getName().equals(request.name()) &&
                 guildRepository.existsByName(request.name())) {
@@ -102,19 +103,6 @@ public class GuildService {
         SteamGame game = gameRepository.findByAppid(request.appid())
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
-        // 기존 이미지 확인 -> 없으면 ""
-        // TODO: 빈 문자열보단 따로 컨트롤하는게 좋아보이는데 논의 필요
-        String currentImgUrl = imageService.getImageById(ImageType.GUILD, guildId);
-
-        // 이미지 수정
-        if (StringUtils.hasText(request.guildImg()) && !request.guildImg().equals(currentImgUrl)) {
-            // 기존 이미지 삭제 image, S3
-            imageService.deleteImagesByIdAndUrl(ImageType.GUILD, guildId, currentImgUrl);
-
-            // 새 이미지 저장
-            imageService.saveImage(ImageType.GUILD, guildId, request.guildImg());
-        }
-
         // 길드 수정
         guild.updateFromRequest(request, game);
 
@@ -124,7 +112,12 @@ public class GuildService {
         guild.getGuildTags().addAll(guildTags);
         guildRepository.save(guild);
 
-        return PutGuildResponse.from(guild);
+        return PutGuildResponse.from(
+                guild,
+                request.newFileType() == null || request.newFileType().isBlank() ?
+                null :
+                s3Service.generatePresignedUrl(ImageType.GUILD, guild.getId(), request.newFileType())
+        );
     }
 
     /**
@@ -166,7 +159,7 @@ public class GuildService {
     }
 
     @Transactional(readOnly = true)
-    public PageDto<GuildMemberDto> getGuildMembers(Long guildId, Member actor, Pageable pageable) {
+    public List<getGuildMemberResponse> getGuildMembers(Long guildId, Member actor) {
         Guild guild = getGuildOrThrow(guildId);
 
         boolean isMember = guildMemberRepository.findByGuildAndMember(guild, actor).isPresent();
@@ -176,15 +169,17 @@ public class GuildService {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
 
-        Page<GuildMember> page = guildMemberRepositoryCustom
-                .findByGuildOrderByRoleAndCreatedAt(guild, pageable);
+        List<GuildMember> members = guildMemberRepositoryCustom
+                .findTopNByGuildOrderByRoleAndCreatedAt(guild, 9);
 
-        return new PageDto<>(page.map(GuildMemberDto::from));
+        return members.stream()
+                .map(getGuildMemberResponse::from)
+                .toList();
     }
 
+    // post
     @Transactional(readOnly = true)
     public PageDto<GetGuildListResponse> searchGuilds(int page, int pageSize, String sort, GetGuildListRequest request) {
-
         Page<Guild> guilds = guildRepository.searchGuilds(request, PageRequest.of(page, pageSize), sort);
 
         return new PageDto<>(guilds.map(GetGuildListResponse::from));
@@ -277,6 +272,7 @@ public class GuildService {
         if (url == null || url.isEmpty()) {
             return;
         }
+        guildRepository.findById(guildId).ifPresent(guild -> guild.setGuildImg(url));
         imageService.saveImage(ImageType.GUILD, guildId, url);
     }
 }

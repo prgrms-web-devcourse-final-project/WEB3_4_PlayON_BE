@@ -9,4 +9,5 @@ import java.util.Optional;
 
 public interface GuildBoardLikeRepository extends JpaRepository<GuildBoardLike, Long> {
     Optional<GuildBoardLike> findByGuildMemberAndBoard(GuildMember guildMember, GuildBoard board);
+    void deleteByGuildMember(GuildMember guildMember);
 }

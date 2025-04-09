@@ -37,41 +37,44 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
                 .and(guild.isPublic.isTrue());   // 비공개 길드 제외
 
         // 이름 검색
-        if (req.getName() != null && !req.getName().isBlank()) {
-            builder.and(guild.name.containsIgnoreCase(req.getName()));
+        if (req.name() != null && !req.name().isBlank()) {
+            builder.and(guild.name.containsIgnoreCase(req.name()));
         }
 
         // 게임 필터
-        if (req.getAppids() != null && !req.getAppids().isEmpty()) {
-            builder.and(guild.game.appid.in(req.getAppids()));
+        if (req.appids() != null && !req.appids().isEmpty()) {
+            builder.and(guild.game.appid.in(req.appids()));
         }
 
         // 태그 필터
-        if (req.getTags() != null && !req.getTags().isEmpty()) {
-            for (Map.Entry<String, List<String>> entry : req.getTags().entrySet()) {
-                String typeKey = entry.getKey();
-                List<String> values = entry.getValue();
+        Map<String, List<String>> tagMap = req.getTagMap();
+        for (Map.Entry<String, List<String>> entry : tagMap.entrySet()) {
+            String typeKo = entry.getKey();
+            List<String> vals = entry.getValue();
 
-                if (values.contains("ALL")) continue;
-
-                TagType tagType = TagType.valueOf(typeKey);
-                List<TagValue> tagValues = values.stream()
-                        .map(TagValue::valueOf)
-                        .toList();
-
-                QGuildTag subTag = new QGuildTag("subTag");
-
-                builder.and(JPAExpressions.selectOne()
-                        .from(subTag)
-                        .where(subTag.guild.eq(guild)
-                                .and(subTag.type.eq(tagType))
-                                .and(subTag.value.in(tagValues)))
-                        .exists());
+            // 전체 한 개만 있으면 필터 생략 */
+            if (vals.size() == 1) {
+                String val = vals.get(0);
+                if ("전체".equals(val)) {
+                    continue;
+                }
             }
-        }
 
-// 정렬 분기 처리
-        boolean isActivitySort = sort.equals("activity");
+            // 태그값 하나씩 적용
+            TagType tagType = TagType.fromValue(typeKo);
+            List<TagValue> tagValues = vals.stream()
+                    .map(TagValue::fromValue)
+                    .toList();
+
+            QGuildTag subTag = new QGuildTag("subTag");
+
+            builder.and(JPAExpressions.selectOne()
+                    .from(subTag)
+                    .where(subTag.guild.eq(guild)
+                            .and(subTag.type.eq(tagType))
+                            .and(subTag.value.in(tagValues)))
+                    .exists());
+        }
 
         List<Guild> content = queryFactory
                 .select(guild)
@@ -99,7 +102,7 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
 
     private OrderSpecifier<?> getSort(String sort, QGuild guild, QGuildBoard board) {
         return switch (sort) {
-            case "members" -> guild.maxMembers.desc(); // 멤버 많은 순
+            case "members" -> guild.members.size().desc(); // 멤버 많은 순
             case "activity" -> board.id.count().desc(); // 게시글 많은 순
             default -> guild.createdAt.desc(); // 최신순
         };

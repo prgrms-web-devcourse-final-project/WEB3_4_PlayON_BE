@@ -75,7 +75,6 @@ public class Guild extends BaseTime {
         this.maxMembers = request.maxMembers();
         this.game = game;
         this.isPublic = request.isPublic();
-        this.guildImg = request.guildImg();
     }
 
     public static Guild createFrom(PostGuildRequest request, Member owner, SteamGame game) {

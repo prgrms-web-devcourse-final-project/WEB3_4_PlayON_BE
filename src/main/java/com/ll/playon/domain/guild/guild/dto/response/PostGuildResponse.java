@@ -12,9 +12,8 @@ public record PostGuildResponse(
         String description,
         int maxMembers,
         boolean isPublic,
-        String guildImg,
         LocalDateTime createdAt,
-        List<String> tags,
+        List<GuildTagResponse> tags,
         URL presignedUrl
 ) {
     public static PostGuildResponse from(Guild guild, URL presignedUrl) {
@@ -24,11 +23,8 @@ public record PostGuildResponse(
                 guild.getDescription(),
                 guild.getMaxMembers(),
                 guild.isPublic(),
-                guild.getGuildImg(),
                 guild.getCreatedAt(),
-                guild.getGuildTags().stream()
-                        .map(tag -> tag.getValue().getKoreanValue())
-                        .toList(),
+                GuildTagResponse.fromList(guild.getGuildTags()),
                 presignedUrl
         );
     }

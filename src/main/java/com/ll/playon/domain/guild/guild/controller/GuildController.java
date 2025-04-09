@@ -4,7 +4,10 @@ import com.ll.playon.domain.guild.guild.dto.request.GetGuildListRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.response.*;
+import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guild.service.GuildService;
+import com.ll.playon.domain.image.service.ImageService;
+import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
@@ -31,6 +34,8 @@ public class GuildController {
 
     private final GuildService guildService;
     private final UserContext userContext;
+    private final GuildRepository guildRepository;
+    private final ImageService imageService;
 
     @PostMapping
     @Operation(summary = "길드 생성")
@@ -44,6 +49,7 @@ public class GuildController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "길드 대표 이미지 URL 저장")
     public void saveImageUrl(@PathVariable long guildId, @RequestBody String url) {
+        imageService.deleteImagesByIdAndUrl(ImageType.GUILD, guildId, url);
         guildService.saveImageUrl(userContext.getActor(), guildId, url);
     }
 
@@ -73,19 +79,20 @@ public class GuildController {
         return RsData.success(HttpStatus.OK, guildService.getGuildAdminDetail(guildId, userContext.getActor()));
     }
 
-//    @GetMapping("/{guildId}/members")
-//    @Operation(summary = "길드 멤버 조회")
-//    public RsData<PageDto<GuildMemberDto>> getGuildMembers(@PathVariable Long guildId, Pageable pageable) {
-//        return RsData.success(HttpStatus.OK, guildService.getGuildMembers(guildId, userContext.getActor(), pageable));
-//    }
+    @GetMapping("/{guildId}/members/page")
+    @Operation(summary = "길드 상세페이지 멤버 조회")
+    public RsData<List<getGuildMemberResponse>> getGuildMembers(@PathVariable Long guildId) {
 
-    @GetMapping
+        return RsData.success(HttpStatus.OK, guildService.getGuildMembers(guildId, userContext.getActor()));
+    }
+
+    @PostMapping("/list")
     @Operation(summary = "길드 상세 검색")
     public RsData<PageDto<GetGuildListResponse>> searchGuilds(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue = "latest") String sort,
-            @ModelAttribute @Valid GetGuildListRequest request
+            @RequestBody @Valid GetGuildListRequest request
     ) {
         GlobalValidation.checkPageSize(pageSize);
         

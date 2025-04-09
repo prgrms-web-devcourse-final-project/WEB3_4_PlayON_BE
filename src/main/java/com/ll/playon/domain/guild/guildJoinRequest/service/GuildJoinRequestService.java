@@ -62,7 +62,7 @@ public class GuildJoinRequestService {
         }
 
         boolean isAuthorized = joinRequest.getGuild().getMembers().stream()
-                .anyMatch(gm -> gm.getMember().equals(approver)
+                .anyMatch(gm -> gm.getMember().getId().equals(approver.getId())
                         && (gm.getGuildRole() == GuildRole.LEADER || gm.getGuildRole() == GuildRole.MANAGER));
 
         if (!isAuthorized) {
@@ -83,7 +83,7 @@ public class GuildJoinRequestService {
                 .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
 
         boolean isAuthorized = guild.getMembers().stream()
-                .anyMatch(gm -> gm.getMember().equals(viewer)
+                .anyMatch(gm -> gm.getMember().getId().equals(viewer.getId())
                         && (gm.getGuildRole() == GuildRole.LEADER || gm.getGuildRole() == GuildRole.MANAGER));
 
         if (!isAuthorized) {
