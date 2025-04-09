@@ -40,7 +40,7 @@ public record ChatMessageDto(
 //                member.getTitle(),
                 member.getNickname(),
                 member.getProfileImg(),
-                "[" + member.getNickname() + " ]님이 입장하셨습니다.",
+                "[ " + member.getNickname() + " ] 님이 입장하셨습니다.",
                 LocalDateTime.now()
         );
     }

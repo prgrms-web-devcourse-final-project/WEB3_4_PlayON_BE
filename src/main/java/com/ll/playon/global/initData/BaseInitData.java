@@ -94,13 +94,16 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleGames() {
-        if(gameRepository.count() > 0 ) return;
+        if (gameRepository.count() > 0) {
+            return;
+        }
 
         SteamGame game1 = SteamGame.builder()
                 .name("sampleGame1")
                 .appid(1L)
                 .releaseDate(LocalDate.now())
-                .headerImage("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
+                .headerImage(
+                        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
                 .requiredAge(0)
                 .developers("sample")
                 .publishers("sample")
@@ -111,7 +114,8 @@ public class BaseInitData {
                 .build();
         SteamImage img1 = SteamImage.builder()
                 .game(game1)
-                .screenshot("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
+                .screenshot(
+                        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
                 .build();
         game1.getScreenshots().add(img1);
         SteamMovie m1 = SteamMovie.builder()
@@ -130,7 +134,8 @@ public class BaseInitData {
                 .name("sampleGame2")
                 .appid(2L)
                 .releaseDate(LocalDate.now())
-                .headerImage("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
+                .headerImage(
+                        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
                 .requiredAge(0)
                 .developers("sample")
                 .publishers("sample")
@@ -141,7 +146,8 @@ public class BaseInitData {
                 .build();
         SteamImage img2 = SteamImage.builder()
                 .game(game2)
-                .screenshot("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
+                .screenshot(
+                        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
                 .build();
         game2.getScreenshots().add(img2);
         SteamMovie m2 = SteamMovie.builder()
@@ -157,7 +163,8 @@ public class BaseInitData {
                 .name("sampleGame3")
                 .appid(3L)
                 .releaseDate(LocalDate.now())
-                .headerImage("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
+                .headerImage(
+                        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/87bc28e442a9758e1c6f83bc531cf673a066e472/header_alt_assets_0.jpg?t=1743743917")
                 .requiredAge(0)
                 .developers("sample")
                 .publishers("sample")
@@ -168,7 +175,8 @@ public class BaseInitData {
                 .build();
         SteamImage img3 = SteamImage.builder()
                 .game(game3)
-                .screenshot("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
+                .screenshot(
+                        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2246340/ss_31b5597fecf2d9a2904bc9bbf8011aacb18143db.600x338.jpg?t=1743743917")
                 .build();
         game3.getScreenshots().add(img3);
         SteamMovie m3 = SteamMovie.builder()
@@ -183,7 +191,9 @@ public class BaseInitData {
 
     @Transactional
     public void makeTitles() {
-        if(titleRepository.count() > 0) return;
+        if (titleRepository.count() > 0) {
+            return;
+        }
 
         titleRepository.saveAll(List.of(
                 Title.builder().name("튜토리얼 클리어").description("회원 가입을 완료했다.")
@@ -274,6 +284,7 @@ public class BaseInitData {
                 .nickname("owner")
                 .password(passwordEncoder.encode("owner"))
                 .profileImg("")
+                .password(passwordEncoder.encode("owner"))
                 .lastLoginAt(LocalDateTime.now())
                 .role(Role.USER)
                 .build();
@@ -286,6 +297,7 @@ public class BaseInitData {
                 .username("partyOwner")
                 .nickname("partyOwner")
                 .profileImg("")
+                .password(passwordEncoder.encode("partyOwner"))
                 .lastLoginAt(LocalDateTime.now())
                 .role(Role.USER)
                 .build();
@@ -298,6 +310,7 @@ public class BaseInitData {
                 .username("partyOwner2")
                 .nickname("partyOwner2")
                 .profileImg("")
+                .password(passwordEncoder.encode("partyOwner2"))
                 .lastLoginAt(LocalDateTime.now())
                 .role(Role.USER)
                 .build();
@@ -310,6 +323,7 @@ public class BaseInitData {
                 .username("partyMember")
                 .nickname("partyMember")
                 .profileImg("")
+                .password(passwordEncoder.encode("partyMember"))
                 .lastLoginAt(LocalDateTime.now())
                 .role(Role.USER)
                 .build();
@@ -320,7 +334,9 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleGuilds() {
-        if (guildRepository.count() != 0) return;
+        if (guildRepository.count() != 0) {
+            return;
+        }
 
         List<Member> members = memberRepository.findAll().stream()
                 .limit(3)
@@ -582,7 +598,9 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleGuildJoinRequests() {
-        if (guildJoinRequestRepository.count() > 0) return;
+        if (guildJoinRequestRepository.count() > 0) {
+            return;
+        }
 
         List<Guild> guilds = guildRepository.findAll();
         List<Member> members = memberRepository.findAll();
@@ -610,7 +628,9 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleGuildBoards() {
-        if (guildBoardRepository.count() > 0) return;
+        if (guildBoardRepository.count() > 0) {
+            return;
+        }
 
         List<Guild> guilds = guildRepository.findAll();
         Random random = new Random();
@@ -618,7 +638,9 @@ public class BaseInitData {
         for (Guild guild : guilds) {
             List<GuildMember> guildMembers = guildMemberRepository.findAllByGuild(guild);
 
-            if (guildMembers.isEmpty()) continue;
+            if (guildMembers.isEmpty()) {
+                continue;
+            }
 
             int boardCount = 2 + random.nextInt(2); // 2~3개 생성
 
@@ -627,9 +649,11 @@ public class BaseInitData {
 
                 // 태그를 NOTICE로 줄 확률 (30%), 리더/매니저가 아닌 경우 강제로 FREE
                 boolean isNotice = random.nextInt(100) < 30;
-                BoardTag tag = (isNotice && author.getGuildRole().isManagerOrLeader()) ? BoardTag.NOTICE : BoardTag.FREE;
+                BoardTag tag =
+                        (isNotice && author.getGuildRole().isManagerOrLeader()) ? BoardTag.NOTICE : BoardTag.FREE;
 
-                String title = (tag == BoardTag.NOTICE ? "[공지] " : "") + "샘플 게시글 " + UUID.randomUUID().toString().substring(0, 5);
+                String title = (tag == BoardTag.NOTICE ? "[공지] " : "") + "샘플 게시글 " + UUID.randomUUID().toString()
+                        .substring(0, 5);
                 String content = "샘플 내용입니다.\n테스트용입니다.";
 
                 GuildBoard board = GuildBoard.builder()

@@ -1,11 +1,13 @@
 package com.ll.playon.global.security;
 
-import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.global.exceptions.ErrorCode;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,9 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
-
-import java.util.Arrays;
-import java.util.Optional;
 
 @RequestScope
 @Component
@@ -96,6 +95,7 @@ public class UserContext {
     // JWT 생성하고 쿠키 생성
     public String makeAuthCookies(Member user) {
         String accessToken = memberService.genAccessToken(user);
+        System.out.println(accessToken);// TODO: 삭제
 
         setCookie("apiKey", user.getApiKey());
         setCookie("accessToken", accessToken);
@@ -114,6 +114,19 @@ public class UserContext {
                 .filter(principal -> principal instanceof SecurityUser)
                 .map(principal -> (SecurityUser) principal)
                 .map(securityUser -> new Member(securityUser.getId(), securityUser.getUsername()))
+                .orElse(null);
+    }
+
+    public Member getActualActor() {
+        return Optional.ofNullable(
+                        SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                )
+                .map(Authentication::getPrincipal)
+                .filter(principal -> principal instanceof SecurityUser)
+                .map(principal -> (SecurityUser) principal)
+                .flatMap(securityUser -> memberService.findById(securityUser.getId()))
                 .orElse(null);
     }
 

@@ -34,7 +34,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Table(
         name = "party",
         indexes = {
-                @Index(name = "idx_party_status_public_party_at_id", columnList = "partyStatus, is_public, party_at, id"),
+                @Index(name = "idx_party_status_public_party_at_id", columnList = "party_status, is_public, party_at, id"),
+                @Index(name = "idx_party_id_party_at", columnList = "id, party_at")
         }
 )
 @Getter

@@ -1,7 +1,7 @@
 package com.ll.playon.domain.chat.listener;
 
 import com.ll.playon.domain.chat.dto.ChatMemberCountDto;
-import com.ll.playon.domain.chat.event.PartyRoomsDeleteEvent;
+import com.ll.playon.domain.chat.event.ChatRoomDetectedAfterGameStartedEvent;
 import com.ll.playon.domain.chat.policy.PartyRoomDeletePolicy;
 import com.ll.playon.domain.chat.repository.ChatMemberRepository;
 import com.ll.playon.domain.chat.repository.PartyRoomRepository;
@@ -24,7 +24,7 @@ public class PartyRoomEventListener {
     private final PartyRoomRepository partyRoomRepository;
 
     @EventListener
-    public void deletePartyRooms(PartyRoomsDeleteEvent event) {
+    public void handle(ChatRoomDetectedAfterGameStartedEvent event) {
         int successCount = 0;
         List<Long> failedIds = new ArrayList<>();
 
