@@ -1,5 +1,6 @@
 package com.ll.playon.domain.guild.guild.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
 import java.util.List;
@@ -20,9 +21,9 @@ public record PostGuildRequest(
 
         Long appid,
 
-        String guildImg,
+        String fileType,
 
         @NotNull(message = "태그 정보들을 입력해주세요.")
-        List<GuildTagRequest> tags
+        List<@Valid GuildTagRequest> tags
 ) {
 }

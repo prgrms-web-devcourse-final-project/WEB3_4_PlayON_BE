@@ -2,6 +2,7 @@ package com.ll.playon.domain.guild.guild.dto.response;
 
 import com.ll.playon.domain.guild.guild.entity.Guild;
 
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,9 +14,10 @@ public record PostGuildResponse(
         boolean isPublic,
         String guildImg,
         LocalDateTime createdAt,
-        List<String> tags
+        List<String> tags,
+        URL presignedUrl
 ) {
-    public static PostGuildResponse from(Guild guild) {
+    public static PostGuildResponse from(Guild guild, URL presignedUrl) {
         return new PostGuildResponse(
                 guild.getId(),
                 guild.getName(),
@@ -26,7 +28,8 @@ public record PostGuildResponse(
                 guild.getCreatedAt(),
                 guild.getGuildTags().stream()
                         .map(tag -> tag.getValue().getKoreanValue())
-                        .toList()
+                        .toList(),
+                presignedUrl
         );
     }
 }
