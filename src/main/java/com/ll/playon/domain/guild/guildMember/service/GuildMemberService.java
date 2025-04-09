@@ -10,6 +10,7 @@ import com.ll.playon.domain.guild.guildMember.dto.response.GuildMemberResponse;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
+import com.ll.playon.domain.guild.util.GuildPermissionValidator;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.global.exceptions.ErrorCode;
@@ -31,19 +32,19 @@ public class GuildMemberService {
     @Transactional(readOnly = true)
     public GuildInfoResponse getGuildInfo(Long guildId, Member actor) {
         Guild guild = getGuild(guildId);
-        validateManagerAccess(guild, actor);
-
         List<GuildMember> members = guildMemberRepository.findAllByGuild(guild);
+        GuildPermissionValidator.checkManagerAccess(members, actor);
+
         int totalCount = members.size();
 
         return GuildInfoResponse.from(guild, members, totalCount);
     }
 
-
     @Transactional(readOnly = true)
     public List<GuildMemberResponse> getAllGuildMembers(Long guildId, Member actor) {
         Guild guild = getGuild(guildId);
-        validateManagerAccess(guild, actor);
+        List<GuildMember> members = guildMemberRepository.findAllByGuild(guild);
+        GuildPermissionValidator.checkManagerAccess(members, actor);
 
         return guildMemberRepository.findAllByGuild(guild).stream()
                 .map(gm -> {
@@ -86,14 +87,13 @@ public class GuildMemberService {
         guildMemberRepository.delete(actorMember);
     }
 
-
     @Transactional
     public void assignManagerRole(Long guildId, Member actor, AssignManagerRequest request) {
         Guild guild = getGuild(guildId);
         Member target = getMember(request.targetMemberId());
 
         GuildMember actorMember = getGuildMember(guild, actor);
-        validateOnlyLeader(actorMember);
+        GuildPermissionValidator.checkLeader(actorMember);
 
         GuildMember targetMember = getGuildMember(guild, target);
         if (targetMember.getGuildRole() == GuildRole.MANAGER) {
@@ -109,7 +109,7 @@ public class GuildMemberService {
         Member target = getMember(request.targetMemberId());
 
         GuildMember actorMember = getGuildMember(guild, actor);
-        validateOnlyLeader(actorMember);
+        GuildPermissionValidator.checkLeader(actorMember);
 
         GuildMember targetMember = getGuildMember(guild, target);
         if (targetMember.getGuildRole() != GuildRole.MANAGER) {
@@ -125,9 +125,7 @@ public class GuildMemberService {
         Member target = getMember(request.targetMemberId());
 
         GuildMember actorMember = getGuildMember(guild, actor);
-        if (!isManager(actorMember)) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
+        GuildPermissionValidator.checkManagerOrLeader(actorMember);
 
         GuildMember targetMember = getGuildMember(guild, target);
         if (targetMember.getGuildRole() == GuildRole.LEADER) {
@@ -149,9 +147,7 @@ public class GuildMemberService {
         GuildMember requesterMember = guildMemberRepository.findByGuildAndMember(guild, actor)
                 .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
 
-        if (!isManager(requesterMember)) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
+        GuildPermissionValidator.checkManagerOrLeader(requesterMember);
 
         Member target = memberRepository.findByUsername(request.nickname())
                 .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
@@ -183,27 +179,5 @@ public class GuildMemberService {
     private GuildMember getGuildMember(Guild guild, Member member) {
         return guildMemberRepository.findByGuildAndMember(guild, member)
                 .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
-    }
-
-    private void validateOnlyLeader(GuildMember gm) {
-        if (gm.getGuildRole() != GuildRole.LEADER) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
-    }
-
-    private void validateManagerAccess(Guild guild, Member member) {
-        List<GuildMember> guildMembers = guildMemberRepository.findAllByGuild(guild);
-
-        boolean authorized = guildMembers.stream()
-                .anyMatch(gm -> gm.getMember().equals(member)
-                        && (gm.getGuildRole() == GuildRole.LEADER || gm.getGuildRole() == GuildRole.MANAGER));
-
-        if (!authorized) {
-            throw ErrorCode.GUILD_APPROVAL_UNAUTHORIZED.throwServiceException();
-        }
-    }
-
-    private boolean isManager(GuildMember gm) {
-        return gm.getGuildRole() == GuildRole.LEADER || gm.getGuildRole() == GuildRole.MANAGER;
     }
 }

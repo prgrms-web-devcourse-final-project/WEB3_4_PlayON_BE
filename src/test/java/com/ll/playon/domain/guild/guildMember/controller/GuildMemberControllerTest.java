@@ -268,6 +268,4 @@ class GuildMemberControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[?(@.memberId == %d)].postCount".formatted(leader.getId())).value(3));
     }
-
-
 }
