@@ -170,4 +170,10 @@ public class GuildBoardController {
     public RsData<List<GetGuildBoardNoticeResponse>> getNotices(@PathVariable Long guildId) {
         return RsData.success(HttpStatus.OK, guildBoardService.getNoticeBoards(guildId, userContext.getActor()));
     }
+
+    @GetMapping("/{guildId}/boards/latest")
+    @Operation(summary = "길드 최신글 조회")
+    public RsData<List<GetGuildBoardPreviewResponse>> getBoardPreview(@PathVariable Long guildId) {
+        return RsData.success(HttpStatus.OK, guildBoardService.getLatestBoards(guildId, userContext.getActor()));
+    }
 }

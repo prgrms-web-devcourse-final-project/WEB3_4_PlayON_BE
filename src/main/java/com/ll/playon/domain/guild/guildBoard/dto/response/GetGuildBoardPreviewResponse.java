@@ -4,7 +4,7 @@ import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
 import lombok.Builder;
 
 @Builder
-public record GetGuildBoardNoticeResponse(
+public record GetGuildBoardPreviewResponse(
         Long id,
         String title,
         String content,
@@ -14,8 +14,8 @@ public record GetGuildBoardNoticeResponse(
         int commentCount,
         String imageUrl
 ) {
-    public static GetGuildBoardNoticeResponse from(GuildBoard board, int commentCount) {
-        return GetGuildBoardNoticeResponse.builder()
+    public static GetGuildBoardPreviewResponse from(GuildBoard board, int commentCount) {
+        return GetGuildBoardPreviewResponse.builder()
                 .id(board.getId())
                 .title(board.getTitle())
                 .content(board.getContent())
