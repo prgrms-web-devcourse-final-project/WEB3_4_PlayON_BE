@@ -1,8 +1,10 @@
 package com.ll.playon.domain.guild.guildMember.controller;
 
 import com.ll.playon.domain.guild.guildMember.dto.request.*;
+import com.ll.playon.domain.guild.guildMember.dto.response.GuildInfoResponse;
 import com.ll.playon.domain.guild.guildMember.dto.response.GuildMemberResponse;
 import com.ll.playon.domain.guild.guildMember.service.GuildMemberService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
@@ -10,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +25,14 @@ public class GuildMemberController {
 
     private final GuildMemberService guildMemberService;
     private final UserContext userContext;
+
+    @GetMapping("/{guildId}/info")
+    @Operation(summary = "길드 관리페이지 길드정보")
+    public ResponseEntity<GuildInfoResponse> getGuildInfo(@PathVariable Long guildId) {
+        Member actor = userContext.getActor();
+        GuildInfoResponse response = guildMemberService.getGuildInfo(guildId, actor);
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/{guildId}/members")
     @Operation(summary = "길드 멤버 조회")

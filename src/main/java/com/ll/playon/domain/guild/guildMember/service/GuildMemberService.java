@@ -1,9 +1,11 @@
 package com.ll.playon.domain.guild.guildMember.service;
 
 import com.ll.playon.domain.guild.guild.entity.Guild;
+import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardRepository;
 import com.ll.playon.domain.guild.guildMember.dto.request.*;
+import com.ll.playon.domain.guild.guildMember.dto.response.GuildInfoResponse;
 import com.ll.playon.domain.guild.guildMember.dto.response.GuildMemberResponse;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
@@ -25,6 +27,18 @@ public class GuildMemberService {
     private final MemberRepository memberRepository;
     private final GuildMemberRepository guildMemberRepository;
     private final GuildBoardRepository guildBoardRepository;
+
+    @Transactional(readOnly = true)
+    public GuildInfoResponse getGuildInfo(Long guildId, Member actor) {
+        Guild guild = getGuild(guildId);
+        validateManagerAccess(guild, actor);
+
+        List<GuildMember> members = guildMemberRepository.findAllByGuild(guild);
+        int totalCount = members.size();
+
+        return GuildInfoResponse.from(guild, members, totalCount);
+    }
+
 
     @Transactional(readOnly = true)
     public List<GuildMemberResponse> getAllGuildMembers(Long guildId, Member actor) {
