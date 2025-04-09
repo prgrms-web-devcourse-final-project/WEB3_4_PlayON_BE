@@ -87,6 +87,7 @@ public class GuildMemberService {
 
         guildBoardLikeRepository.deleteByGuildMember(actorMember);
         guildBoardCommentRepository.deleteByAuthor(actorMember);
+        guildBoardRepository.deleteByAuthor(actorMember);
         guildMemberRepository.delete(actorMember);
 
     }
@@ -142,6 +143,7 @@ public class GuildMemberService {
 
         guildBoardLikeRepository.deleteByGuildMember(actorMember);
         guildBoardCommentRepository.deleteByAuthor(actorMember);
+        guildBoardRepository.deleteByAuthor(actorMember);
         guildMemberRepository.delete(actorMember);
 
     }
