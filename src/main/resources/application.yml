@@ -54,3 +54,26 @@ custom:
     secretKey: ON_SECRET
   accessToken:
     expirationSeconds: "#{60 * 20}"
+
+resilience4j:
+  retry:
+    instances:
+      steamApiRetry:
+        max-attempts: 3
+        wait-duration: 1s
+
+  ratelimiter:
+    instances:
+      steamApiRateLimiter:
+        limit-for-period: 20
+        limit-refresh-period: 30s
+        timeout-duration: 1000ms
+
+  circuitbreaker:
+    instances:
+      steamApiCircuitBreaker:
+        register-health-indicator: true
+        failure-rate-threshold: 50
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 30s
