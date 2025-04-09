@@ -1,8 +1,8 @@
-name: Deploy Backend to EC2 with Docker
+name: Deploy Backend to EC2 with DockerHub
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "main" ]
 
 jobs:
   deploy:
@@ -24,44 +24,27 @@ jobs:
       - name: Build the application
         run: ./gradlew clean bootJar
 
+      - name: Log in to DockerHub
+        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_IMAGE_NAME }} .
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }} .
 
-      - name: Save Docker image as tar
-        run: docker save -o image.tar ${{ secrets.DOCKER_IMAGE_NAME }}
+      - name: Push Docker image to DockerHub
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}
 
-      - name: Copy Docker image to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "image.tar"
-          target: "~/app/"
-
-      - name: Copy application-secret.yml to EC2
-        run: echo "${{ secrets.APPLICATION_SECRET_YML }}" > application-secret.yml
-
-      - name: Upload application-secret.yml to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "application-secret.yml"
-          target: "~/app/"
-
-      - name: SSH into EC2 and run Docker container
+      - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/app
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}
             docker stop playon || true
             docker rm playon || true
-            docker load -i image.tar
+            echo "${{ secrets.APPLICATION_SECRET_YML }}" > application-secret.yml
             docker run -d --name playon \
               -v $(pwd)/application-secret.yml:/app/application-secret.yml \
-              -p 8080:8080 ${{ secrets.DOCKER_IMAGE_NAME }}
+              -p 8080:8080 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}

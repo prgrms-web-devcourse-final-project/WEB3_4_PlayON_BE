@@ -2,6 +2,7 @@ package com.ll.playon.domain.guild.guild.repository;
 
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +17,10 @@ public interface GuildRepository extends JpaRepository<Guild, Long>, GuildReposi
     boolean existsByName(String name);
 
     Optional<Guild> findByIdAndIsDeletedFalse(Long guildId);
+
+    @EntityGraph(attributePaths = {"guildTags"})
+    @Query("SELECT g FROM Guild g WHERE g.id = :guildId AND g.isDeleted = false")
+    Optional<Guild> findWithTagsById(@Param("guildId") Long guildId);
 
     List<Guild> findAllByIsDeletedFalseOrderByCreatedAtDesc(Pageable pageable);
 

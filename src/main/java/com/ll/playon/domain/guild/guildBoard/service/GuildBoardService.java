@@ -232,4 +232,43 @@ public class GuildBoardService {
             return guildBoardRepository.findByGuild(guild, pageable);
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<GetGuildBoardNoticeResponse> getNoticeBoards(Long guildId, Member actor) {
+        // 길드 확인
+        Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        // 길드 멤버 확인
+        if (!guildMemberRepository.existsByGuildAndMember(guild, actor)) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        // 공지글
+        return guildBoardRepository.findTop2ByGuildIdAndTagOrderByCreatedAtDesc(
+                        guild.getId(), BoardTag.NOTICE
+                )
+                .stream()
+                .map(board -> GetGuildBoardNoticeResponse.from(board, board.getComments().size()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetGuildBoardPreviewResponse> getLatestBoards(Long guildId, Member actor) {
+        // 길드 확인
+        Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        // 길드 멤버 확인
+        if (!guildMemberRepository.existsByGuildAndMember(guild, actor)) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        // 최신글
+        return guildBoardRepository.findTop4ByGuildIdOrderByCreatedAtDesc(guild.getId())
+                .stream()
+                .map(board -> GetGuildBoardPreviewResponse.from(board, board.getComments().size()))
+                .toList();
+
+    }
 }

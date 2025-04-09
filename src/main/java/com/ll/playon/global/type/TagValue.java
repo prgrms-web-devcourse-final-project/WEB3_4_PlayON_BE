@@ -3,24 +3,27 @@ package com.ll.playon.global.type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.ll.playon.global.exceptions.ErrorCode;
-import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import java.util.Arrays;
 
 @Getter
 @AllArgsConstructor
 public enum TagValue {
     // 파티 스타일
-    HARDCORE("빡겜"),
-    CASUAL("즐겜"),
-    SPEEDRUN("스피드런"),
-    COMPLETIONIST("도전과제 콜렉터"),
+    BEGINNER("맛보기"),
+    CASUAL("캐주얼"),
+    NORMAL("노멀"),
+    HARDCORE("하드"),
+    EXTREME("익스트림"),
+    COMPLETIONIST("도전과제"),
+    SPEEDRUN("스피드러너"),
 
     // 게임 실력
-    ROTTEN_WATER("썩은물"),
-    STAGNANT_WATER("고인물"),
-    MUD_WATER("흙탕물"),
-    CLEAN_WATER("청정수"),
+    MASTER("마스터"),
+    HACKER("해커"),
+    PRO("프로"),
     NEWBIE("뉴비"),
 
     // 성별
@@ -29,8 +32,8 @@ public enum TagValue {
 
     // 친목
     SOCIAL_FRIENDLY("친목 환영"),
-    GAME_ONLY("게임만 하고 싶어요"),
-    NO_CHAT("대화 안함");
+    GAME_ONLY("게임 전용"),
+    NO_CHAT("대화 없음");
 
     private final String koreanValue;
 

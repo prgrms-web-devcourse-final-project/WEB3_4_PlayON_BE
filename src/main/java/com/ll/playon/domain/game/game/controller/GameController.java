@@ -98,7 +98,9 @@ public class GameController {
     @GetMapping("/recommend/friends")
     @Operation(summary = "최근 함께 파티한 유저의 게임")
     public RsData<List<GetRecommendedGameResponse>> getFriendRecommendedGames() {
-        return RsData.success(HttpStatus.OK, gameService.recommendGamesForMember(userContext.getActor().getId()));
+        Member actor = userContext.getActor();
+        if(ObjectUtils.isEmpty(actor)) throw ErrorCode.UNAUTHORIZED.throwServiceException();
+        return RsData.success(HttpStatus.OK, gameService.recommendGamesForMember(actor.getId()));
     }
 
     @GetMapping("/recommend/playtime/top")
