@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.net.URL;
+import java.util.List;
 
 @Tag(name = "Guild Board", description = "길드 게시판 관련 기능")
 @RestController
@@ -162,5 +163,11 @@ public class GuildBoardController {
         Member actor = userContext.getActor();
         guildBoardService.deleteComment(guildId, boardId, commentId, actor);
         return RsData.success(HttpStatus.OK, "삭제되었습니다.");
+    }
+
+    @GetMapping("/{guildId}/boards/notices")
+    @Operation(summary = "길드 공지글 조회")
+    public RsData<List<GetGuildBoardNoticeResponse>> getNotices(@PathVariable Long guildId) {
+        return RsData.success(HttpStatus.OK, guildBoardService.getNoticeBoards(guildId, userContext.getActor()));
     }
 }

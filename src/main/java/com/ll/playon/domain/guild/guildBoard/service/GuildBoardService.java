@@ -232,4 +232,24 @@ public class GuildBoardService {
             return guildBoardRepository.findByGuild(guild, pageable);
         }
     }
+
+    public List<GetGuildBoardNoticeResponse> getNoticeBoards(Long guildId, Member actor) {
+        // 길드 확인
+        Guild guild = guildRepository.findByIdAndIsDeletedFalse(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+        // 길드 멤버 확인
+        if (!guildMemberRepository.existsByGuildAndMember(guild, actor)) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        // 공지글
+        List<GuildBoard> notices = guildBoardRepository.findTop2ByGuildIdAndTagOrderByCreatedAtDesc(
+                guild.getId(), BoardTag.NOTICE
+        );
+
+        return notices.stream()
+                .map(board -> GetGuildBoardNoticeResponse.from(board, board.getComments().size()))
+                .toList();
+    }
 }
