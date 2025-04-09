@@ -70,6 +70,12 @@ public class GuildController {
         return RsData.success(HttpStatus.OK, guildService.getGuildDetail(guildId, userContext.getActor()));
     }
 
+    @GetMapping("/{guildId}/admin")
+    @Operation(summary = "길드 관리자페이지 상세 조회")
+    public RsData<GetGuildManageDetailResponse> getGuildAdminDetail(@PathVariable Long guildId) {
+        return RsData.success(HttpStatus.OK, guildService.getGuildAdminDetail(guildId, userContext.getActor()));
+    }
+
 //    @GetMapping("/{guildId}/members")
 //    @Operation(summary = "길드 멤버 조회")
 //    public RsData<PageDto<GuildMemberDto>> getGuildMembers(@PathVariable Long guildId, Pageable pageable) {

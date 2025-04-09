@@ -28,4 +28,8 @@ public class GuildMember extends BaseTime {
     public void setGuildRole(GuildRole guildRole) {
         this.guildRole = guildRole;
     }
+
+    public boolean isManagerOrLeader() {
+        return guildRole == GuildRole.LEADER || guildRole == GuildRole.MANAGER;
+    }
 }

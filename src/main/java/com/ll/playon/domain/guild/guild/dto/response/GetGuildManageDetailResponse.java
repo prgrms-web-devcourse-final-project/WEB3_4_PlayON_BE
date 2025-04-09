@@ -7,30 +7,24 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Builder
-public record GetGuildDetailResponse(
+public record GetGuildManageDetailResponse(
         Long id,
         String name,
-        String description,
         String leaderName,
-        String leaderImg,
+        List<String> managerNames,
         int memberCount,
-        int maxMembers,
-        boolean isPublic,
         String guildImg,
         LocalDateTime createdAt,
         String myRole,
         List<String> tags
 ) {
-    public static GetGuildDetailResponse from(Guild guild, String myRole) {
-        return GetGuildDetailResponse.builder()
+    public static GetGuildManageDetailResponse from(Guild guild, String myRole, List<String> managerNames) {
+        return GetGuildManageDetailResponse.builder()
                 .id(guild.getId())
                 .name(guild.getName())
-                .description(guild.getDescription())
                 .leaderName(guild.getOwner().getNickname())
-                .leaderImg(guild.getOwner().getProfileImg())
+                .managerNames(managerNames)
                 .memberCount(guild.getMembers().size())
-                .maxMembers(guild.getMaxMembers())
-                .isPublic(guild.isPublic())
                 .guildImg(guild.getGuildImg())
                 .createdAt(guild.getCreatedAt())
                 .myRole(myRole)

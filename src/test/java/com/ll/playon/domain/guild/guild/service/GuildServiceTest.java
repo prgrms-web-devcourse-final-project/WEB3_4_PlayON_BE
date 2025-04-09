@@ -1,7 +1,6 @@
 package com.ll.playon.domain.guild.guild.service;
 
 import com.ll.playon.domain.game.game.repository.GameRepository;
-import com.ll.playon.domain.guild.guild.dto.GuildMemberDto;
 import com.ll.playon.domain.guild.guild.dto.request.GuildTagRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
@@ -19,7 +18,6 @@ import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.exceptions.ServiceException;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
-import com.ll.playon.standard.page.dto.PageDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,9 +25,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -131,7 +126,7 @@ class GuildServiceTest {
         Guild guild = createGuild("삭제길드", true);
         GuildMember guildMember = createGuildMember(guild, GuildRole.LEADER);
 
-        when(guildRepository.findByIdAndIsDeletedFalse(guildId)).thenReturn(Optional.of(guild));
+        when(guildRepository.findWithTagsById(anyLong())).thenReturn(Optional.of(guild));
         when(guildMemberRepository.findByGuildAndMember(guild, mockMember)).thenReturn(Optional.of(guildMember));
 
         // when
@@ -143,7 +138,7 @@ class GuildServiceTest {
         assertThat(guild.getDescription()).isEqualTo("DELETED");
         assertThat(guild.getMembers()).isEmpty();
 
-        verify(guildRepository).findByIdAndIsDeletedFalse(guildId);
+        verify(guildRepository).findWithTagsById(guildId);
         verify(guildMemberRepository).findByGuildAndMember(guild, mockMember);
     }
 
@@ -154,7 +149,7 @@ class GuildServiceTest {
         Guild guild = createGuild("삭제 길드", true);
         GuildMember guildMember = createGuildMember(guild, GuildRole.MEMBER);
 
-        when(guildRepository.findByIdAndIsDeletedFalse(anyLong())).thenReturn(Optional.of(guild));
+        when(guildRepository.findWithTagsById(anyLong())).thenReturn(Optional.of(guild));
         when(guildMemberRepository.findByGuildAndMember(guild, mockMember)).thenReturn(Optional.of(guildMember));
 
         // when & then
@@ -173,7 +168,7 @@ class GuildServiceTest {
         Guild guild = createGuild("테스트 길드", true);
         GuildMember guildMember = createGuildMember(guild, GuildRole.MEMBER);
 
-        when(guildRepository.findByIdAndIsDeletedFalse(anyLong())).thenReturn(Optional.of(guild));
+        when(guildRepository.findWithTagsById(anyLong())).thenReturn(Optional.of(guild));
         when(guildMemberRepository.findByGuildAndMember(guild, mockMember)).thenReturn(Optional.of(guildMember));
 
         // when
@@ -181,7 +176,7 @@ class GuildServiceTest {
 
         // then
         assertThat(result.name()).isEqualTo("테스트 길드");
-        assertThat(result.myRole()).isEqualTo(GuildRole.MEMBER);
+        assertThat(result.myRole()).isEqualTo("MEMBER");
     }
 
     @Test
@@ -190,7 +185,7 @@ class GuildServiceTest {
         //given
         Guild guild = createGuild("공개 길드", true);
 
-        when(guildRepository.findByIdAndIsDeletedFalse(anyLong())).thenReturn(Optional.of(guild));
+        when(guildRepository.findWithTagsById(anyLong())).thenReturn(Optional.of(guild));
         when(guildMemberRepository.findByGuildAndMember(guild, mockMember)).thenReturn(Optional.empty());
 
         // when
@@ -198,7 +193,7 @@ class GuildServiceTest {
 
         // then
         assertThat(result.name()).isEqualTo("공개 길드");
-        assertThat(result.myRole()).isNull();
+        assertThat(result.myRole()).isEqualTo("GUEST");
     }
 
     @Test
@@ -208,7 +203,7 @@ class GuildServiceTest {
         Guild guild = createGuild("비공개 길드", false);
         GuildMember guildMember = createGuildMember(guild, GuildRole.MEMBER);
 
-        when(guildRepository.findByIdAndIsDeletedFalse(anyLong())).thenReturn(Optional.of(guild));
+        when(guildRepository.findWithTagsById(anyLong())).thenReturn(Optional.of(guild));
         when(guildMemberRepository.findByGuildAndMember(guild, mockMember)).thenReturn(Optional.of(guildMember));
 
         // when
@@ -216,7 +211,7 @@ class GuildServiceTest {
 
         // then
         assertThat(result.name()).isEqualTo("비공개 길드");
-        assertThat(result.myRole()).isEqualTo(GuildRole.MEMBER);
+        assertThat(result.myRole()).isEqualTo("MEMBER");
     }
 
     @Test
@@ -225,23 +220,8 @@ class GuildServiceTest {
         // given
         Guild guild = createGuild("비공개 길드", false);
 
-        when(guildRepository.findByIdAndIsDeletedFalse(anyLong())).thenReturn(Optional.of(guild));
-        when(guildMemberRepository.findByGuildAndMember(guild, mockMember)).thenReturn(Optional.empty());
-
-        // when & then
-        assertThatThrownBy(() -> guildService.getGuildDetail(1L, mockMember))
-                .isInstanceOf(ServiceException.class)
-                .hasMessageContaining(ErrorCode.GUILD_NOT_FOUND.getMessage());
-
-        verify(guildRepository).findByIdAndIsDeletedFalse(1L);
-        verify(guildMemberRepository).findByGuildAndMember(guild, mockMember);
-    }
-
-    @Test
-    @DisplayName("길드 조회 실패 - 삭제된 길드")
-    void getGuildDetail_deleted_guild() {
-        // given
-        when(guildRepository.findByIdAndIsDeletedFalse(anyLong()))
+        when(guildRepository.findWithTagsById(anyLong())).thenReturn(Optional.of(guild));
+        when(guildMemberRepository.findByGuildAndMember(any(Guild.class), eq(mockMember)))
                 .thenReturn(Optional.empty());
 
         // when & then
@@ -249,70 +229,24 @@ class GuildServiceTest {
                 .isInstanceOf(ServiceException.class)
                 .hasMessageContaining(ErrorCode.GUILD_NOT_FOUND.getMessage());
 
-        verify(guildRepository).findByIdAndIsDeletedFalse(1L);
-        verifyNoInteractions(guildMemberRepository); // 길드 조회 실패했으므로 멤버 조회 안 됨
+        verify(guildRepository).findWithTagsById(1L);
+        verify(guildMemberRepository).findByGuildAndMember(any(Guild.class), eq(mockMember));
     }
 
     @Test
-    @DisplayName("멤버 조회 성공")
-    void getGuildMembers() {
+    @DisplayName("길드 조회 실패 - 삭제된 길드")
+    void getGuildDetail_deleted_guild() {
         // given
-        Guild guild = createGuild("공개 길드", true);
-
-        when(guildRepository.findByIdAndIsDeletedFalse(anyLong())).thenReturn(Optional.of(guild));
-        when(guildMemberRepository.findByGuildAndMember(guild, mockMember)).thenReturn(Optional.empty());
-
-        List<GuildMember> mockMembers = List.of(
-                GuildMember.builder().guild(guild).member(mock(Member.class)).guildRole(GuildRole.MEMBER).build()
-        );
-        Page<GuildMember> page = new PageImpl<>(mockMembers);
-
-        when(guildMemberRepositoryCustom.findByGuildOrderByRoleAndCreatedAt(eq(guild), any())).thenReturn(page);
-
-        // when
-        PageDto<GuildMemberDto> result = guildService.getGuildMembers(1L, mockMember, PageRequest.of(0, 10));
-
-        // then
-        assertThat(result.items()).hasSize(1);
-        verify(guildMemberRepositoryCustom).findByGuildOrderByRoleAndCreatedAt(eq(guild), any());
-    }
-
-    @DisplayName("멤버 조회 - 비공개+멤버")
-    @Test
-    void getGuildMembers_privateAndMember() {
-        // given
-        Guild guild = createGuild("비공개", false);
-
-        when(guildRepository.findByIdAndIsDeletedFalse(anyLong())).thenReturn(Optional.of(guild));
-        when(guildMemberRepository.findByGuildAndMember(guild, mockMember)).thenReturn(Optional.of(
-                GuildMember.builder().guild(guild).member(mockMember).guildRole(GuildRole.MEMBER).build()
-        ));
-
-        Page<GuildMember> page = new PageImpl<>(List.of());
-        when(guildMemberRepositoryCustom.findByGuildOrderByRoleAndCreatedAt(eq(guild), any())).thenReturn(page);
-
-        // when
-        PageDto<GuildMemberDto> result = guildService.getGuildMembers(1L, mockMember, PageRequest.of(0, 10));
-
-        // then
-        assertThat(result.items()).isEmpty();
-    }
-
-    @DisplayName("멤버 조회 실패 - 비공개+멤버X")
-    @Test
-    void getGuildMembers_privateAndNotMember() {
-        // given
-        Guild guild = createGuild("비공개", false);
-
-        when(guildRepository.findByIdAndIsDeletedFalse(anyLong())).thenReturn(Optional.of(guild));
-        when(guildMemberRepository.findByGuildAndMember(guild, mockMember)).thenReturn(Optional.empty());
+        when(guildRepository.findWithTagsById(anyLong()))
+                .thenReturn(Optional.empty()); // 삭제된 길드로 간주
 
         // when & then
-        assertThatThrownBy(() -> guildService.getGuildMembers(1L, mockMember, PageRequest.of(0, 10)))
+        assertThatThrownBy(() -> guildService.getGuildDetail(1L, mockMember))
                 .isInstanceOf(ServiceException.class)
-                .hasMessageContaining("길드 권한이 없습니다.");
+                .hasMessageContaining(ErrorCode.GUILD_NOT_FOUND.getMessage());
 
-        verify(guildMemberRepositoryCustom, never()).findByGuildOrderByRoleAndCreatedAt(any(), any());
+        verify(guildRepository).findWithTagsById(1L);
+        verifyNoInteractions(guildMemberRepository); // 길드 조회 실패했으므로 멤버 조회 안 됨
     }
 
     private Guild createGuild(String name, boolean isPublic) {
@@ -338,18 +272,6 @@ class GuildServiceTest {
                 .member(mockMember)
                 .guildRole(role)
                 .build();
-    }
-
-    private PostGuildRequest createPostGuildRequest(String name) {
-        return new PostGuildRequest(
-                name,
-                "소개글",
-                10,
-                true,
-                730L,
-                "imgUrl",
-                getGuildTagRequests()
-        );
     }
 
     private PutGuildRequest createPutGuildRequest(String name) {
