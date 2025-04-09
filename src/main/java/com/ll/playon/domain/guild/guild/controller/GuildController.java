@@ -5,7 +5,8 @@ import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.response.*;
 import com.ll.playon.domain.guild.guild.service.GuildService;
-import com.ll.playon.domain.image.service.ImageService;
+import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.validation.GlobalValidation;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.DayOfWeek;
@@ -29,12 +31,13 @@ public class GuildController {
 
     private final GuildService guildService;
     private final UserContext userContext;
-    private final ImageService imageService;
 
     @PostMapping
     @Operation(summary = "길드 생성")
     public RsData<PostGuildResponse> addGuild(@RequestBody @Valid PostGuildRequest request) {
-        return RsData.success(HttpStatus.CREATED, guildService.createGuild(request, userContext.getActor()));
+        Member actor = userContext.getActor();
+        if(ObjectUtils.isEmpty(actor)) throw ErrorCode.UNAUTHORIZED.throwServiceException();
+        return RsData.success(HttpStatus.CREATED, guildService.createGuild(request, actor));
     }
 
     @PostMapping("/{guildId}/img")
