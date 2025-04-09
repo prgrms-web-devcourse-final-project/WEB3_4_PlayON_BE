@@ -10,7 +10,7 @@ public class FileValidator {
     public static void validateFileType(String fileType) {
         // 파일 타입이 없음
         if (fileType == null || fileType.isBlank()) {
-            throw ErrorCode.INVALID_FILE_TYPE.throwServiceException();
+            return;
         }
 
         // 허용되지 않는 파일 타입

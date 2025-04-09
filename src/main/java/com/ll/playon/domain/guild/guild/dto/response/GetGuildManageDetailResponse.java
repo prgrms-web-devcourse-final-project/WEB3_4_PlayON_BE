@@ -16,7 +16,7 @@ public record GetGuildManageDetailResponse(
         String guildImg,
         LocalDateTime createdAt,
         String myRole,
-        List<String> tags
+        List<GuildTagResponse> tags
 ) {
     public static GetGuildManageDetailResponse from(Guild guild, String myRole, List<String> managerNames) {
         return GetGuildManageDetailResponse.builder()
@@ -28,11 +28,7 @@ public record GetGuildManageDetailResponse(
                 .guildImg(guild.getGuildImg())
                 .createdAt(guild.getCreatedAt())
                 .myRole(myRole)
-                .tags(guild.getGuildTags()
-                        .stream()
-                        .map(t -> t.getValue().getKoreanValue())
-                        .toList()
-                )
+                .tags(GuildTagResponse.fromList(guild.getGuildTags()))
                 .build();
     }
 }

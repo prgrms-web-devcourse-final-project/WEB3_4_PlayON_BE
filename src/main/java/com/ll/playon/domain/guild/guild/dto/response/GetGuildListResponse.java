@@ -11,7 +11,7 @@ public record GetGuildListResponse(
         String gameName,
         String description,
         int memberCount,
-        List<String> tags
+        List<GuildTagResponse> tags
 ) {
     public static GetGuildListResponse from(Guild guild) {
         return new GetGuildListResponse(
@@ -21,9 +21,7 @@ public record GetGuildListResponse(
                 guild.getGame().getName(),
                 guild.getDescription(),
                 guild.getMembers().size(),
-                guild.getGuildTags().stream()
-                        .map(tag -> tag.getValue().getKoreanValue())
-                        .toList()
+                GuildTagResponse.fromList(guild.getGuildTags())
         );
     }
 }

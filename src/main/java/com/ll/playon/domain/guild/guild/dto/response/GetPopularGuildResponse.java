@@ -10,7 +10,7 @@ public record GetPopularGuildResponse(
         String description,
         String guildImg,
         int memberCount,
-        List<String> tags
+        List<GuildTagResponse> tags
 ) {
     public static GetPopularGuildResponse from(Guild guild) {
         return new GetPopularGuildResponse(
@@ -19,9 +19,7 @@ public record GetPopularGuildResponse(
                 guild.getDescription(),
                 guild.getGuildImg(),
                 guild.getMembers().size(),
-                guild.getGuildTags().stream()
-                        .map(tag -> tag.getValue().getKoreanValue())
-                        .toList()
+                GuildTagResponse.fromList(guild.getGuildTags())
         );
     }
 }
