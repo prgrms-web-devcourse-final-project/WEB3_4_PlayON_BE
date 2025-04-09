@@ -1,7 +1,7 @@
 package com.ll.playon.global.openFeign;
 
-import com.ll.playon.global.openFeign.dto.SteamGameResponse;
-import com.ll.playon.global.openFeign.dto.SteamResponse;
+import com.ll.playon.global.openFeign.dto.ownedGames.SteamGameResponse;
+import com.ll.playon.global.openFeign.dto.playerSummaries.SteamResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;

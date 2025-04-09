@@ -1,4 +1,4 @@
-package com.ll.playon.global.openFeign.dto;
+package com.ll.playon.global.openFeign.dto.playerSummaries;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
