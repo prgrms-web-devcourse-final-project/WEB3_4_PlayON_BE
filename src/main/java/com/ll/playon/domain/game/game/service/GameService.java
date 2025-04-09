@@ -81,19 +81,7 @@ public class GameService {
     // 메인 페이지에 보여줄 스팀 랭킹
     @Transactional
     public List<GameListResponse>  getGameRanking() {
-        final List<Long> steamRankingIds = steamAPI.getSteamRanking();
-        final List<SteamGame> gameList = new ArrayList<>();
-
-        int count = 1;
-        for (Long id : steamRankingIds) {
-            if(count > TOP_FIVE) break;
-
-            gameList.add(steamAPI.fetchOrCreateGameDetail(id));
-
-            count++;
-        }
-
-        return makeGameListWithoutGenre(gameList);
+        return makeGameListWithoutGenre(steamAPI.getSteamRanking().stream().limit(5).toList());
     }
 
     // 메인 페이지에 보여줄 사용자 게임 추천
@@ -106,11 +94,11 @@ public class GameService {
         final List<Long> ownedGames = memberSteamDataRepository.findAllByMemberId(member.getId()).stream()
                 .map(MemberSteamData::getAppId).toList();
 
-        final List<Long> notOwnedGames = steamAPI.getSteamRanking().stream()
-                .filter(appId -> !ownedGames.contains(appId)).toList();
+        final List<SteamGame> notOwnedGames = steamAPI.getSteamRanking().stream()
+                .filter(steamGame -> !ownedGames.contains(steamGame.getAppid())).toList();
 
         // 장르 필터링 후 리스트 완성
-        return makeGameListWithGenre(gameRepository.findAllByAppidIn(notOwnedGames), member.getPreferredGenre());
+        return makeGameListWithGenre(notOwnedGames, member.getPreferredGenre());
     }
 
     @Transactional(readOnly = true)
