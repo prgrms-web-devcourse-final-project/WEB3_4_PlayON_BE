@@ -1,5 +1,6 @@
 package com.ll.playon.domain.guild.guild.controller;
 
+import com.ll.playon.domain.guild.guild.dto.GuildMemberDto;
 import com.ll.playon.domain.guild.guild.dto.request.GetGuildListRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
@@ -73,11 +74,11 @@ public class GuildController {
         return RsData.success(HttpStatus.OK, guildService.getGuildAdminDetail(guildId, userContext.getActor()));
     }
 
-//    @GetMapping("/{guildId}/members")
-//    @Operation(summary = "길드 멤버 조회")
-//    public RsData<PageDto<GuildMemberDto>> getGuildMembers(@PathVariable Long guildId, Pageable pageable) {
-//        return RsData.success(HttpStatus.OK, guildService.getGuildMembers(guildId, userContext.getActor(), pageable));
-//    }
+    @GetMapping("/{guildId}/members/page")
+    @Operation(summary = "길드 상세페이지 멤버 조회")
+    public RsData<List<GuildMemberDto>> getGuildMembers(@PathVariable Long guildId) {
+        return RsData.success(HttpStatus.OK, guildService.getGuildMembers(guildId, userContext.getActor()));
+    }
 
     @GetMapping
     @Operation(summary = "길드 상세 검색")

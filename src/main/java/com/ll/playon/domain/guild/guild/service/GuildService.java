@@ -29,7 +29,6 @@ import com.ll.playon.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -166,7 +165,7 @@ public class GuildService {
     }
 
     @Transactional(readOnly = true)
-    public PageDto<GuildMemberDto> getGuildMembers(Long guildId, Member actor, Pageable pageable) {
+    public List<GuildMemberDto> getGuildMembers(Long guildId, Member actor) {
         Guild guild = getGuildOrThrow(guildId);
 
         boolean isMember = guildMemberRepository.findByGuildAndMember(guild, actor).isPresent();
@@ -176,12 +175,15 @@ public class GuildService {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
 
-        Page<GuildMember> page = guildMemberRepositoryCustom
-                .findByGuildOrderByRoleAndCreatedAt(guild, pageable);
+        List<GuildMember> members = guildMemberRepositoryCustom
+                .findTopNByGuildOrderByRoleAndCreatedAt(guild, 9);
 
-        return new PageDto<>(page.map(GuildMemberDto::from));
+        return members.stream()
+                .map(GuildMemberDto::from)
+                .toList();
     }
 
+    // post
     @Transactional(readOnly = true)
     public PageDto<GetGuildListResponse> searchGuilds(int page, int pageSize, String sort, GetGuildListRequest request) {
 

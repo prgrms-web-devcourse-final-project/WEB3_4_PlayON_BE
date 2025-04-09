@@ -1,10 +1,6 @@
 package com.ll.playon.global.initData;
 
-import com.ll.playon.domain.game.game.entity.SteamGame;
-import com.ll.playon.domain.game.game.entity.SteamGenre;
-import com.ll.playon.domain.game.game.entity.SteamImage;
-import com.ll.playon.domain.game.game.entity.SteamMovie;
-import com.ll.playon.domain.game.game.entity.WeeklyPopularGame;
+import com.ll.playon.domain.game.game.entity.*;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
@@ -38,15 +34,6 @@ import com.ll.playon.domain.title.repository.TitleRepository;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import jakarta.transaction.Transactional;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -57,6 +44,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
 
 @Configuration
@@ -276,6 +267,7 @@ public class BaseInitData {
                 .steamId(111L)
                 .username("owner")
                 .nickname("owner")
+                .password(passwordEncoder.encode("owner"))
                 .profileImg("")
                 .lastLoginAt(LocalDateTime.now())
                 .role(Role.USER)
@@ -475,18 +467,20 @@ public class BaseInitData {
     }
 
     // 특정 TagValue가 TagType에 맞는 값인지 확인하는 메서드
+    private static final Map<TagType, Set<TagValue>> VALID_TAG_VALUE_MAP = Map.of(
+            TagType.PARTY_STYLE, EnumSet.of(
+                    TagValue.BEGINNER, TagValue.CASUAL, TagValue.NORMAL,
+                    TagValue.HARDCORE, TagValue.EXTREME, TagValue.COMPLETIONIST, TagValue.SPEEDRUN),
+            TagType.GAME_SKILL, EnumSet.of(
+                    TagValue.MASTER, TagValue.HACKER, TagValue.PRO, TagValue.NEWBIE),
+            TagType.GENDER, EnumSet.of(
+                    TagValue.MALE, TagValue.FEMALE),
+            TagType.SOCIALIZING, EnumSet.of(
+                    TagValue.SOCIAL_FRIENDLY, TagValue.GAME_ONLY, TagValue.NO_CHAT)
+    );
+
     private boolean isValidTagValueForType(TagValue tagValue, TagType tagType) {
-        return switch (tagType) {
-            case PARTY_STYLE ->
-                    tagValue == TagValue.BEGINNER || tagValue == TagValue.CASUAL || tagValue == TagValue.NORMAL
-                    || tagValue == TagValue.HARDCORE || tagValue == TagValue.EXTREME || tagValue == TagValue.COMPLETIONIST
-                    || tagValue == TagValue.SPEEDRUN;
-            case GAME_SKILL -> tagValue == TagValue.MASTER || tagValue == TagValue.HACKER
-                    || tagValue == TagValue.PRO || tagValue == TagValue.NEWBIE;
-            case GENDER -> tagValue == TagValue.MALE || tagValue == TagValue.FEMALE;
-            case SOCIALIZING -> tagValue == TagValue.SOCIAL_FRIENDLY || tagValue == TagValue.GAME_ONLY
-                                || tagValue == TagValue.NO_CHAT;
-        };
+        return VALID_TAG_VALUE_MAP.getOrDefault(tagType, Collections.emptySet()).contains(tagValue);
     }
 
     private List<GuildTag> createSampleGuildTags(Guild guild) {
@@ -647,7 +641,7 @@ public class BaseInitData {
                 }
             }
         }
-}
+    }
 
 
 }
