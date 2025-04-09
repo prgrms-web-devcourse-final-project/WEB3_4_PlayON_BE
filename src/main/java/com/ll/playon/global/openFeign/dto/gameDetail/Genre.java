@@ -1,4 +1,4 @@
-package com.ll.playon.global.openFeign.dto;
+package com.ll.playon.global.openFeign.dto.gameDetail;
 
 import lombok.Getter;
 import lombok.Setter;
