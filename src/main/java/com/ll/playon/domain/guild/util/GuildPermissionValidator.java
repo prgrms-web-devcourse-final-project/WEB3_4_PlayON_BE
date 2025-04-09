@@ -24,7 +24,7 @@ public class GuildPermissionValidator {
 
     public static void checkManagerAccess(List<GuildMember> guildMembers, Member member) {
         GuildMember actorMember = guildMembers.stream()
-                .filter(gm -> gm.getMember().equals(member))
+                .filter(gm -> gm.getMember().getId().equals(member.getId()))
                 .findFirst()
                 .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
 
