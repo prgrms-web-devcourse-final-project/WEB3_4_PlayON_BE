@@ -22,8 +22,7 @@ public class GuildPermissionValidator {
         }
     }
 
-    public static void checkManagerAccess(Guild guild, Member member) {
-        List<GuildMember> guildMembers = guild.getMembers();
+    public static void checkManagerAccess(List<GuildMember> guildMembers, Member member) {
         boolean authorized = guildMembers.stream()
                 .anyMatch(gm -> gm.getMember().equals(member) && gm.isManagerOrLeader());
 

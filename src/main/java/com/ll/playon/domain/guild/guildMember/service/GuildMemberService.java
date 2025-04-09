@@ -32,9 +32,9 @@ public class GuildMemberService {
     @Transactional(readOnly = true)
     public GuildInfoResponse getGuildInfo(Long guildId, Member actor) {
         Guild guild = getGuild(guildId);
-        GuildPermissionValidator.checkManagerAccess(guild, actor);
-
         List<GuildMember> members = guildMemberRepository.findAllByGuild(guild);
+        GuildPermissionValidator.checkManagerAccess(members, actor);
+
         int totalCount = members.size();
 
         return GuildInfoResponse.from(guild, members, totalCount);
@@ -43,7 +43,8 @@ public class GuildMemberService {
     @Transactional(readOnly = true)
     public List<GuildMemberResponse> getAllGuildMembers(Long guildId, Member actor) {
         Guild guild = getGuild(guildId);
-        GuildPermissionValidator.checkManagerAccess(guild, actor);
+        List<GuildMember> members = guildMemberRepository.findAllByGuild(guild);
+        GuildPermissionValidator.checkManagerAccess(members, actor);
 
         return guildMemberRepository.findAllByGuild(guild).stream()
                 .map(gm -> {
