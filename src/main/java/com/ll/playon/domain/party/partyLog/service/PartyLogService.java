@@ -1,5 +1,6 @@
 package com.ll.playon.domain.party.partyLog.service;
 
+import com.ll.playon.domain.image.event.ImageDeleteEvent;
 import com.ll.playon.domain.image.service.ImageService;
 import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.domain.member.entity.Member;
@@ -16,7 +17,6 @@ import com.ll.playon.domain.party.partyLog.dto.response.GetAllPartyLogResponse;
 import com.ll.playon.domain.party.partyLog.dto.response.GetPartyLogResponse;
 import com.ll.playon.domain.party.partyLog.dto.response.PartyLogResponse;
 import com.ll.playon.domain.party.partyLog.entity.PartyLog;
-import com.ll.playon.domain.image.event.ImageDeleteEvent;
 import com.ll.playon.domain.party.partyLog.mapper.PartyLogMapper;
 import com.ll.playon.domain.party.partyLog.repository.PartyLogRepository;
 import com.ll.playon.domain.party.partyLog.validation.PartyLogValidation;
@@ -32,8 +32,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.net.URL;
 
 @Service
 @RequiredArgsConstructor
@@ -156,7 +154,7 @@ public class PartyLogService {
 
         partyLog.delete();
 
-        this.eventPublisher.publishEvent(new ImageDeleteEvent(logId));
+        this.eventPublisher.publishEvent(new ImageDeleteEvent(logId, ImageType.LOG));
     }
 
     // logId로 PartyLog 조회
