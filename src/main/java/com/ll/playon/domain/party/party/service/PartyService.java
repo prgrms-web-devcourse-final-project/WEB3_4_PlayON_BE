@@ -131,27 +131,20 @@ public class PartyService {
 
         long tagSize = tagValues.size();
 
-        int myPartyCount = myPartyIds.size();
-        int pageOffset = pageable.getPageNumber() * pageable.getPageSize();
-        int publicOffset = Math.max(0, pageOffset - myPartyCount);
-
-        Pageable publicPageable = PageRequest.of(0, publicOffset + pageable.getPageSize());
-
         // 내 파티 ID 제외 + 공개 파티 ID 조회
         Page<Long> publicPartyIds = this.partyRepository.findPublicPartyIdsExcludingMyParties(myPartyIds,
-                partyAt, tagValues, tagSize, publicPageable);
+                partyAt, tagValues, tagSize, pageable);
 
         // Game 관련 필터링 진행한 파티 ID들 조회
         Page<Long> partyFilteredByGameIds = this.partyRepository.findPublicPartiesFilteredByGame(
                 publicPartyIds.getContent(), request.gameId(), request.genres(), request.genres().size(), pageable);
 
         // 최종 파티 ID 페이징 리스트
-        List<Long> mergedPartyIds = new ArrayList<>(myPartyIds);
-        mergedPartyIds.addAll(partyFilteredByGameIds.getContent());
+        List<Long> finalPartyIds = new ArrayList<>(partyFilteredByGameIds.getContent());
 
-        List<Party> parties = this.partyRepository.findPartiesByIds(mergedPartyIds);
-        List<PartyMember> partyMembers = this.partyRepository.findPartyMembersByPartyIds(mergedPartyIds);
-        List<PartyTag> partyTags = this.partyRepository.findPartyTagsByPartyIds(mergedPartyIds);
+        List<Party> parties = this.partyRepository.findPartiesByIds(finalPartyIds);
+        List<PartyMember> partyMembers = this.partyRepository.findPartyMembersByPartyIds(finalPartyIds);
+        List<PartyTag> partyTags = this.partyRepository.findPartyTagsByPartyIds(finalPartyIds);
 
         Map<Long, Party> partyMap = PartySortUtils.convertToMap(parties);
         Map<Long, Long> totalCountMap = PartySortUtils.convertToTotalCountMap(partyMembers);
@@ -160,27 +153,14 @@ public class PartyService {
 
         Comparator<GetPartyResponse> comparator = PartySortUtils.compare(orderBy, partyMap, totalCountMap);
 
-        List<GetPartyResponse> myParties = mergedList.stream()
-                .filter(party -> myPartyIds.contains(party.partyId()))
-                .collect(Collectors.toList());
-
-        List<GetPartyResponse> publicParties = mergedList.stream()
-                .filter(party -> !myPartyIds.contains(party.partyId()))
-                .collect(Collectors.toList());
-
-        myParties.sort(comparator);
-        publicParties.sort(comparator);
-
-        List<GetPartyResponse> sortedList = new ArrayList<>(myParties.size() + publicParties.size());
-        sortedList.addAll(myParties);
-        sortedList.addAll(publicParties);
-
         int start = Math.max(0, pageable.getPageNumber() * pageable.getPageSize());
         int end = Math.min(start + pageable.getPageSize(), mergedList.size());
 
-        List<GetPartyResponse> pagedResponses = start >= end ? Collections.emptyList() : sortedList.subList(start, end);
+        mergedList.sort(comparator);
 
-        return new PageImpl<>(pagedResponses, pageable, myPartyIds.size() + partyFilteredByGameIds.getTotalElements());
+        List<GetPartyResponse> pagedResponses = start >= end ? Collections.emptyList() : mergedList.subList(start, end);
+
+        return new PageImpl<>(pagedResponses, pageable, partyFilteredByGameIds.getTotalElements());
     }
 
     // 파티 결과창 조회

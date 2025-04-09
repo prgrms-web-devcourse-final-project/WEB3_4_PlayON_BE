@@ -21,7 +21,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 //                .setAllowedOrigins("*")
                 .setAllowedOriginPatterns("*")
 //                .addInterceptors(jwtHandshakeInterceptor)
-                .withSockJS();  // SockJs Fallback
+                .withSockJS()   // SockJs Fallback
+        ;
     }
 
     @Override
