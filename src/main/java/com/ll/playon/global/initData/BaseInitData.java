@@ -1,6 +1,10 @@
 package com.ll.playon.global.initData;
 
-import com.ll.playon.domain.game.game.entity.*;
+import com.ll.playon.domain.game.game.entity.SteamGame;
+import com.ll.playon.domain.game.game.entity.SteamGenre;
+import com.ll.playon.domain.game.game.entity.SteamImage;
+import com.ll.playon.domain.game.game.entity.SteamMovie;
+import com.ll.playon.domain.game.game.entity.WeeklyPopularGame;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
@@ -23,16 +27,26 @@ import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.enums.Role;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.service.MemberService;
-import com.ll.playon.domain.party.party.dto.request.PartyTagRequest;
-import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
+import com.ll.playon.domain.party.party.entity.Party;
+import com.ll.playon.domain.party.party.entity.PartyMember;
+import com.ll.playon.domain.party.party.entity.PartyTag;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
-import com.ll.playon.domain.party.party.service.PartyService;
+import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.title.entity.Title;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.repository.TitleRepository;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import jakarta.transaction.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -43,10 +57,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
 
 
 @Configuration
@@ -61,7 +71,6 @@ public class BaseInitData {
     private final GuildBoardCommentRepository guildBoardCommentRepository;
     private final GuildBoardLikeRepository guildBoardLikeRepository;
     private final MemberService memberService;
-    private final PartyService partyService;
     private final PartyRepository partyRepository;
     private final PasswordEncoder passwordEncoder;
     private final TitleRepository titleRepository;
@@ -402,65 +411,65 @@ public class BaseInitData {
             return;
         }
 
-        // 모든 멤버를 가져옵니다.
         List<Member> members = memberRepository.findAll().stream()
-                .skip(Math.max(0, this.memberRepository.findAll().size() - 4))  // 뒤에서 4명 가져오기
+                .skip(Math.max(0, this.memberRepository.findAll().size() - 4))
                 .toList();
 
-        // 태그 타입과 태그 값들
         List<TagType> tagTypes = new ArrayList<>(List.of(TagType.values()));
-
-        // 파티에 사용할 SteamGame 리스트 조회
         List<SteamGame> steamGames = this.gameRepository.findAll(
                 PageRequest.of(0, 100, Sort.by(Direction.DESC, "id"))
         ).getContent();
 
-        // 랜덤 객체 생성
         Random random = new Random();
 
-        // 각 멤버에 대해 3개의 파티 생성
         for (Member member : members) {
             for (int i = 0; i < 3; i++) {
-                // 랜덤 값 생성
-                String randomName = "파티_" + UUID.randomUUID().toString().substring(0, 6);  // 랜덤 이름 생성
-                String randomDescription = "랜덤 파티 설명 " + UUID.randomUUID().toString().substring(0, 6);  // 랜덤 설명
-                LocalDateTime randomPartyAt = LocalDateTime.now().plusDays(random.nextInt(30));  // 30일 이내의 랜덤 날짜
-                boolean isPublic = random.nextBoolean();  // 공개 여부 랜덤
-                int minimum = random.nextInt(2, 10);  // 최소 인원 2명 이상
-                int maximum = random.nextInt(10, 51);  // 최대 인원 10명 이상, 50명 이하
+                String randomName = "파티_" + UUID.randomUUID().toString().substring(0, 6);
+                String randomDescription = "랜덤 파티 설명 " + UUID.randomUUID().toString().substring(0, 6);
+                LocalDateTime randomPartyAt = LocalDateTime.now().plusDays(random.nextInt(30));
+                boolean isPublic = random.nextBoolean();
+                int minimum = random.nextInt(2, 10);
+                int maximum = random.nextInt(10, 51);
                 SteamGame steamGame = steamGames.get(random.nextInt(steamGames.size()));
 
-                // 파티 태그 생성
-                List<PartyTagRequest> randomTags = new ArrayList<>();
+                // Party 생성
+                Party party = Party.builder()
+                        .name(randomName)
+                        .description(randomDescription)
+                        .partyAt(randomPartyAt)
+                        .publicFlag(isPublic)
+                        .minimum(minimum)
+                        .maximum(maximum)
+                        .game(steamGame)
+                        .build();
 
-                // 각 TagType에 대해 하나씩 TagValue를 선택하여 추가
+                // PartyMember 생성 (OWNER)
+                PartyMember partyMember = PartyMember.builder()
+                        .member(member)
+                        .party(party)
+                        .partyRole(PartyRole.OWNER)
+                        .mvpPoint(0)
+                        .build();
+                party.addPartyMember(partyMember);  // total 증가 포함
+
+                // PartyTag 생성
+                List<PartyTag> partyTags = new ArrayList<>();
                 for (TagType tagType : tagTypes) {
-                    // 해당 TagType에 맞는 TagValue들을 필터링
                     List<TagValue> tagValuesForType = Arrays.stream(TagValue.values())
                             .filter(tv -> isValidTagValueForType(tv, tagType))
                             .toList();
 
-                    // TagType에 맞는 TagValue를 랜덤으로 1개 선택
-                    TagValue randomTagValue = tagValuesForType.get(new Random().nextInt(tagValuesForType.size()));
-
-                    // PartyTagRequest 생성 후 randomTags에 추가
-                    randomTags.add(new PartyTagRequest(tagType.getKoreanValue(), randomTagValue.getKoreanValue()));
+                    TagValue randomTagValue = tagValuesForType.get(random.nextInt(tagValuesForType.size()));
+                    partyTags.add(PartyTag.builder()
+                            .party(party)
+                            .type(tagType)
+                            .value(randomTagValue)
+                            .build());
                 }
+                party.setPartyTags(partyTags);  // 연관관계 설정
 
-                // PostPartyRequest 객체 생성
-                PostPartyRequest postPartyRequest = new PostPartyRequest(
-                        randomName,
-                        randomDescription,
-                        randomPartyAt,
-                        isPublic,
-                        minimum,
-                        maximum,
-                        steamGame.getId(),
-                        randomTags
-                );
-
-                // 파티 생성
-                this.partyService.createParty(member, postPartyRequest);
+                // Party 저장
+                partyRepository.save(party);
             }
         }
     }
