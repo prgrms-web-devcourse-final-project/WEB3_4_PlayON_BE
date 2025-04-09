@@ -20,14 +20,17 @@ public class TitleEvaluator {
     private final MemberTitleService memberTitleService;
     private final MemberStatRepository memberStatRepository;
 
+    @Transactional
     public void check(ConditionType conditionType, Member member) {
         checkLogic(conditionType, member, 1);
     }
+
+    @Transactional
     public void gameCountCheck(ConditionType conditionType, Member member, int count) {
         checkLogic(conditionType, member, count);
     }
-    @Transactional
-    public void checkLogic(ConditionType conditionType, Member member, int count) {
+
+    private void checkLogic(ConditionType conditionType, Member member, int count) {
         // 해당 타입의 칭호 조회 (필요값으로 오름차순 정렬)
         final List<Title> titleList = titleService.findByConditionTypeOrderByConditionValueAsc(conditionType);
 
