@@ -23,10 +23,12 @@ public class GuildPermissionValidator {
     }
 
     public static void checkManagerAccess(List<GuildMember> guildMembers, Member member) {
-        boolean authorized = guildMembers.stream()
-                .anyMatch(gm -> gm.getMember().equals(member) && gm.isManagerOrLeader());
+        GuildMember actorMember = guildMembers.stream()
+                .filter(gm -> gm.getMember().equals(member))
+                .findFirst()
+                .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
 
-        if (!authorized) {
+        if (!actorMember.isManagerOrLeader()) {
             throw ErrorCode.GUILD_APPROVAL_UNAUTHORIZED.throwServiceException();
         }
     }

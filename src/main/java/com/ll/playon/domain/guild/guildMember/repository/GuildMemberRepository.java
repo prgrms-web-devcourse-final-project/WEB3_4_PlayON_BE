@@ -20,6 +20,12 @@ public interface GuildMemberRepository extends JpaRepository<GuildMember, Long> 
     List<GuildMember> findAllByMember(Member member);
 
     @Query("""
+     SELECT gm FROM GuildMember gm
+     WHERE gm.guild.id = :guildId AND gm.member.id = :memberId
+ """)
+    Optional<GuildMember> findByGuildIdAndMemberId(@Param("guildId") Long guildId, @Param("memberId") Long memberId);
+
+    @Query("""
             SELECT m.nickname
             FROM GuildMember gm
             JOIN gm.member m

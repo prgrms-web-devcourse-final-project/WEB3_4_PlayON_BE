@@ -2,6 +2,7 @@ package com.ll.playon.domain.guild.guildBoard.repository;
 
 import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
 import com.ll.playon.domain.guild.guildBoard.entity.GuildBoardComment;
+import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -10,5 +11,5 @@ public interface GuildBoardCommentRepository extends JpaRepository<GuildBoardCom
     List<GuildBoardComment> findByBoardOrderByCreatedAtAsc(GuildBoard board);
     int countByBoard(GuildBoard board);
     List<GuildBoardComment> comment(String comment);
-
+    void deleteByAuthor(GuildMember author);
 }
