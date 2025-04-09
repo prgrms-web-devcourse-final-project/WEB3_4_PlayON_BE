@@ -136,15 +136,33 @@ public class GuildService {
      */
     @Transactional(readOnly = true)
     public GetGuildDetailResponse getGuildDetail(Long guildId, Member actor) {
-        Guild guild = getGuildOrThrow(guildId);
+        Guild guild = getGuildOrThrowWithTags(guildId);
         GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor).orElse(null);
 
         if (!guild.isPublic() && guildMember == null) {
             throw ErrorCode.GUILD_NOT_FOUND.throwServiceException();
         }
 
-        GuildRole myRole = guildMember != null ? guildMember.getGuildRole() : null;
-        return GetGuildDetailResponse.from(guild, myRole);
+        return GetGuildDetailResponse.from(
+                guild,
+                guildMember != null ? guildMember.getGuildRole().toString() : "GUEST"
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public GetGuildManageDetailResponse getGuildAdminDetail(Long guildId, Member actor) {
+        Guild guild = getGuildOrThrowWithTags(guildId);
+
+        GuildMember member = guildMemberRepository.findByGuildAndMember(guild, actor)
+                .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
+
+        if (!member.isManagerOrLeader()) {
+            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+        }
+
+        List<String> managerNames = guildMemberRepository.findManagerNicknamesByGuildId(guildId);
+
+        return GetGuildManageDetailResponse.from(guild, member.getGuildRole().name(), managerNames);
     }
 
     @Transactional(readOnly = true)
@@ -188,7 +206,7 @@ public class GuildService {
 
     @Transactional
     public void deleteGuild(Long guildId, Member actor) {
-        Guild guild = getGuildOrThrow(guildId);
+        Guild guild = getGuildOrThrowWithTags(guildId);
         GuildMember member = getGuildMemberOrThrow(guild, actor);
 
         // 길드장만 삭제가능
@@ -236,6 +254,11 @@ public class GuildService {
 
     private Guild getGuildOrThrow(Long guildId) {
         return guildRepository.findByIdAndIsDeletedFalse(guildId)
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+    }
+
+    private Guild getGuildOrThrowWithTags(Long id) {
+        return guildRepository.findWithTagsById(id)
                 .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
     }
 
