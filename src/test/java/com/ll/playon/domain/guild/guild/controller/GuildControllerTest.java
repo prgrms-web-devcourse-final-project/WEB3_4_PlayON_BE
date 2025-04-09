@@ -42,7 +42,7 @@ class GuildControllerTest {
                             "tags": [
                                 {
                                     "type": "파티 스타일",
-                                    "value": "빡겜"
+                                    "value": "하드"
                                 },
                                 {
                                     "type": "게임 실력",
