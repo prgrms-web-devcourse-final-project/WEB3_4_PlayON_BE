@@ -220,6 +220,7 @@ public class SteamAuthTest {
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         ResultActions resultActions = testMemberHelper.requestWithUserAuth("noSteamMember", request);
+        Thread.sleep(1000); // 비동기 처리 1초 기다림
 
         resultActions.andExpect(status().isOk());
 

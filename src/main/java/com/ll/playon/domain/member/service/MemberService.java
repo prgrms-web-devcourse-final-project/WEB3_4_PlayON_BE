@@ -53,6 +53,8 @@ public class MemberService {
     private final GameRepository gameRepository;
     private final TitleEvaluator titleEvaluator;
     private final S3Service s3Service;
+    private final WeeklyGameRepository weeklyGameRepository;
+    private final SteamAsyncService steamAsyncService;
 
     public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
@@ -148,9 +150,9 @@ public class MemberService {
                 .role(Role.USER)
                 .nickname(profile.get("nickname"))
                 .build();
-        memberRepository.save(newMember);
+        memberRepository.saveAndFlush(newMember);
 
-        getUserGamesAndCheckGenres(newMember);
+        steamAsyncService.getUserGamesAndCheckGenres(newMember);
 
         return newMember;
     }
@@ -162,18 +164,6 @@ public class MemberService {
                 .role(Role.USER)
                 .nickname(username)
                 .build());
-    }
-
-    public void saveUserGameList(List<Long> gameList, Member member) {
-        List<MemberSteamData> games = gameList.stream()
-                .map(appId -> MemberSteamData.builder()
-                        .appId(appId)
-                        .member(member)
-                        .build())
-                .toList();
-
-        member.getGames().addAll(games);
-        memberSteamDataRepository.saveAll(games);
     }
 
     private void handleSuccessfulLogin(Member member) {
@@ -193,7 +183,7 @@ public class MemberService {
                     targetMember.setSteamId(steamId);
                     memberRepository.save(targetMember);
 
-                    getUserGamesAndCheckGenres(targetMember);
+                    steamAsyncService.getUserGamesAndCheckGenres(targetMember);
 
                     return targetMember;
                 })
@@ -220,6 +210,7 @@ public class MemberService {
     }
 
     public PresignedUrlResponse modifyMember(PutMemberDetailDto req, Member actor) {
+    public void modifyMember(MemberDetailDto req, Member actor) {
         Member member = memberRepository.findById(actor.getId())
                 .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
 
