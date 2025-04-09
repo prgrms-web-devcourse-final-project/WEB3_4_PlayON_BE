@@ -21,6 +21,7 @@ import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.service.TitleEvaluator;
+import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
@@ -50,6 +51,7 @@ public class GuildService {
     private final TitleEvaluator titleEvaluator;
     private final ImageService imageService;
     private final WeeklyPopularGuildRepository weeklyPopularGuildRepository;
+    private final S3Service s3Service;
 
     @Transactional
     public PostGuildResponse createGuild(PostGuildRequest request, Member owner) {
@@ -76,15 +78,13 @@ public class GuildService {
                 .build();
         guildMemberRepository.save(guildMember);
 
-        // 이미지 저장
-        if (StringUtils.hasText(request.guildImg())) {
-            imageService.saveImage(ImageType.GUILD, guild.getId(), request.guildImg());
-        }
-
         // 길드 생성 칭호
         titleEvaluator.check(ConditionType.GUILD_CREATE, owner);
 
-        return PostGuildResponse.from(guild);
+        return PostGuildResponse.from(
+                guild,
+                s3Service.generatePresignedUrl(ImageType.GUILD, guild.getId(), request.fileType())
+        );
     }
 
     @Transactional
@@ -271,5 +271,12 @@ public class GuildService {
         if (!guildMember.getGuildRole().isManagerOrLeader()) {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
+    }
+
+    public void saveImageUrl(Member actor, long guildId, String url) {
+        if (url == null || url.isEmpty()) {
+            return;
+        }
+        imageService.saveImage(ImageType.GUILD, guildId, url);
     }
 }

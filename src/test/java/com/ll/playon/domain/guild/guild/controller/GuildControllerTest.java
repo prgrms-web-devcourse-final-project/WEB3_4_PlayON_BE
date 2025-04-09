@@ -38,7 +38,6 @@ class GuildControllerTest {
                             "maxMembers": 3,
                             "isPublic": true,
                             "appid": 1,
-                            "guildImg": "a.png",
                             "tags": [
                                 {
                                     "type": "파티 스타일",
@@ -69,7 +68,6 @@ class GuildControllerTest {
                 .andExpect(jsonPath("$.resultCode").value("CREATED"))
                 .andExpect(jsonPath("$.msg").value("OK"))
                 .andExpect(jsonPath("$.data.name").value("테스트"))
-                .andExpect(jsonPath("$.data.guildImg").value("a.png"))
                 .andExpect(jsonPath("$.data.tags", hasSize(4)));
     }
 }

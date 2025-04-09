@@ -86,7 +86,6 @@ public class Guild extends BaseTime {
                 .maxMembers(request.maxMembers())
                 .isPublic(request.isPublic())
                 .game(game)
-                .guildImg(request.guildImg())
                 .build();
     }
 }

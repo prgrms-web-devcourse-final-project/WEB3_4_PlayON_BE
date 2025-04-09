@@ -5,11 +5,9 @@ import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.response.*;
 import com.ll.playon.domain.guild.guild.service.GuildService;
-import com.ll.playon.domain.image.type.ImageType;
-import com.ll.playon.global.aws.s3.S3Service;
+import com.ll.playon.domain.image.service.ImageService;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
-import com.ll.playon.global.validation.FileValidator;
 import com.ll.playon.global.validation.GlobalValidation;
 import com.ll.playon.standard.page.dto.PageDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,9 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URL;
 import java.time.DayOfWeek;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -33,21 +29,19 @@ public class GuildController {
 
     private final GuildService guildService;
     private final UserContext userContext;
-    private final S3Service s3Service;
-
-    @GetMapping("/presigned-url")
-    @Operation(summary = "길드 대표 이미지 업로드용 Presigned URL 발급")
-    public RsData<URL> getPresignedUrl(@RequestParam String fileType) {
-        FileValidator.validateFileType(fileType); // 파일 타입 체크
-
-        // presigned URL은 아직 길드가 생성되기 전이므로 임시 ID 사용
-        return RsData.success(HttpStatus.OK, s3Service.generatePresignedUrl(ImageType.GUILD, Instant.now().getEpochSecond(), fileType));
-    }
+    private final ImageService imageService;
 
     @PostMapping
     @Operation(summary = "길드 생성")
     public RsData<PostGuildResponse> addGuild(@RequestBody @Valid PostGuildRequest request) {
         return RsData.success(HttpStatus.CREATED, guildService.createGuild(request, userContext.getActor()));
+    }
+
+    @PostMapping("/{guildId}/img")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "길드 대표 이미지 URL 저장")
+    public void saveImageUrl(@PathVariable long guildId, @RequestBody String url) {
+        guildService.saveImageUrl(userContext.getActor(), guildId, url);
     }
 
     @PutMapping("/{guildId}")
