@@ -2,7 +2,7 @@ name: Deploy Backend to EC2 with DockerHub
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "main" ]
 
 jobs:
   deploy:
