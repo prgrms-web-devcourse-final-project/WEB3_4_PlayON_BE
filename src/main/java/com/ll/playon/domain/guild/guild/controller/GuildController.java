@@ -76,7 +76,8 @@ public class GuildController {
 
     @GetMapping("/{guildId}/members/page")
     @Operation(summary = "길드 상세페이지 멤버 조회")
-    public RsData<List<GuildMemberDto>> getGuildMembers(@PathVariable Long guildId) {
+    public RsData<List<getGuildMemberResponse>> getGuildMembers(@PathVariable Long guildId) {
+
         return RsData.success(HttpStatus.OK, guildService.getGuildMembers(guildId, userContext.getActor()));
     }
 
