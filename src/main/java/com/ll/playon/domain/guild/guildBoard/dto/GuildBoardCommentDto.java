@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 public record GuildBoardCommentDto(
         Long id,
         String authorNickname,
+        String authorProfileImg,
         String content,
         LocalDateTime createdAt
 ) {
@@ -14,6 +15,7 @@ public record GuildBoardCommentDto(
         return new GuildBoardCommentDto(
                 comment.getId(),
                 comment.getAuthor().getMember().getNickname(),
+                comment.getAuthor().getMember().getProfileImg(),
                 comment.getComment(),
                 comment.getCreatedAt()
         );
