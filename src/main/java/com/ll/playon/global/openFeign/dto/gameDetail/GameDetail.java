@@ -1,7 +1,6 @@
 package com.ll.playon.global.openFeign.dto.gameDetail;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.ll.playon.global.openFeign.dto.Genre;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +9,7 @@ import java.util.List;
 @Setter
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GameDetail2 {
+public class GameDetail {
     private String name;
     private int steam_appid;
     private int required_age;

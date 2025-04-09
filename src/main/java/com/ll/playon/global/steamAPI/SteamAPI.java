@@ -8,10 +8,14 @@ import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.GenreRepository;
 import com.ll.playon.global.openFeign.SteamApiClient;
 import com.ll.playon.global.openFeign.SteamStoreClient;
-import com.ll.playon.global.openFeign.dto.*;
-import com.ll.playon.global.openFeign.dto.gameDetail.GameDetail2;
+import com.ll.playon.global.openFeign.dto.gameDetail.GameDetail;
+import com.ll.playon.global.openFeign.dto.gameDetail.Genre;
 import com.ll.playon.global.openFeign.dto.gameDetail.Screenshot;
-import com.ll.playon.global.openFeign.dto.gameDetail.SteamGameDetailResponse2;
+import com.ll.playon.global.openFeign.dto.gameDetail.SteamGameDetailResponse;
+import com.ll.playon.global.openFeign.dto.ownedGames.SteamGameResponse;
+import com.ll.playon.global.openFeign.dto.playerSummaries.Player;
+import com.ll.playon.global.openFeign.dto.playerSummaries.SteamResponse;
+import com.ll.playon.global.openFeign.dto.ranking.GameItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -109,8 +113,8 @@ public class SteamAPI {
         final Optional<SteamGame> steamGameOptional = gameRepository.findByAppid(appId);
         if(steamGameOptional.isPresent()) return steamGameOptional.get();
 
-        final SteamGameDetailResponse2 response = steamStoreClient.getGameDetail(String.valueOf(appId));
-        final GameDetail2 gameData = response.getGames().get(String.valueOf(appId)).getGameData();
+        final SteamGameDetailResponse response = steamStoreClient.getGameDetail(String.valueOf(appId));
+        final GameDetail gameData = response.getGames().get(String.valueOf(appId)).getGameData();
         if(ObjectUtils.isEmpty(gameData))return null;
 
         // releaseDate, LocalDate 로
