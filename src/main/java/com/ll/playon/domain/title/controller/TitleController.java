@@ -1,7 +1,7 @@
 package com.ll.playon.domain.title.controller;
 
 import com.ll.playon.domain.title.entity.TitleDto;
-import com.ll.playon.domain.title.repository.MemberTitleService;
+import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
 import io.swagger.v3.oas.annotations.Operation;

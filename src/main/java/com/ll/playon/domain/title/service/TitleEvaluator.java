@@ -1,7 +1,6 @@
 package com.ll.playon.domain.title.service;
 
 import com.ll.playon.domain.member.entity.Member;
-import com.ll.playon.domain.title.repository.MemberTitleService;
 import com.ll.playon.domain.title.entity.MemberStat;
 import com.ll.playon.domain.title.entity.Title;
 import com.ll.playon.domain.title.entity.enums.ConditionType;

@@ -3,6 +3,7 @@ package com.ll.playon.domain.member.controller;
 import com.ll.playon.domain.member.dto.MemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.service.SteamAuthService;
+import com.ll.playon.global.app.AppConfig;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
@@ -24,9 +25,8 @@ public class SteamAuthController {
     private final UserContext userContext;
     private final SteamAuthService steamAuthService;
 
-    private static final String REALM_URL = "http://localhost:3000";  // TODO : 배포시 해당 도메인으로 수정
+    private static final String REALM_URL = AppConfig.getSiteFrontUrl();
     private static final String STEAM_OPENID_URL = "https://steamcommunity.com/openid/login";
-    private static final String RETURN_URL = REALM_URL +"/signup/steam";
 
     @GetMapping("/login")
     @Operation(summary = "로그인 : 스팀 로그인 리다이렉트")
@@ -47,7 +47,7 @@ public class SteamAuthController {
         final String authUrl = STEAM_OPENID_URL + "?openid.ns=http://specs.openid.net/auth/2.0"
                 + "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
                 + "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
-                + "&openid.return_to=" + RETURN_URL
+                + "&openid.return_to=" + REALM_URL + url + "/steam"
                 + "&openid.realm=" + REALM_URL
                 + "&openid.mode=checkid_setup";
 

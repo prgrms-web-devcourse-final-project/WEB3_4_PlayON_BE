@@ -75,8 +75,10 @@ public class SecurityConfig {
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // 허용할 오리진 설정
-        configuration.setAllowedOriginPatterns(Arrays.asList(AppConfig.getSiteFrontUrl()));
-        configuration.setAllowedOriginPatterns(Arrays.asList("https://websocketking.com/"));    // TODO: 제거
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+                AppConfig.getSiteFrontUrl(),
+                "https://websocketking.com/"
+        ));
         // 허용할 HTTP 메서드 설정
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
         // 자격 증명 허용 설정
