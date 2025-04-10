@@ -42,7 +42,7 @@ public class GuildBoardService {
     public Page<GuildBoardSummaryResponse> getBoardList(Long guildId, BoardTag tag, String keyword, Pageable pageable) {
         Guild guild = getGuild(guildId);
 
-        Page<GuildBoard> boards = switchBoardSearch(tag, keyword, pageable, guild);
+        Page<GuildBoard> boards = guildBoardRepository.searchWithFilter(guild, tag, keyword, pageable);
 
         return boards.map(board -> {
             int commentCount = guildBoardCommentRepository.countByBoard(board);
@@ -231,17 +231,7 @@ public class GuildBoardService {
     }
 
     private Page<GuildBoard> switchBoardSearch(BoardTag tag, String keyword, Pageable pageable, Guild guild) {
-        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
-
-        if (tag != null && hasKeyword) {
-            return guildBoardRepository.findByGuildAndTagAndTitleContaining(guild, tag, keyword, pageable);
-        } else if (tag != null) {
-            return guildBoardRepository.findByGuildAndTag(guild, tag, pageable);
-        } else if (hasKeyword) {
-            return guildBoardRepository.findByGuildAndTitleContaining(guild, keyword, pageable);
-        } else {
-            return guildBoardRepository.findByGuild(guild, pageable);
-        }
+        return guildBoardRepository.searchWithFilter(guild, tag, keyword, pageable);
     }
 
     @Transactional(readOnly = true)
