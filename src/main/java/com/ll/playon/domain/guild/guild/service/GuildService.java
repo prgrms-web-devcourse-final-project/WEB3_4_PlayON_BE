@@ -28,6 +28,7 @@ import com.ll.playon.global.type.TagValue;
 import com.ll.playon.global.validation.FileValidator;
 import com.ll.playon.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -57,12 +58,13 @@ public class GuildService {
 
     @Transactional
     public PostGuildResponse createGuild(PostGuildRequest request, Member owner) {
+        // 파일 형식 확인
+        FileValidator.validateFileType(request.fileType());
+
         // 이름 중복 확인
         if (guildRepository.existsByName(request.name())) {
             ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
-
-        FileValidator.validateFileType(request.fileType());
 
         // 게임 확인
         SteamGame game = gameRepository.findByAppid(request.appid())
@@ -92,9 +94,11 @@ public class GuildService {
     }
 
     private URL genGuildPresignedUrl(Long guildId, String fileType) {
-        return fileType == null || fileType.isBlank() ?
-                null :
-                s3Service.generatePresignedUrl(ImageType.GUILD, guildId, fileType);
+        if(!ObjectUtils.isEmpty(fileType)) {
+            return s3Service.generatePresignedUrl(ImageType.GUILD, guildId, fileType);
+        }
+
+        return null;
     }
 
     @Transactional
@@ -115,10 +119,10 @@ public class GuildService {
 
     @Transactional
     public PutGuildResponse modifyGuild(Long guildId, PutGuildRequest request, Member actor) {
+        FileValidator.validateFileType(request.newFileType());
         Guild guild = getGuildOrThrow(guildId);
         GuildMember member = getGuildMemberOrThrow(guild, actor);
         validateIsManager(member);
-        FileValidator.validateFileType(request.newFileType());
 
         if (!guild.getName().equals(request.name()) &&
                 guildRepository.existsByName(request.name())) {
