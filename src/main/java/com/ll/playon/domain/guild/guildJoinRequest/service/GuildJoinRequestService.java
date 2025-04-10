@@ -8,6 +8,7 @@ import com.ll.playon.domain.guild.guildJoinRequest.enums.ApprovalState;
 import com.ll.playon.domain.guild.guildJoinRequest.repository.GuildJoinRequestRepository;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.global.exceptions.ErrorCode;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class GuildJoinRequestService {
 
     private final GuildRepository guildRepository;
     private final GuildJoinRequestRepository guildJoinRequestRepository;
+    private final MemberTitleService memberTitleService;
 
     @Transactional
     public void requestToJoinGuild(Long guildId, Member member) {
@@ -94,7 +96,10 @@ public class GuildJoinRequestService {
                 .findAllByGuildAndApprovalState(guild, ApprovalState.PENDING);
 
         return pendingRequests.stream()
-                .map(GuildJoinRequestResponse::from)
+                .map(request -> {
+                    String titleName = memberTitleService.getRepresentativeTitle(request.getMember());
+                    return GuildJoinRequestResponse.from(request, titleName);
+                })
                 .toList();
     }
 }
