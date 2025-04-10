@@ -142,10 +142,11 @@ public class GuildMemberService {
             targetMember.setGuildRole(GuildRole.MEMBER);
         }
 
-        guildBoardLikeRepository.deleteByGuildMember(actorMember);
-        guildBoardCommentRepository.deleteByAuthor(actorMember);
-        guildBoardRepository.deleteByAuthor(actorMember);
-        guildMemberRepository.delete(actorMember);
+        guildBoardLikeRepository.deleteByGuildMember(targetMember);
+        guildBoardCommentRepository.deleteByAuthor(targetMember);
+        guildBoardRepository.deleteByAuthor(targetMember);
+        guildMemberRepository.delete(targetMember);
+
 
     }
 
