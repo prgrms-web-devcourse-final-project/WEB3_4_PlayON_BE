@@ -92,7 +92,7 @@
 
         // 먼저 퇴장 요청
         fetch(`http://localhost:8080/api/chat/leave/${partyId}`, {
-            method: "POST",
+            method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
                 "X-USER-ID": userId
