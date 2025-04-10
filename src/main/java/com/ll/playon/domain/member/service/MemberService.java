@@ -192,7 +192,10 @@ public class MemberService {
                 .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
     }
 
-    public void getUserGamesAndCheckGenres(Member member) {
+    public void getUserGamesAndCheckGenres(Member actor) {
+        Member member = memberRepository.findById(actor.getId())
+                .orElseThrow(ErrorCode.MEMBER_NOT_FOUND::throwServiceException);
+
         int before = member.getGames().size();
 
         List<Long> userGames = steamAPI.getUserGames(member.getSteamId());
