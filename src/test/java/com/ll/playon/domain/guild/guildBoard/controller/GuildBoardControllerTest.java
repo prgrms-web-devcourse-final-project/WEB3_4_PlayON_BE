@@ -107,15 +107,17 @@ public class GuildBoardControllerTest {
                 .andExpect(content().string("길드 권한이 없습니다."));
     }
 
-    @Test @DisplayName("게시글 수정 - 성공")
+    @Test
+    @DisplayName("게시글 수정 - 성공 (presigned URL 포함)")
     void updateBoard_success() throws Exception {
-        var req = new GuildBoardUpdateRequest("수정된 제목", "수정된 내용", BoardTag.GAME, null);
+        var req = new GuildBoardUpdateRequest("수정된 제목", "수정된 내용", BoardTag.GAME, "png");
 
         mockMvc.perform(put("/api/guilds/{guildId}/board/{boardId}", guild.getId(), board.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(req)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").value("수정되었습니다."));
+                .andExpect(jsonPath("$.data.id").value(board.getId()))
+                .andExpect(jsonPath("$.data.presignedUrl").exists());
     }
 
     @Test @DisplayName("게시글 수정 - 권한 없음")

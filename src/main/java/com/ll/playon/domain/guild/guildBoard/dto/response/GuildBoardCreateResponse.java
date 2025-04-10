@@ -1,9 +1,9 @@
 package com.ll.playon.domain.guild.guildBoard.dto.response;
 
-import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
+import java.net.URL;
 
-public record GuildBoardCreateResponse(Long id) {
-    public static GuildBoardCreateResponse from(Long id) {
-        return new GuildBoardCreateResponse(id);
+public record GuildBoardCreateResponse(Long id, URL presignedUrl) {
+    public static GuildBoardCreateResponse from(Long id, URL presignedUrl) {
+        return new GuildBoardCreateResponse(id, presignedUrl);
     }
 }
