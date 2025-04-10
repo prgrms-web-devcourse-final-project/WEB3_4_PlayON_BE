@@ -19,7 +19,6 @@ import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
 import com.ll.playon.domain.party.party.context.PartyMemberContext;
 import com.ll.playon.domain.party.party.entity.PartyMember;
-import com.ll.playon.domain.party.party.service.PartyService;
 import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.service.TitleEvaluator;
@@ -46,7 +45,6 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final AuthTokenService authTokenService;
-    private final PartyService partyService;
     private final UserContext userContext;
     private final SteamAPI steamAPI;
     private final MemberSteamDataRepository memberSteamDataRepository;
