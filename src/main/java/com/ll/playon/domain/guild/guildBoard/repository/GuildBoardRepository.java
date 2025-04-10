@@ -17,37 +17,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface GuildBoardRepository extends JpaRepository<GuildBoard, Long> {
+
     @EntityGraph(attributePaths = {"author.member"})
     Page<GuildBoard> findByGuild(Guild guild, Pageable pageable);
 
     @EntityGraph(attributePaths = {"author.member"})
     Page<GuildBoard> findByGuildAndTag(Guild guild, BoardTag tag, Pageable pageable);
-
-    Page<GuildBoard> findByGuildAndTitleContaining(Guild guild, String keyword, Pageable pageable);
-    Page<GuildBoard> findByGuildAndTagAndTitleContaining(Guild guild, BoardTag tag, String keyword, Pageable pageable);
-
-    int countByAuthor(GuildMember author);
-
-    @Query("""
-                SELECT gb.guild.id AS guildId, COUNT(gb) AS postCount
-                FROM GuildBoard gb
-                WHERE gb.createdAt >= :fromDate AND gb.createdAt < :toDate
-                  AND gb.guild.isDeleted = false
-                  AND gb.guild.isPublic = true
-                GROUP BY gb.guild.id
-                ORDER BY COUNT(gb) DESC
-            """)
-    List<TopGuildPostProjection> findTopGuildsByPartyLastWeek(
-            @Param("fromDate") LocalDateTime fromDate,
-            @Param("toDate") LocalDateTime toDate,
-            Pageable pageable
-    );
-
-    List<GuildBoard> findTop2ByGuildIdAndTagOrderByCreatedAtDesc(Long guildId, BoardTag boardTag);
-
-    List<GuildBoard> findTop4ByGuildIdOrderByCreatedAtDesc(Long guildId);
-
-    void deleteByAuthor(GuildMember author);
 
     @Query("SELECT gb FROM GuildBoard gb " +
             "LEFT JOIN FETCH gb.author a " +
@@ -55,4 +30,37 @@ public interface GuildBoardRepository extends JpaRepository<GuildBoard, Long> {
             "WHERE gb.id = :boardId")
     Optional<GuildBoard> findWithAuthorAndMemberById(Long boardId);
 
+    int countByAuthor(GuildMember author);
+
+    @Query("""
+    SELECT gb FROM GuildBoard gb
+    WHERE gb.guild = :guild
+    AND (:tag IS NULL OR gb.tag = :tag)
+    AND (:keyword IS NULL OR gb.title LIKE %:keyword%)
+""")
+    Page<GuildBoard> searchWithFilter(
+            @Param("guild") Guild guild,
+            @Param("tag") BoardTag tag,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
+    @Query("""
+        SELECT gb.guild.id AS guildId, COUNT(gb) AS postCount
+        FROM GuildBoard gb
+        WHERE gb.createdAt >= :fromDate AND gb.createdAt < :toDate
+          AND gb.guild.isDeleted = false
+          AND gb.guild.isPublic = true
+        GROUP BY gb.guild.id
+        ORDER BY COUNT(gb) DESC
+    """)
+    List<TopGuildPostProjection> findTopGuildsByPartyLastWeek(
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            Pageable pageable
+    );
+
+    List<GuildBoard> findTop2ByGuildIdAndTagOrderByCreatedAtDesc(Long guildId, BoardTag boardTag);
+    List<GuildBoard> findTop4ByGuildIdOrderByCreatedAtDesc(Long guildId);
+    void deleteByAuthor(GuildMember author);
 }
