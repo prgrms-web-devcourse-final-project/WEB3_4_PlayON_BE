@@ -5,14 +5,16 @@ import com.ll.playon.domain.chat.dto.GetChatRoomResponse;
 import com.ll.playon.domain.chat.entity.ChatMember;
 import com.ll.playon.domain.chat.entity.PartyRoom;
 import com.ll.playon.domain.chat.mapper.ChatMemberMapper;
-import com.ll.playon.domain.chat.policy.PartyRoomDeletePolicy;
+import com.ll.playon.domain.chat.policy.PartyRoomPolicy;
 import com.ll.playon.domain.chat.repository.ChatMemberRepository;
 import com.ll.playon.domain.chat.repository.PartyRoomRepository;
+import com.ll.playon.domain.chat.validation.PartyRoomValidation;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.party.party.context.PartyContext;
 import com.ll.playon.domain.party.party.context.PartyMemberContext;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
+import com.ll.playon.domain.party.party.type.PartyStatus;
 import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.global.annotation.ActivePartyMemberOnly;
 import com.ll.playon.global.exceptions.ErrorCode;
@@ -35,6 +37,13 @@ public class ChatService {
     @Transactional
     public GetChatRoomResponse enterPartyRoom(Member actor, Long partyId) {
         Party party = PartyContext.getParty();
+
+        PartyRoomValidation.checkPartyRoomCanEnter(party);
+
+        if (party.getPartyStatus().equals(PartyStatus.PENDING)) {
+            party.updatePartyStatus(PartyStatus.ONGOING);
+        }
+
         PartyMember partymember = PartyMemberContext.getPartyMember();
         PartyRoom partyRoom = this.getPartyRoom(party);
 
@@ -46,11 +55,11 @@ public class ChatService {
 
         this.chatMemberRepository.save(ChatMemberMapper.of(partyRoom, partymember));
 
+        List<ChatMemberDto> chatMemberDtos = this.getChatMemberDtos(partyRoom);
+
         String title = this.memberTitleService.getRepresentativeTitle(actor);
 
         this.chatMessageService.broadcastEnterMessage(partyId, actor, title);
-
-        List<ChatMemberDto> chatMemberDtos = this.getChatMemberDtos(partyRoom);
 
         this.chatMessageService.broadcastMemberList(partyId, chatMemberDtos);
 
@@ -78,8 +87,9 @@ public class ChatService {
         long remainCount = this.chatMemberRepository.countByPartyRoom(partyRoom);
 
         // 파티 진행 시간 5분 이상 지나고, 채팅인원이 0명이면 채팅방 삭제, 브로드캐스트 생략
-        if (PartyRoomDeletePolicy.shouldDeletePartyRoom(remainCount, party)) {
+        if (PartyRoomPolicy.shouldDeletePartyRoom(remainCount, party)) {
             this.partyRoomRepository.delete(partyRoom);
+            party.updatePartyStatus(PartyStatus.COMPLETED);
             return;
         }
 
