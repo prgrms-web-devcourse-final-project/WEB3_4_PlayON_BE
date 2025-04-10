@@ -8,5 +8,5 @@ public record GuildBoardUpdateRequest(
         @NotBlank String title,
         @NotBlank String content,
         @NotNull BoardTag tag,
-        String imageUrl
+        String newFileType
 ) {}

@@ -39,19 +39,6 @@ public class GuildBoardController {
     private final UserContext userContext;
     private final S3Service s3Service;
 
-    @GetMapping("/board/image-upload-url")
-    @Operation(summary = "길드 게시판 이미지 업로드용 Presigned URL 발급")
-    public RsData<URL> getBoardImageUploadUrl(@RequestParam String fileType) {
-        FileValidator.validateFileType(fileType);
-
-        long timestamp = Instant.now().getEpochSecond();
-
-        URL presignedUrl = s3Service.generatePresignedUrl(ImageType.GUILDBOARD, timestamp, fileType);
-
-        return RsData.success(HttpStatus.OK, presignedUrl);
-    }
-
-
     @GetMapping("/{guildId}/board")
     @Operation(summary = "길드 게시글 목록 조회")
     public RsData<Page<GuildBoardSummaryResponse>> getBoards(
@@ -72,6 +59,18 @@ public class GuildBoardController {
         return RsData.success(HttpStatus.OK, result);
     }
 
+    @PostMapping("/{guildId}/board/{boardId}/img")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "게시글 이미지 URL 저장")
+    public void saveBoardImageUrl(
+            @PathVariable long guildId,
+            @PathVariable long boardId,
+            @RequestBody String url
+    ) {
+        Member actor = userContext.getActor();
+        guildBoardService.saveBoardImageUrl(actor, guildId, boardId, url);
+    }
+
     @PostMapping("/{guildId}/board")
     @Operation(summary = "길드 게시글 작성")
     public RsData<GuildBoardCreateResponse> createBoard(
@@ -85,14 +84,14 @@ public class GuildBoardController {
 
     @PutMapping("/{guildId}/board/{boardId}")
     @Operation(summary = "길드 게시글 수정")
-    public RsData<String> updateBoard(
+    public RsData<GuildBoardUpdateResponse> updateBoard(
             @PathVariable Long guildId,
             @PathVariable Long boardId,
             @RequestBody @Valid GuildBoardUpdateRequest request
-    ){
+    ) {
         Member actor = userContext.getActor();
-        guildBoardService.updateBoard(guildId, boardId, request, actor);
-        return RsData.success(HttpStatus.OK, "수정되었습니다.");
+        GuildBoardUpdateResponse response = guildBoardService.updateBoard(guildId, boardId, request, actor);
+        return RsData.success(HttpStatus.OK, response);
     }
 
     @DeleteMapping("/{guildId}/board/{boardId}")

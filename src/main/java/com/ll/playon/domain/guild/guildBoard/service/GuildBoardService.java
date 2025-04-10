@@ -17,7 +17,10 @@ import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardLikeRepository
 import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
+import com.ll.playon.domain.image.service.ImageService;
+import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +41,8 @@ public class GuildBoardService {
     private final GuildBoardRepository guildBoardRepository;
     private final GuildBoardCommentRepository guildBoardCommentRepository;
     private final GuildBoardLikeRepository guildBoardLikeRepository;
+    private final S3Service s3Service;
+    private final ImageService imageService;
 
     @Transactional(readOnly = true)
     public Page<GuildBoardSummaryResponse> getBoardList(Long guildId, BoardTag tag, String keyword, Pageable pageable) {
@@ -63,23 +69,51 @@ public class GuildBoardService {
                 .title(request.title())
                 .content(request.content())
                 .tag(request.tag())
-                .imageUrl(request.imageUrl())
+                .imageUrl(null)
                 .build();
 
         guildBoardRepository.save(board);
 
-        return GuildBoardCreateResponse.from(board.getId());
+        // presigned URL 발급
+        URL presignedUrl = null;
+        if (request.fileType() != null && !request.fileType().isBlank()) {
+            presignedUrl = s3Service.generatePresignedUrl(ImageType.GUILDBOARD, board.getId(), request.fileType());
+        }
+
+        return GuildBoardCreateResponse.from(board.getId(), presignedUrl);
     }
 
+
     @Transactional
-    public void updateBoard(Long guildId, Long boardId, GuildBoardUpdateRequest request, Member actor) {
+    public GuildBoardUpdateResponse updateBoard(Long guildId, Long boardId, GuildBoardUpdateRequest request, Member actor) {
         GuildBoard board = getBoardInGuild(guildId, boardId);
         GuildMember guildMember = getGuildMember(board.getGuild(), actor);
 
         validateAuthor(board, guildMember);
         validateNoticePermission(request.tag(), board.getAuthor());
 
-        board.update(request.title(), request.content(), request.tag(), request.imageUrl());
+        board.update(request.title(), request.content(), request.tag(), board.getImageUrl());
+
+        // presigned URL 발급
+        URL presignedUrl = null;
+        if (request.newFileType() != null && !request.newFileType().isBlank()) {
+            presignedUrl = s3Service.generatePresignedUrl(ImageType.GUILDBOARD, board.getId(), request.newFileType());
+        }
+
+        return GuildBoardUpdateResponse.from(board.getId(), presignedUrl);
+    }
+
+    @Transactional
+    public void saveBoardImageUrl(Member actor, long guildId, long boardId, String url) {
+        GuildBoard board = getBoardInGuild(guildId, boardId);
+        GuildMember guildMember = getGuildMember(board.getGuild(), actor);
+
+        validateAuthor(board, guildMember);
+
+        imageService.deleteImagesByIdAndUrl(ImageType.GUILDBOARD, boardId, board.getImageUrl());
+        board.update(board.getTitle(), board.getContent(), board.getTag(), url);
+
+        imageService.saveImage(ImageType.GUILDBOARD, boardId, url);
     }
 
     @Transactional
@@ -158,7 +192,7 @@ public class GuildBoardService {
     public void updateComment(Long guildId, Long boardId, Long commentId, GuildBoardCommentUpdateRequest request, Member actor) {
         GuildBoard board = getBoardInGuild(guildId, boardId);
         GuildBoardComment comment = getComment(commentId);
-        GuildMember guildMember = getGuildMember(board.getGuild(), actor); // 👈 변경됨
+        GuildMember guildMember = getGuildMember(board.getGuild(), actor);
 
         validateCommentBelongsToBoard(comment, board);
         validateAuthor(comment, guildMember);
@@ -170,7 +204,7 @@ public class GuildBoardService {
     public void deleteComment(Long guildId, Long boardId, Long commentId, Member actor) {
         GuildBoard board = getBoardInGuild(guildId, boardId);
         GuildBoardComment comment = getComment(commentId);
-        GuildMember guildMember = getGuildMember(board.getGuild(), actor); // 👈 변경됨
+        GuildMember guildMember = getGuildMember(board.getGuild(), actor);
 
         validateCommentBelongsToBoard(comment, board);
         validateAuthor(comment, guildMember);
