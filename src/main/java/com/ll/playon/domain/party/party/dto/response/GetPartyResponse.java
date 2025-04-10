@@ -1,7 +1,7 @@
 package com.ll.playon.domain.party.party.dto.response;
 
-import com.ll.playon.domain.party.party.dto.PartyDetailMemberDto;
 import com.ll.playon.domain.party.party.dto.PartyDetailTagDto;
+import com.ll.playon.domain.party.party.dto.PartyMemberIdProfileImgDto;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
@@ -19,8 +19,7 @@ public record GetPartyResponse(
         @NonNull
         String description,
 
-        @NonNull
-        String headerImage,
+        long appId,
 
         @NonNull
         LocalDateTime partyAt,
@@ -28,7 +27,7 @@ public record GetPartyResponse(
         int total,
 
         @NonNull
-        List<PartyDetailMemberDto> members,
+        List<PartyMemberIdProfileImgDto> members,
 
         @NonNull
         List<PartyDetailTagDto> partyTags
@@ -40,11 +39,11 @@ public record GetPartyResponse(
                 party.getId(),
                 party.getName(),
                 party.getDescription(),
-                party.getGame().getHeaderImage() != null ? party.getGame().getHeaderImage() : "",
+                party.getGame().getAppid(),
                 party.getPartyAt(),
                 party.getTotal(),
                 memberDtos.stream()
-                        .map(PartyDetailMemberDto::new)
+                        .map(PartyMemberIdProfileImgDto::new)
                         .toList(),
                 tagDtos.stream()
                         .map(tag -> tag.getValue().getKoreanValue())

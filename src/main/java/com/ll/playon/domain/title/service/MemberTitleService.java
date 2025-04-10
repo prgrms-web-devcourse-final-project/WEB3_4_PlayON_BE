@@ -1,17 +1,19 @@
 package com.ll.playon.domain.title.service;
 
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.title.dto.RepresentativeTitleDto;
 import com.ll.playon.domain.title.entity.MemberTitle;
 import com.ll.playon.domain.title.entity.Title;
 import com.ll.playon.domain.title.entity.TitleDto;
 import com.ll.playon.domain.title.repository.MemberTitleRepository;
 import com.ll.playon.global.exceptions.ErrorCode;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +22,9 @@ public class MemberTitleService {
     private final MemberTitleRepository memberTitleRepository;
 
     public void acquireTitle(Member member, Title title) {
-        if(memberTitleRepository.findByMemberAndTitle(member, title).isPresent()) return;
+        if (memberTitleRepository.findByMemberAndTitle(member, title).isPresent()) {
+            return;
+        }
 
         memberTitleRepository.save(MemberTitle.builder()
                 .member(member).title(title).build());
@@ -30,7 +34,9 @@ public class MemberTitleService {
         List<TitleDto> response = new ArrayList<>();
 
         List<Title> titleList = findMemberTitle(actor);
-        if(titleList.isEmpty()) return new ArrayList<>();
+        if (titleList.isEmpty()) {
+            return new ArrayList<>();
+        }
 
         for (Title title : titleList) {
             MemberTitle memberTitle = memberTitleRepository.findByMemberAndTitle(actor, title)
@@ -58,14 +64,25 @@ public class MemberTitleService {
                 .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
 
         memberTitleRepository.findAllByMember(memberTitle.getMember())
-                        .forEach(mt -> mt.setRepresentative(false));
+                .forEach(mt -> mt.setRepresentative(false));
 
         memberTitle.setRepresentative(true);
     }
 
     public String getRepresentativeTitle(Member member) {
         Optional<MemberTitle> memberTitleOptional = memberTitleRepository.findByMemberAndIsRepresentativeTrue(member);
-        if(memberTitleOptional.isPresent()) return memberTitleOptional.get().getTitle().getName();
+        if (memberTitleOptional.isPresent()) {
+            return memberTitleOptional.get().getTitle().getName();
+        }
         return ""; // 대표 칭호 설정하지 않았을 시 빈 String 반환
+    }
+
+    public Map<Long, String> getRepresentativeTitleMap(List<Long> memberIds) {
+        return this.memberTitleRepository.findRepresentativeTitleByMemberIds(memberIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        RepresentativeTitleDto::memberId,
+                        RepresentativeTitleDto::title
+                ));
     }
 }

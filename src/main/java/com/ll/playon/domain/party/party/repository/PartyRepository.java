@@ -7,150 +7,50 @@ import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
 import com.ll.playon.domain.party.party.type.PartyStatus;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 public interface PartyRepository extends JpaRepository<Party, Long> {
 
     @Query("""
             SELECT p.id
             FROM Party p
-            LEFT JOIN PartyTag pt
-            ON pt.party = p
             WHERE p.partyStatus = 'PENDING'
             AND p.publicFlag = true
             AND (:partyAt IS NULL OR p.partyAt >= :partyAt)
             AND p.id NOT IN :excludedIds
-            AND ((:tagSize = 0) OR (pt.value IN :tagValues))
-            GROUP BY p.id
-            HAVING (:tagSize = 0 OR COUNT(pt.value) = :tagSize)
+            AND (1=:noTagCondition OR p.id IN (
+                SELECT pt.party.id
+                FROM PartyTag pt
+                WHERE pt.value IN :tagValues
+                GROUP BY pt.party.id
+                HAVING COUNT(pt.value) = :tagSize
+            ))
+            AND (:gameId IS NULL OR p.game.id = :gameId)
+            AND (1=:noGenreCondition OR p.game.id IN (
+                SELECT sg.id
+                FROM SteamGame sg
+                JOIN sg.genres g
+                WHERE g.name IN :genres
+                GROUP BY sg.id
+                HAVING COUNT(g.name) = :genreSize
+            ))
             """)
-    Page<Long> findPublicPartyIdsExcludingMyParties(
+    Page<Long> findPartyIdsByAllConditions(
             @Param("excludedIds") List<Long> excludedIds,
             @Param("partyAt") LocalDateTime partyAt,
             @Param("tagValues") List<String> tagValues,
             @Param("tagSize") long tagSize,
-            Pageable pageable
-    );
-
-    // 성능 비교용 1
-//    @Query("""
-//            SELECT p.id
-//            FROM Party p
-//            WHERE p.partyStatus = 'PENDING'
-//            AND p.publicFlag = true
-//            AND (:partyAt IS NULL OR p.partyAt >= :partyAt)
-//            AND (:tagSize = 0 OR (
-//                SELECT COUNT(pt.value)
-//                FROM PartyTag pt
-//                WHERE pt.party = p
-//                AND pt.value IN :tagValues
-//            ) = :tagSize)
-//            AND p.id NOT IN :excludedIds
-//            """)
-//    Page<Long> findPublicPartyIdsExcludingMyParties(
-//            @Param("excludedIds") List<Long> excludedIds,
-//            @Param("partyAt") LocalDateTime partyAt,
-//            @Param("tagValues") List<String> tagValues,
-//            @Param("tagSize") long tagSize,
-//            Pageable pageable
-//    );
-
-    // 성능 비교용 2
-//    @Query(value = """
-//            SELECT p.id
-//            FROM Party p
-//            LEFT JOIN PartyTag pt ON pt.party = p
-//            WHERE p.partyStatus = 'PENDING'
-//            AND p.publicFlag = true
-//            AND (:partyAt IS NULL OR p.partyAt >= :partyAt)
-//            AND (:tagSize = 0 OR pt.value IN :tagValues)
-//            AND p.id NOT IN :excludedIds
-//            GROUP BY p.id
-//            HAVING COUNT(pt.value) = :tagSize
-//            """,
-//            countQuery = """
-//                    SELECT COUNT(p)
-//                    FROM Party p
-//                    LEFT JOIN PartyTag pt ON pt.party = p
-//                    WHERE p.partyStatus = 'PENDING'
-//                    AND p.publicFlag = true
-//                    AND (:party IS NULL OR p.partyAt >= :partyAt)
-//                    AND (:tagSize = 0 OR pt.value IN :tagValues)
-//                    AND p.id NOT IN :excludedIds
-//                    GROUP BY p.id
-//                    HAVING COUNT(pt.value) = :tagSize
-//                    """
-//    )
-//    Page<Long> findPublicPartyIdsExcludingMyParties(
-//            @Param("excludedIds") List<Long> excludedIds,
-//            @Param("partyAt") LocalDateTime partyAt,
-//            @Param("tagValues") List<String> tagValues,
-//            @Param("tagSize") long tagSize,
-//            Pageable pageable
-//    );
-
-    // 성능 비교용 3
-//    @Query(value = """
-//            SELECT p.id
-//            FROM Party p
-//            WHERE p.partyStatus = 'PENDING'
-//            AND p.publicFlag = true
-//            AND (:partyAt IS NULL OR p.partyAt >= :partyAt)
-//            AND (:tagSize = 0 OR (
-//                SELECT COUNT(pt.value)
-//                FROM PartyTag pt
-//                WHERE pt.party = p
-//                AND pt.value IN :tagValues
-//            ) = :tagSize)
-//            AND p.id NOT IN :excludedIds
-//            """,
-//            countQuery = """
-//                    SELECT COUNT(p)
-//                    FROM Party p
-//                    WHERE p.partyStatus = 'PENDING'
-//                    AND p.publicFlag = true
-//                    AND (:party IS NULL OR p.partyAt >= :partyAt)
-//                    AND (:tagSize = 0 OR (
-//                        SELECT COUNT(pt.value)
-//                        FROM PartyTag pt
-//                        WHERE pt.party = p
-//                        AND pt.value IN :tagValues
-//                    ) = :tagSize)
-//                    AND p.id NOT IN :excludedIds
-//                    """
-//    )
-//    Page<Long> findPublicPartyIdsExcludingMyParties(
-//            @Param("excludedIds") List<Long> excludedIds,
-//            @Param("partyAt") LocalDateTime partyAt,
-//            @Param("tagValues") List<String> tagValues,
-//            @Param("tagSize") long tagSize,
-//            Pageable pageable
-//    );
-
-    @Query("""
-            SELECT p.id
-            FROM Party p
-            LEFT JOIN SteamGame sg
-            ON sg.id = p.game.id
-            LEFT JOIN sg.genres g
-            ON g.name IN :genres
-            WHERE p.id IN :partyIds
-            AND (:gameId IS NULL OR p.game.id = :gameId)
-            GROUP BY p.id
-            HAVING (:genreSize = 0 OR COUNT(g.name) = :genreSize)
-            """)
-    Page<Long> findPublicPartiesFilteredByGame(
-            @Param("partyIds") List<Long> partyIds,
+            @Param("noTagCondition") int noTagCondition,
             @Param("gameId") Long gameId,
             @Param("genres") List<String> genres,
             @Param("genreSize") int genreSize,
+            @Param("noGenreCondition") int noGenreCondition,
             Pageable pageable
     );
 
@@ -188,7 +88,8 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             FROM PartyMember pm
             JOIN FETCH pm.party p
             WHERE p.id IN :partyIds
-            AND pm.partyRole != 'PENDING'
+            AND pm.partyRole = 'MEMBER'
+            OR pm.partyRole = 'OWNER'
             """)
     List<PartyMember> findPartyMembersByPartyIds(@Param("partyIds") List<Long> partyIds);
 
