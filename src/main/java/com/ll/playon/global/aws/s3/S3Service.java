@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class S3Service {
@@ -82,16 +84,26 @@ public class S3Service {
     // URL을 포함한 S3 객체 삭제
     public void deleteObjectByUrl(String url) {
         if (StringUtils.isBlank(url)) {
+            log.warn("URL is blank, skipping S3 deletion");
             return;
         }
 
         try {
             // 삭제할 키가 포함되는 ObjectIdentifier 생성
             String key = S3Util.extractS3KeyFromUrl(url);
-
+            
+            if (key == null) {
+                log.error("Failed to extract S3 key from URL: {}", url);
+                return;
+            }
+            
+            log.info("Deleting S3 object with key: {}", key);
+            
             // 키가 포함되면 S3에서 삭제
             s3Client.deleteObject(this.buildDeleteObjectRequest(key));
-        } catch (SdkException e) {
+            log.info("S3 object deleted successfully: {}", key);
+        } catch (Exception e) {
+            log.error("Error deleting S3 object with URL {}: {}", url, e.getMessage(), e);
             throw ErrorCode.S3_OBJECT_DELETE_FAILED.throwServiceException();
         }
     }
@@ -132,7 +144,7 @@ public class S3Service {
             }
 
             // 단일 객체 삭제
-            String key = objects.getFirst().key();
+            String key = objects.get(0).key();
 
             s3Client.deleteObject(this.buildDeleteObjectRequest(key));
         } catch (SdkException e) {
