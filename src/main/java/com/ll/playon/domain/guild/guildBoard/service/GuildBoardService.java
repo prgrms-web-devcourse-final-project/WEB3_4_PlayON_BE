@@ -38,6 +38,7 @@ public class GuildBoardService {
     private final GuildBoardCommentRepository guildBoardCommentRepository;
     private final GuildBoardLikeRepository guildBoardLikeRepository;
 
+    @Transactional(readOnly = true)
     public Page<GuildBoardSummaryResponse> getBoardList(Long guildId, BoardTag tag, String keyword, Pageable pageable) {
         Guild guild = getGuild(guildId);
 
@@ -49,6 +50,7 @@ public class GuildBoardService {
         });
     }
 
+    @Transactional
     public GuildBoardCreateResponse createBoard(Long guildId, GuildBoardCreateRequest request, Member actor) {
         Guild guild = getGuild(guildId);
         GuildMember guildMember = getGuildMember(guild, actor);
@@ -69,6 +71,7 @@ public class GuildBoardService {
         return GuildBoardCreateResponse.from(board.getId());
     }
 
+    @Transactional
     public void updateBoard(Long guildId, Long boardId, GuildBoardUpdateRequest request, Member actor) {
         GuildBoard board = getBoardInGuild(guildId, boardId);
         validateAuthor(board, actor);
@@ -77,6 +80,7 @@ public class GuildBoardService {
         board.update(request.title(), request.content(), request.tag(), request.imageUrl());
     }
 
+    @Transactional
     public void deleteBoard(Long guildId, Long boardId, Member actor) {
         GuildBoard board = getBoardInGuild(guildId, boardId);
         validateAuthor(board, actor);
@@ -84,6 +88,7 @@ public class GuildBoardService {
         guildBoardRepository.delete(board);
     }
 
+    @Transactional
     public GuildBoardDetailResponse getBoardDetail(Long guildId, Long boardId, Member actor) {
         Guild guild = getGuild(guildId);
         GuildMember guildMember = getGuildMember(guild, actor);
@@ -180,7 +185,7 @@ public class GuildBoardService {
     }
 
     private GuildBoard getBoardInGuild(Long guildId, Long boardId) {
-        GuildBoard board = guildBoardRepository.findById(boardId)
+        GuildBoard board = guildBoardRepository.findWithAuthorAndMemberById(boardId)
                 .orElseThrow(ErrorCode.GUILD_BOARD_NOT_FOUND::throwServiceException);
 
         if (!board.getGuild().getId().equals(guildId)) {

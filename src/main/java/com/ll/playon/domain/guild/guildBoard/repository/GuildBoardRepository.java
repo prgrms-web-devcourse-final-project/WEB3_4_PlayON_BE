@@ -14,6 +14,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface GuildBoardRepository extends JpaRepository<GuildBoard, Long> {
     @EntityGraph(attributePaths = {"author.member"})
@@ -47,4 +48,11 @@ public interface GuildBoardRepository extends JpaRepository<GuildBoard, Long> {
     List<GuildBoard> findTop4ByGuildIdOrderByCreatedAtDesc(Long guildId);
 
     void deleteByAuthor(GuildMember author);
+
+    @Query("SELECT gb FROM GuildBoard gb " +
+            "JOIN FETCH gb.author a " +
+            "JOIN FETCH a.member " +
+            "WHERE gb.id = :boardId")
+    Optional<GuildBoard> findWithAuthorAndMemberById(Long boardId);
+
 }
