@@ -1,7 +1,6 @@
 package com.ll.playon.domain.chat.service;
 
 import com.ll.playon.domain.chat.dto.ChatMemberDto;
-import com.ll.playon.domain.chat.dto.ChatMessageDto;
 import com.ll.playon.domain.chat.dto.GetChatRoomResponse;
 import com.ll.playon.domain.chat.entity.ChatMember;
 import com.ll.playon.domain.chat.entity.PartyRoom;
@@ -14,6 +13,7 @@ import com.ll.playon.domain.party.party.context.PartyContext;
 import com.ll.playon.domain.party.party.context.PartyMemberContext;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
+import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.global.annotation.ActivePartyMemberOnly;
 import com.ll.playon.global.exceptions.ErrorCode;
 import java.util.Collections;
@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ChatService {
     private final ChatMessageService chatMessageService;
+    private final MemberTitleService memberTitleService;
     private final ChatMemberRepository chatMemberRepository;
     private final PartyRoomRepository partyRoomRepository;
 
@@ -45,7 +46,9 @@ public class ChatService {
 
         this.chatMemberRepository.save(ChatMemberMapper.of(partyRoom, partymember));
 
-        this.chatMessageService.broadcastMessage(partyId, ChatMessageDto.enter(actor));
+        String title = this.memberTitleService.getRepresentativeTitle(actor);
+
+        this.chatMessageService.broadcastEnterMessage(partyId, actor, title);
 
         List<ChatMemberDto> chatMemberDtos = this.getChatMemberDtos(partyRoom);
 
@@ -80,7 +83,9 @@ public class ChatService {
             return;
         }
 
-        this.chatMessageService.broadcastMessage(partyId, ChatMessageDto.leave(actor));
+        String title = this.memberTitleService.getRepresentativeTitle(actor);
+
+        this.chatMessageService.broadcastLeaveMessage(partyId, actor, title);
 
         this.chatMessageService.broadcastMemberList(partyId, this.getChatMemberDtos(partyRoom));
     }

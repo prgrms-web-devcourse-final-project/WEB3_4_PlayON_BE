@@ -8,8 +8,7 @@ import lombok.NonNull;
 public record ChatMessageDto(
         long senderMemberId,
 
-        // TODO: 칭호 연동 후 주석 해제
-//        String title,
+        String title,
 
         @NotBlank
         String nickname,
@@ -23,10 +22,10 @@ public record ChatMessageDto(
         @NonNull
         LocalDateTime sendAt
 ) {
-    public static ChatMessageDto of(Member member, String message) {
+    public static ChatMessageDto of(Member member, String title, String message) {
         return new ChatMessageDto(
                 member.getId(),
-//                member.getTitle(),
+                title,
                 member.getNickname(),
                 member.getProfileImg(),
                 message,
@@ -34,10 +33,10 @@ public record ChatMessageDto(
         );
     }
 
-    public static ChatMessageDto enter(Member member) {
+    public static ChatMessageDto enter(Member member, String title) {
         return new ChatMessageDto(
                 member.getId(),
-//                member.getTitle(),
+                title,
                 member.getNickname(),
                 member.getProfileImg(),
                 "[ " + member.getNickname() + " ] 님이 입장하셨습니다.",
@@ -45,13 +44,13 @@ public record ChatMessageDto(
         );
     }
 
-    public static ChatMessageDto leave(Member member) {
+    public static ChatMessageDto leave(Member member, String title) {
         return new ChatMessageDto(
                 member.getId(),
-//                member.getTitle(),
+                title,
                 member.getNickname(),
                 member.getProfileImg(),
-                "[" + member.getNickname() + " ]님이 퇴장하셨습니다.",
+                "[ " + member.getNickname() + " ]님이 퇴장하셨습니다.",
                 LocalDateTime.now()
         );
     }
