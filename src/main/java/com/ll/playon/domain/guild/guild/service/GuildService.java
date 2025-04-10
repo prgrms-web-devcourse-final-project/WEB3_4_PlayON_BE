@@ -15,6 +15,7 @@ import com.ll.playon.domain.guild.guild.repository.WeeklyPopularGuildRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
+import com.ll.playon.domain.image.event.ImageDeleteEvent;
 import com.ll.playon.domain.image.service.ImageService;
 import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.domain.member.entity.Member;
@@ -27,11 +28,14 @@ import com.ll.playon.global.type.TagValue;
 import com.ll.playon.global.validation.FileValidator;
 import com.ll.playon.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,15 +54,17 @@ public class GuildService {
     private final ImageService imageService;
     private final WeeklyPopularGuildRepository weeklyPopularGuildRepository;
     private final S3Service s3Service;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public PostGuildResponse createGuild(PostGuildRequest request, Member owner) {
+        // 파일 형식 확인
+        FileValidator.validateFileType(request.fileType());
+
         // 이름 중복 확인
         if (guildRepository.existsByName(request.name())) {
             ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
-
-        FileValidator.validateFileType(request.fileType());
 
         // 게임 확인
         SteamGame game = gameRepository.findByAppid(request.appid())
@@ -83,16 +89,40 @@ public class GuildService {
 
         return PostGuildResponse.from(
                 guild,
-                request.fileType() == null || request.fileType().isBlank() ? null : s3Service.generatePresignedUrl(ImageType.GUILD, guild.getId(), request.fileType())
+                genGuildPresignedUrl(guild.getId(), request.fileType())
         );
+    }
+
+    private URL genGuildPresignedUrl(Long guildId, String fileType) {
+        if(!ObjectUtils.isEmpty(fileType)) {
+            return s3Service.generatePresignedUrl(ImageType.GUILD, guildId, fileType);
+        }
+
+        return null;
+    }
+
+    @Transactional
+    public void saveImageUrl(Member actor, long guildId, String url) {
+        if (url == null || url.isEmpty()) {
+            return;
+        }
+        guildRepository.findById(guildId)
+                .ifPresent(guild -> updateGuildImage(guild, guildId, url));
+
+        imageService.saveImage(ImageType.GUILD, guildId, url);
+    }
+
+    private void updateGuildImage(Guild guild, long guildId, String url) {
+        imageService.deleteImagesByIdAndUrl(ImageType.GUILD, guildId, guild.getGuildImg());
+        guild.setGuildImg(url);
     }
 
     @Transactional
     public PutGuildResponse modifyGuild(Long guildId, PutGuildRequest request, Member actor) {
+        FileValidator.validateFileType(request.newFileType());
         Guild guild = getGuildOrThrow(guildId);
         GuildMember member = getGuildMemberOrThrow(guild, actor);
         validateIsManager(member);
-        FileValidator.validateFileType(request.newFileType());
 
         if (!guild.getName().equals(request.name()) &&
                 guildRepository.existsByName(request.name())) {
@@ -114,9 +144,7 @@ public class GuildService {
 
         return PutGuildResponse.from(
                 guild,
-                request.newFileType() == null || request.newFileType().isBlank() ?
-                null :
-                s3Service.generatePresignedUrl(ImageType.GUILD, guild.getId(), request.newFileType())
+                genGuildPresignedUrl(guild.getId(), request.newFileType())
         );
     }
 
@@ -177,7 +205,6 @@ public class GuildService {
                 .toList();
     }
 
-    // post
     @Transactional(readOnly = true)
     public PageDto<GetGuildListResponse> searchGuilds(int page, int pageSize, String sort, GetGuildListRequest request) {
         Page<Guild> guilds = guildRepository.searchGuilds(request, PageRequest.of(page, pageSize), sort);
@@ -215,17 +242,13 @@ public class GuildService {
         // 멤버 삭제
         guild.getMembers().clear();
 
-        // 이미지 삭제
-        // TODO: 지금 임시 a.png 저장. 삭제 실패. 실제 S3 연결 후 다시 확인해 볼 것
-//        String imageUrl = imageService.getImageById(ImageType.GUILD, guildId); // "" / 실제 URL
-//        if (StringUtils.hasText(imageUrl)) {
-//            imageService.deleteImagesByIdAndUrl(ImageType.GUILD, guildId, imageUrl);
-//        }
-
         // 정보 마스킹
         guild.softDelete();
 
         guildRepository.save(guild); // 명시적으로 저장
+
+        // 이미지 삭제
+        applicationEventPublisher.publishEvent(new ImageDeleteEvent(guildId, ImageType.GUILD));
     }
 
     @Transactional(readOnly = true)
@@ -268,11 +291,4 @@ public class GuildService {
         }
     }
 
-    public void saveImageUrl(Member actor, long guildId, String url) {
-        if (url == null || url.isEmpty()) {
-            return;
-        }
-        guildRepository.findById(guildId).ifPresent(guild -> guild.setGuildImg(url));
-        imageService.saveImage(ImageType.GUILD, guildId, url);
-    }
 }

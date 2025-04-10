@@ -4,7 +4,6 @@ import com.ll.playon.domain.guild.guild.dto.request.GetGuildListRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.response.*;
-import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guild.service.GuildService;
 import com.ll.playon.domain.image.service.ImageService;
 import com.ll.playon.domain.image.type.ImageType;
@@ -34,7 +33,6 @@ public class GuildController {
 
     private final GuildService guildService;
     private final UserContext userContext;
-    private final GuildRepository guildRepository;
     private final ImageService imageService;
 
     @PostMapping

@@ -25,6 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,9 @@ class GuildServiceTest {
     private GuildMemberRepositoryCustom guildMemberRepositoryCustom;
 
     @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
+    @Mock
     private GameRepository gameRepository;
 
     @Mock
@@ -67,7 +71,7 @@ class GuildServiceTest {
     void createGuild_fail_duplicate() {
         //given
         PostGuildRequest request = new PostGuildRequest(
-                "중복용", "소개글", 10, true, 730L, "imgUrl", null
+                "중복용", "소개글", 10, true, 730L, "", null
         );
 
         when(guildRepository.existsByName("중복용")).thenReturn(true);
@@ -281,7 +285,7 @@ class GuildServiceTest {
                 15,
                 730L,
                 false,
-                "new-img.png",
+                "",
                 getGuildTagRequests()
         );
     }
