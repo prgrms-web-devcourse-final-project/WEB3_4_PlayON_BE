@@ -5,11 +5,8 @@ import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.service.GameService;
-import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
-import com.ll.playon.domain.member.dto.GetMembersResponse;
-import com.ll.playon.domain.member.dto.MemberDetailDto;
-import com.ll.playon.domain.member.dto.MemberProfileResponse;
-import com.ll.playon.domain.member.dto.ProfileMemberDetailDto;
+import com.ll.playon.domain.image.type.ImageType;
+import com.ll.playon.domain.member.dto.*;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
@@ -17,6 +14,7 @@ import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.service.TitleEvaluator;
+import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
@@ -46,7 +44,7 @@ public class MemberService {
     private final GameService gameService;
     private final GameRepository gameRepository;
     private final TitleEvaluator titleEvaluator;
-    private final WeeklyGameRepository weeklyGameRepository;
+    private final S3Service s3Service;
 
     public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
@@ -210,18 +208,44 @@ public class MemberService {
         titleEvaluator.gameCountCheck(ConditionType.STEAM_GAME_COUNT, member, after - before);
     }
 
-    public void modifyMember(MemberDetailDto req, Member actor) {
+    public PresignedUrlResponse modifyMember(PutMemberDetailDto req, Member actor) {
         Member member = memberRepository.findById(actor.getId())
                 .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
 
         // 사용자 정보 수정 및 저장 (방어적 복사 적용해봄)
         memberRepository.save(member.toBuilder()
                 .nickname(req.nickname())
-                .profileImg(req.profileImg())
                 .playStyle(req.playStyle())
                 .skillLevel(req.skillLevel())
                 .gender(req.gender())
                 .build());
+
+        if(req.updateProfileImg()) {
+            // S3 기존 이미지 삭제
+            s3Service.deleteObjectByUrl(member.getProfileImg());
+
+            // 수정하는 경우 presigned url 응답
+            if(!ObjectUtils.isEmpty(req.newFileType())) {
+                return new PresignedUrlResponse(
+                    s3Service.generatePresignedUrl(ImageType.MEMBER, member.getId(), req.newFileType())
+                    .toString()
+                );
+            } else {
+                // 삭제하는 경우 기존 프로필 이미지도 삭제
+                memberRepository.save(member.toBuilder()
+                        .profileImg(null)
+                        .build());
+            }
+        }
+        return new PresignedUrlResponse(null);
+    }
+
+    public void saveProfileImage(Member actor, String url) {
+        if(ObjectUtils.isEmpty(url))
+            throw ErrorCode.URL_NOT_FOUND.throwServiceException();
+
+        memberRepository.findById(actor.getId()).ifPresent(member ->
+                member.changeProfileImg(url));
     }
 
     public void deactivateMember(Member actor) {

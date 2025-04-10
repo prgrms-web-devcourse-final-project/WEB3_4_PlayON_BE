@@ -12,6 +12,7 @@ public class S3Util {
             case LOG -> "log/" + referenceId + key;
             case BOARD -> "board/" + referenceId + key;
             case GUILDBOARD -> "guildboard/" + referenceId + key;
+            case MEMBER -> "member/" + referenceId + key;
         };
     }
 
@@ -27,6 +28,7 @@ public class S3Util {
             case LOG -> "log/";
             case BOARD -> "board/";
             case GUILDBOARD -> "guildboard/";
+            case MEMBER -> "member/";
         };
 
         return type + referenceId + "/";

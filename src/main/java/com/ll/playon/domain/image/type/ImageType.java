@@ -4,5 +4,6 @@ public enum ImageType {
     GUILD,
     LOG,
     GUILDBOARD,
-    BOARD
+    BOARD,
+    MEMBER
 }
