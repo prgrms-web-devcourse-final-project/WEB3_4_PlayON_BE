@@ -21,8 +21,14 @@ public record GetPartyResponse(
 
         long appId,
 
+        String gameName,
+
         @NonNull
         LocalDateTime partyAt,
+
+        int minimum,
+
+        int maximum,
 
         int total,
 
@@ -31,8 +37,6 @@ public record GetPartyResponse(
 
         @NonNull
         List<PartyDetailTagDto> partyTags
-
-        // TODO: 스팀 아바타로 변경할지 고려
 ) {
     public GetPartyResponse(Party party, List<PartyTag> tagDtos, List<PartyMember> memberDtos) {
         this(
@@ -40,7 +44,10 @@ public record GetPartyResponse(
                 party.getName(),
                 party.getDescription(),
                 party.getGame().getAppid(),
+                party.getGame().getName(),
                 party.getPartyAt(),
+                party.getMinimum(),
+                party.getMaximum(),
                 party.getTotal(),
                 memberDtos.stream()
                         .map(PartyMemberIdProfileImgDto::new)
