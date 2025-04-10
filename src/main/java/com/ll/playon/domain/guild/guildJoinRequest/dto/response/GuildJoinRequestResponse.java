@@ -9,15 +9,17 @@ public record GuildJoinRequestResponse(
         Long requestId,
         Long memberId,
         String username,
+        String titleName,
         String profileImg,
         LocalDateTime requestedAt,
         ApprovalState approvalState
 ) {
-    public static GuildJoinRequestResponse from(GuildJoinRequest entity) {
+    public static GuildJoinRequestResponse from(GuildJoinRequest entity, String titleName) {
         return new GuildJoinRequestResponse(
                 entity.getId(),
                 entity.getMember().getId(),
                 entity.getMember().getUsername(),
+                titleName,
                 entity.getMember().getProfileImg(),
                 entity.getCreatedAt(),
                 entity.getApprovalState()
