@@ -4,6 +4,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.party.party.dto.request.PutPartyRequest;
+import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.party.party.type.PartyStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -115,16 +116,22 @@ public class Party {
     public void addPartyMember(PartyMember partyMember) {
         this.partyMembers.add(partyMember);
         partyMember.setParty(this);
-        this.total += 1;
+
+        if (partyMember.getPartyRole().equals(PartyRole.OWNER) || partyMember.getPartyRole().equals(PartyRole.MEMBER)) {
+            this.updateTotal(true);
+        }
     }
 
     public void deletePartyMember(PartyMember partyMember) {
+        if (partyMember.getPartyRole().equals(PartyRole.OWNER) || partyMember.getPartyRole().equals(PartyRole.MEMBER)) {
+            this.updateTotal(false);
+        }
+
         this.partyMembers.remove(partyMember);
         partyMember.setParty(null);
-        this.total -= 1;
     }
 
-    public void update(PutPartyRequest request, SteamGame game) {
+    public void updateParty(PutPartyRequest request, SteamGame game) {
         this.name = request.name();
         this.description = request.description() != null ? request.description() : "";
         this.partyAt = request.partyAt();
@@ -132,5 +139,9 @@ public class Party {
         this.minimum = request.minimum();
         this.maximum = request.maximum();
         this.game = game;
+    }
+
+    public void updateTotal(boolean isPlus) {
+        this.total = isPlus ? this.total + 1 : this.total - 1;
     }
 }

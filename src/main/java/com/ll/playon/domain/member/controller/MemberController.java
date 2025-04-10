@@ -91,4 +91,22 @@ public class MemberController {
         memberService.getUserGamesAndCheckGenres(actor);
         return RsData.success(HttpStatus.OK, "성공");
     }
+
+    @PostMapping("/me/parties/{partyId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "파티 초대 승락")
+    public void approvePartyInvitation(@PathVariable long partyId) {
+        Member actor = this.userContext.getActualActor();
+
+        this.memberService.approvePartyInvitation(actor, partyId);
+    }
+
+    @DeleteMapping("/me/parties/{partyId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "파티 초대 거절")
+    public void rejectPartyInvitation(@PathVariable long partyId) {
+        Member actor = this.userContext.getActualActor();
+
+        this.memberService.rejectPartyInvitation(actor, partyId);
+    }
 }

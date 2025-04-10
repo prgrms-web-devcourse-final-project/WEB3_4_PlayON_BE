@@ -6,18 +6,33 @@ import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.service.GameService;
 import com.ll.playon.domain.image.type.ImageType;
-import com.ll.playon.domain.member.dto.*;
+import com.ll.playon.domain.member.dto.GetMembersResponse;
+import com.ll.playon.domain.member.dto.MemberDetailDto;
+import com.ll.playon.domain.member.dto.MemberProfileResponse;
+import com.ll.playon.domain.member.dto.PresignedUrlResponse;
+import com.ll.playon.domain.member.dto.ProfileMemberDetailDto;
+import com.ll.playon.domain.member.dto.PutMemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
+import com.ll.playon.domain.party.party.context.PartyMemberContext;
+import com.ll.playon.domain.party.party.entity.PartyMember;
+import com.ll.playon.domain.party.party.service.PartyService;
+import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.service.TitleEvaluator;
+import com.ll.playon.global.annotation.PartyInviterOnly;
 import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,18 +40,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepository memberRepository;
     private final AuthTokenService authTokenService;
+    private final PartyService partyService;
     private final UserContext userContext;
     private final SteamAPI steamAPI;
     private final MemberSteamDataRepository memberSteamDataRepository;
@@ -199,7 +209,7 @@ public class MemberService {
         int before = member.getGames().size();
 
         List<Long> userGames = steamAPI.getUserGames(member.getSteamId());
-        if(!userGames.isEmpty()) {
+        if (!userGames.isEmpty()) {
             SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
             memberRepository.save(member.toBuilder().preferredGenre(preferredGenre.getName()).build());
             saveUserGameList(userGames, member);
@@ -223,15 +233,15 @@ public class MemberService {
                 .gender(req.gender())
                 .build());
 
-        if(req.updateProfileImg()) {
+        if (req.updateProfileImg()) {
             // S3 기존 이미지 삭제
             s3Service.deleteObjectByUrl(member.getProfileImg());
 
             // 수정하는 경우 presigned url 응답
-            if(!ObjectUtils.isEmpty(req.newFileType())) {
+            if (!ObjectUtils.isEmpty(req.newFileType())) {
                 return new PresignedUrlResponse(
-                    s3Service.generatePresignedUrl(ImageType.MEMBER, member.getId(), req.newFileType())
-                    .toString()
+                        s3Service.generatePresignedUrl(ImageType.MEMBER, member.getId(), req.newFileType())
+                                .toString()
                 );
             } else {
                 // 삭제하는 경우 기존 프로필 이미지도 삭제
@@ -244,8 +254,9 @@ public class MemberService {
     }
 
     public void saveProfileImage(Member actor, String url) {
-        if(ObjectUtils.isEmpty(url))
+        if (ObjectUtils.isEmpty(url)) {
             throw ErrorCode.URL_NOT_FOUND.throwServiceException();
+        }
 
         memberRepository.findById(actor.getId()).ifPresent(member ->
                 member.changeProfileImg(url));
@@ -286,7 +297,8 @@ public class MemberService {
     }
 
     private List<GameListResponse> getMemberOwnedGamesDto(List<MemberSteamData> gamesList) {
-        final List<SteamGame> gameList = gameRepository.findAllByAppidIn(gamesList.stream().map(MemberSteamData::getAppId).toList()); // DB 에 없는 게임은 제외됨
+        final List<SteamGame> gameList = gameRepository.findAllByAppidIn(
+                gamesList.stream().map(MemberSteamData::getAppId).toList()); // DB 에 없는 게임은 제외됨
         return gameService.makeGameListWithoutGenre(gameList);
     }
 
@@ -308,6 +320,26 @@ public class MemberService {
         }
 
         return toGameListResponse(ownedGames);
+    }
+
+    // 파티 초대 승인
+    // AOP에 필요한 파라미터
+    @PartyInviterOnly
+    @Transactional
+    public void approvePartyInvitation(Member actor, long partyId) {
+        PartyMember me = PartyMemberContext.getPartyMember();
+
+        me.promoteRole(PartyRole.MEMBER);
+    }
+
+    // 파티 초대 거절
+    // AOP에 필요한 파라미터
+    @PartyInviterOnly
+    @Transactional
+    public void rejectPartyInvitation(Member actor, long partyId) {
+        PartyMember me = PartyMemberContext.getPartyMember();
+
+        me.delete();
     }
 
     private List<GameListResponse> toGameListResponse(List<Long> appIds) {

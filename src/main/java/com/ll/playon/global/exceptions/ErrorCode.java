@@ -79,6 +79,7 @@ public enum ErrorCode {
     // PartyMember
     IS_NOT_PARTY_OWNER(HttpStatus.FORBIDDEN, "해당 파티의 파티장이 아닙니다."),
     IS_NOT_PARTY_MEMBER(HttpStatus.FORBIDDEN, "해당 파티의 파티원이 아닙니다."),
+    IS_NOT_PARTY_INVITER(HttpStatus.FORBIDDEN, "해당 파티에 초대되지 않았습니다"),
     IS_NOT_PARTY_MEMBER_OWN(HttpStatus.FORBIDDEN, "파티원 본인이 아닙니다."),
     IS_ALREADY_PARTY_MEMBER(HttpStatus.FORBIDDEN, "이미 해당 파티의 파티원입니다."),
     IS_PARTY_MEMBER_OWN(HttpStatus.FORBIDDEN, "파티원 본인 스스로에 대한 처리는 불가능합니다."),

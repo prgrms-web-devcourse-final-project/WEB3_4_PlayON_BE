@@ -314,7 +314,7 @@ public class PartyService {
         }
 
         // TODO: 유니크 제약 조건 있으면 체크
-        party.update(putPartyRequest, game);
+        party.updateParty(putPartyRequest, game);
 
         this.partyTagService.updatePartyTags(party, putPartyRequest.tags());
 
@@ -387,7 +387,7 @@ public class PartyService {
 
         PartyMember pendingMember = this.getPendingMember(memberId, party);
 
-        pendingMember.setPartyRole(PartyRole.MEMBER);
+        pendingMember.promoteRole(PartyRole.MEMBER);
     }
 
     // 파티 참가 신청 거부
@@ -428,7 +428,7 @@ public class PartyService {
             ErrorCode.IS_ALREADY_PARTY_MEMBER.throwServiceException();
         }
 
-        party.addPartyMember(PartyMemberMapper.of(invitedActor, PartyRole.PENDING));
+        party.addPartyMember(PartyMemberMapper.of(invitedActor, PartyRole.INVITER));
 
         // TODO: 알람?
     }
