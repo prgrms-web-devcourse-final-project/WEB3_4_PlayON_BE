@@ -12,9 +12,9 @@ public record GuildInfoResponse(
         String imageUrl,
         List<String> tags,
         LocalDate createdDate,
-        String leaderUsername,
+        String leaderNickname,
         int totalMemberCount,
-        List<String> managerUsernames
+        List<String> managerNicknames
 ) {
     public static GuildInfoResponse from(Guild guild, List<GuildMember> members, int totalCount) {
         GuildMember leaderMember = members.stream()
@@ -22,12 +22,13 @@ public record GuildInfoResponse(
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("길드장이 존재하지 않습니다."));
 
-        String leaderUsername = leaderMember.getMember().getUsername();
+        String leaderNickname = leaderMember.getMember().getNickname();
+
         String imageUrl = leaderMember.getMember().getProfileImg();
 
         List<String> managers = members.stream()
                 .filter(m -> m.getGuildRole() == GuildRole.MANAGER)
-                .map(m -> m.getMember().getUsername())
+                .map(m -> m.getMember().getNickname())
                 .toList();
 
         List<String> tagStrings = guild.getGuildTags().stream()
@@ -39,7 +40,7 @@ public record GuildInfoResponse(
                 imageUrl,
                 tagStrings,
                 guild.getCreatedAt().toLocalDate(),
-                leaderUsername,
+                leaderNickname,
                 totalCount,
                 managers
         );
