@@ -5,13 +5,12 @@ import com.ll.playon.domain.image.mapper.ImageMapper;
 import com.ll.playon.domain.image.repository.ImageRepository;
 import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.global.aws.s3.S3Service;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +52,7 @@ public class ImageService {
     // DB에서 해당 Id의 이미지 전부 삭제
     @Transactional
     public void deleteAllImagesById(ImageType imageType, long referenceId) {
-        long imageDeleteCount = this.imageRepository.deleteByImageTypeAndReferenceId(imageType, referenceId);
+        long imageDeleteCount = this.imageRepository.deleteImageByImageTypeAndReferenceId(imageType, referenceId);
 
         if (imageDeleteCount > 0) {
             this.s3Service.deleteAllObjectsById(ImageType.LOG, referenceId);
@@ -63,10 +62,10 @@ public class ImageService {
     // DB에서 해당 Id의 이미지 삭제
     @Transactional
     public void deleteImageById(ImageType imageType, long referenceId) {
-        long imageDeleteCount = this.imageRepository.deleteByImageTypeAndReferenceId(imageType, referenceId);
+        long imageDeleteCount = this.imageRepository.deleteImageByImageTypeAndReferenceId(imageType, referenceId);
 
         if (imageDeleteCount > 0) {
-            this.s3Service.deleteObjectById(ImageType.LOG, referenceId);
+            this.s3Service.deleteObjectById(imageType, referenceId);
         }
     }
 

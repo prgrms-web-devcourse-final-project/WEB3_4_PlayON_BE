@@ -24,6 +24,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain baseSecurityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))  //TODO: 제거
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .anyRequest()
@@ -75,6 +76,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // 허용할 오리진 설정
         configuration.setAllowedOriginPatterns(Arrays.asList(AppConfig.getSiteFrontUrl()));
+        configuration.setAllowedOriginPatterns(Arrays.asList("https://websocketking.com/"));    // TODO: 제거
         // 허용할 HTTP 메서드 설정
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
         // 자격 증명 허용 설정

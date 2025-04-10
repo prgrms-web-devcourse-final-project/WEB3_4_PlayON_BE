@@ -26,6 +26,10 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 //    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
 //                                   Map<String, Object> attributes) throws Exception {
 //        String token = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+////        String token = null;    // TODO: 이 if절 끝까지 삭제
+////        if (request instanceof ServletServerHttpRequest servletRequest) {
+////            token = servletRequest.getServletRequest().getHeader("Authorization");
+////        }
 //
 //        if (token.startsWith("Bearer ")) {
 //            token = token.substring("Bearer ".length());
@@ -33,7 +37,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 //            Map<String, Object> payload = this.authTokenService.payload(token);
 //
 //            if (payload != null) {
-//                Long userId = (Long) payload.get("id");
+//                Long userId = ((Number) payload.get("id")).longValue();
 //                attributes.put("userId", userId);
 //                return true;
 //            }
