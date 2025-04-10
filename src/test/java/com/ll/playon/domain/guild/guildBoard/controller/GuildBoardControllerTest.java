@@ -121,6 +121,13 @@ public class GuildBoardControllerTest {
     @Test @DisplayName("게시글 수정 - 권한 없음")
     void updateBoard_fail() throws Exception {
         Member other = memberRepository.save(Member.builder().username("other").steamId(2L).build());
+
+        guildMemberRepository.save(GuildMember.builder()
+                .guild(guild)
+                .member(other)
+                .guildRole(GuildRole.MEMBER)
+                .build());
+
         given(userContext.getActor()).willReturn(other);
 
         var req = new GuildBoardUpdateRequest("제목", "내용", BoardTag.FREE, null);
@@ -130,6 +137,7 @@ public class GuildBoardControllerTest {
                         .content(json(req)))
                 .andExpect(status().isForbidden());
     }
+
 
     @Test @DisplayName("게시글 삭제 - 성공")
     void deleteBoard_success() throws Exception {
@@ -141,6 +149,13 @@ public class GuildBoardControllerTest {
     @Test @DisplayName("게시글 삭제 - 권한 없음")
     void deleteBoard_fail() throws Exception {
         Member other = memberRepository.save(Member.builder().username("other").steamId(2L).build());
+
+        guildMemberRepository.save(GuildMember.builder()
+                .guild(guild)
+                .member(other)
+                .guildRole(GuildRole.MEMBER)
+                .build());
+
         given(userContext.getActor()).willReturn(other);
 
         mockMvc.perform(delete("/api/guilds/{guildId}/board/{boardId}", guild.getId(), board.getId()))
