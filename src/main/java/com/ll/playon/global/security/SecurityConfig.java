@@ -27,8 +27,37 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))  //TODO: 제거
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .anyRequest()
-                                .permitAll() // TODO : 각 요청별 인가 체크 후 수정
+                                .requestMatchers(
+                                        "/api/guilds/*/board",
+                                        "/api/guilds/recommend",
+                                        "/api/guilds/popular",
+                                        "/api/guilds/list",
+                                        "/api/parties/main/pending",
+                                        "/api/parties/main/completed",
+                                        "/api/parties/*",
+                                        "/api/parties/*/result",
+                                        "/api/logs/party/*",
+                                        "/api/members/signup",
+                                        "/api/members/login",
+                                        "/api/auth/steam/signup",
+                                        "/api/auth/steam/callback/signup",
+                                        "/api/auth/steam/login",
+                                        "/api/auth/steam/callback/login",
+                                        "/api/auth/steam/logout",
+                                        "/api/games/popular",
+                                        "/api/games/ranking",
+                                        "/api/games/recommend/playtime/top",
+                                        "/api/games/list",
+                                        "/api/games/search",
+                                        "/api/games/*/party",
+                                        "/api/games/*/logs",
+                                        "/api/games/*/details",
+                                        "/api/batch/steam-game"
+                                ).permitAll()
+
+                                .requestMatchers("/api/**").authenticated()
+
+                                .anyRequest().permitAll()
                 )
                 .headers(
                         headers ->
