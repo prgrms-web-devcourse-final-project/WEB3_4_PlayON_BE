@@ -349,10 +349,9 @@ public class PartyService {
 
         Map<Long, String> titleMap = this.memberTitleService.getRepresentativeTitleMap(memberIds);
 
-        return new GetAllPendingMemberResponse(
-                party.getPartyMembers().stream()
-                        .map(pm -> new PartyDetailMemberDto(pm, titleMap))
-                        .toList());
+        return new GetAllPendingMemberResponse(partyMembers.stream()
+                .map(pm -> new PartyDetailMemberDto(pm, titleMap))
+                .toList());
     }
 
     // 파티 참가 신청
