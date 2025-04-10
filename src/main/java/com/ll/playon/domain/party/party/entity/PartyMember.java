@@ -14,7 +14,12 @@ import jakarta.persistence.Index;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(
@@ -65,5 +70,14 @@ public class PartyMember extends BaseTime {
         if (this.party != null) {
             this.party.deletePartyMember(this);
         }
+    }
+
+    public void promoteRole(PartyRole partyRole) {
+        if ((this.partyRole.equals(PartyRole.PENDING) || this.partyRole.equals(PartyRole.INVITER))
+            && (partyRole.equals(PartyRole.OWNER) || partyRole.equals(PartyRole.MEMBER))) {
+            this.party.updateTotal(true);
+        }
+
+        this.partyRole = partyRole;
     }
 }
