@@ -92,7 +92,7 @@ public class MemberController {
         return RsData.success(HttpStatus.OK, "성공");
     }
 
-    @PostMapping("/me/parties/{partyId}")
+    @PutMapping("/me/parties/{partyId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "파티 초대 승락")
     public void approvePartyInvitation(@PathVariable long partyId) {
