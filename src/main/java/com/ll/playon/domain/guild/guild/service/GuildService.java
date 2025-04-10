@@ -2,10 +2,7 @@ package com.ll.playon.domain.guild.guild.service;
 
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.repository.GameRepository;
-import com.ll.playon.domain.guild.guild.dto.request.GetGuildListRequest;
-import com.ll.playon.domain.guild.guild.dto.request.GuildTagRequest;
-import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
-import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
+import com.ll.playon.domain.guild.guild.dto.request.*;
 import com.ll.playon.domain.guild.guild.dto.response.*;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
@@ -28,6 +25,7 @@ import com.ll.playon.global.type.TagValue;
 import com.ll.playon.global.validation.FileValidator;
 import com.ll.playon.standard.page.dto.PageDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -42,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GuildService {
@@ -93,37 +92,17 @@ public class GuildService {
         );
     }
 
-    private URL genGuildPresignedUrl(Long guildId, String fileType) {
-        if(!ObjectUtils.isEmpty(fileType)) {
-            return s3Service.generatePresignedUrl(ImageType.GUILD, guildId, fileType);
-        }
-
-        return null;
-    }
-
-    @Transactional
-    public void saveImageUrl(Member actor, long guildId, String url) {
-        if (url == null || url.isEmpty()) {
-            return;
-        }
-        guildRepository.findById(guildId)
-                .ifPresent(guild -> updateGuildImage(guild, guildId, url));
-
-        imageService.saveImage(ImageType.GUILD, guildId, url);
-    }
-
-    private void updateGuildImage(Guild guild, long guildId, String url) {
-        imageService.deleteImagesByIdAndUrl(ImageType.GUILD, guildId, guild.getGuildImg());
-        guild.setGuildImg(url);
-    }
-
     @Transactional
     public PutGuildResponse modifyGuild(Long guildId, PutGuildRequest request, Member actor) {
+        // 파일 형식 확인
         FileValidator.validateFileType(request.newFileType());
+
+        // 길드 권한 관련 확인
         Guild guild = getGuildOrThrow(guildId);
         GuildMember member = getGuildMemberOrThrow(guild, actor);
         validateIsManager(member);
 
+        // 이름 중복 확인
         if (!guild.getName().equals(request.name()) &&
                 guildRepository.existsByName(request.name())) {
             throw ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
@@ -132,6 +111,11 @@ public class GuildService {
         // 게임 확인
         SteamGame game = gameRepository.findByAppid(request.appid())
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
+
+        // 이미지 수정인경우 -> 기존 이미지삭제, S3 삭제
+        if (!request.newFileType().isBlank()) {
+            imageService.deleteImagesByIdAndUrl(ImageType.GUILD, guild.getId(), guild.getGuildImg());
+        }
 
         // 길드 수정
         guild.updateFromRequest(request, game);
@@ -146,6 +130,29 @@ public class GuildService {
                 guild,
                 genGuildPresignedUrl(guild.getId(), request.newFileType())
         );
+    }
+
+    @Transactional
+    public void saveImageUrl(Member actor, long guildId, PostImageUrlRequest request) {
+        // URL 확인
+        if (ObjectUtils.isEmpty(request.url())) {
+            throw ErrorCode.URL_NOT_FOUND.throwServiceException();
+        }
+
+        // 길드 저장
+        guildRepository.findById(guildId).ifPresent(guild -> guild.changeGuildImg(request.url()));
+
+        // 이미지 테이블 저장
+        imageService.saveImage(ImageType.GUILD, guildId, request.url());
+    }
+
+    // PresignedUrl 발급
+    private URL genGuildPresignedUrl(Long guildId, String fileType) {
+        if(ObjectUtils.isNotEmpty(fileType)) {
+            return s3Service.generatePresignedUrl(ImageType.GUILD, guildId, fileType);
+        }
+
+        return null;
     }
 
     /**

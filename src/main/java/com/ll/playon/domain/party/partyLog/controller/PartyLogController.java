@@ -1,6 +1,7 @@
 package com.ll.playon.domain.party.partyLog.controller;
 
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.party.partyLog.dto.request.PostImageUrlRequest;
 import com.ll.playon.domain.party.partyLog.dto.request.PostPartyLogRequest;
 import com.ll.playon.domain.party.partyLog.dto.request.PutPartyLogRequest;
 import com.ll.playon.domain.party.partyLog.dto.response.GetAllPartyLogResponse;
@@ -13,15 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,11 +37,11 @@ public class PartyLogController {
     @PostMapping("/{logId}/party/{partyId}/screenshot")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "스크린샷 URL 저장")
-    public void saveImageUrl(@PathVariable long logId, @PathVariable long partyId, @RequestBody String url) {
+    public void saveImageUrl(@PathVariable long logId, @PathVariable long partyId, @RequestBody PostImageUrlRequest request) {
         // TODO : 추후 롤백
         Member actor = this.userContext.getActualActor();
 
-        this.partyLogService.saveImageUrl(actor, partyId, logId, url);
+        this.partyLogService.saveImageUrl(actor, partyId, logId, request);
     }
 
     @GetMapping("/party/{partyId}")
