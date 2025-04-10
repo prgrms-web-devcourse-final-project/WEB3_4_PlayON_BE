@@ -136,4 +136,8 @@ public class Member {
     public void changeMemberId(Long newId){
         setId(newId);
     }
+
+    public void changeProfileImg(String url) {
+        this.profileImg = url;
+    }
 }

@@ -29,6 +29,7 @@ public enum ErrorCode {
 
     // 이미지
     IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "이미지를 찾을 수 없습니다."),
+    URL_NOT_FOUND(HttpStatus.BAD_REQUEST, "URL을 찾을 수 없습니다."),
 
     // Filtering
     PAGE_SIZE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "pageSize는 1에서 100 사이로 입력해주세요."),

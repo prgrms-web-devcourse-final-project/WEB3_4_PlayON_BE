@@ -45,9 +45,16 @@ public class MemberController {
     @PutMapping("/me")
     @Transactional
     @Operation(summary = "사용자 정보 수정")
-    public RsData<String> modifyMember(@Valid @RequestBody MemberDetailDto req) {
-        memberService.modifyMember(req, userContext.getActor());
-        return RsData.success(HttpStatus.OK, "성공적으로 수정되었습니다.");
+    public RsData<PresignedUrlResponse> modifyMember(@Valid @RequestBody PutMemberDetailDto req) {
+        return RsData.success(HttpStatus.OK, memberService.modifyMember(req, userContext.getActor()));
+    }
+
+    @PostMapping("/me/image")
+    @Transactional
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "사용자 프로필 이미지 URL 저장")
+    public void saveProfileImage(@RequestBody String url) {
+        memberService.saveProfileImage(userContext.getActor(), url);
     }
 
     @DeleteMapping("/me")
