@@ -36,7 +36,7 @@ import com.ll.playon.domain.party.party.validation.PartyValidation;
 import com.ll.playon.domain.party.partyLog.dto.response.GetAllPartyLogResponse;
 import com.ll.playon.domain.party.partyLog.service.PartyLogService;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
-import com.ll.playon.domain.title.repository.MemberTitleService;
+import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.global.annotation.PartyOwnerOnly;
 import com.ll.playon.global.exceptions.ErrorCode;
