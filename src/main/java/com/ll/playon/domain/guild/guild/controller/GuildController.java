@@ -2,11 +2,11 @@ package com.ll.playon.domain.guild.guild.controller;
 
 import com.ll.playon.domain.guild.guild.dto.request.GetGuildListRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PostGuildRequest;
+import com.ll.playon.domain.guild.guild.dto.request.PostImageUrlRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.response.*;
 import com.ll.playon.domain.guild.guild.service.GuildService;
 import com.ll.playon.domain.image.service.ImageService;
-import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
@@ -46,9 +46,8 @@ public class GuildController {
     @PostMapping("/{guildId}/img")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "길드 대표 이미지 URL 저장")
-    public void saveImageUrl(@PathVariable long guildId, @RequestBody String url) {
-        imageService.deleteImagesByIdAndUrl(ImageType.GUILD, guildId, url);
-        guildService.saveImageUrl(userContext.getActor(), guildId, url);
+    public void saveImageUrl(@PathVariable long guildId, @RequestBody PostImageUrlRequest newImgUrl) {
+        guildService.saveImageUrl(userContext.getActor(), guildId, newImgUrl);
     }
 
     @PutMapping("/{guildId}")

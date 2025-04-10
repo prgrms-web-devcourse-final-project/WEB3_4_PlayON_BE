@@ -11,6 +11,7 @@ import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.repository.PartyMemberRepository;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.party.validation.PartyMemberValidation;
+import com.ll.playon.domain.party.partyLog.dto.request.PostImageUrlRequest;
 import com.ll.playon.domain.party.partyLog.dto.request.PostPartyLogRequest;
 import com.ll.playon.domain.party.partyLog.dto.request.PutPartyLogRequest;
 import com.ll.playon.domain.party.partyLog.dto.response.GetAllPartyLogResponse;
@@ -25,14 +26,15 @@ import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.global.annotation.ActivePartyMemberOnly;
 import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
-import java.net.URL;
-import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.net.URL;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -93,8 +95,8 @@ public class PartyLogService {
     // AOP로 권한 체크
     @ActivePartyMemberOnly
     @Transactional
-    public void saveImageUrl(Member actor, long partyId, long logId, String url) {
-        if (StringUtils.isBlank(url)) {
+    public void saveImageUrl(Member actor, long partyId, long logId, PostImageUrlRequest request) {
+        if (StringUtils.isBlank(request.url())) {
             return;
         }
 
@@ -103,7 +105,7 @@ public class PartyLogService {
         PartyMemberValidation.checkIsNotPartyMemberOwn(PartyMemberContext.getPartyMember(), actor);
         PartyLogValidation.checkIsPartyEnd(party);
 
-        this.imageService.saveImage(ImageType.LOG, logId, url);
+        this.imageService.saveImage(ImageType.LOG, logId, request.url());
     }
 
     // 파티의 모든 파티 로그 조회
