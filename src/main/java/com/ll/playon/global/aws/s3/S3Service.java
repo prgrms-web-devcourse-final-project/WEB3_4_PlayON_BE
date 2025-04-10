@@ -84,7 +84,6 @@ public class S3Service {
     // URL을 포함한 S3 객체 삭제
     public void deleteObjectByUrl(String url) {
         if (StringUtils.isBlank(url)) {
-            log.warn("URL is blank, skipping S3 deletion");
             return;
         }
 
@@ -93,17 +92,12 @@ public class S3Service {
             String key = S3Util.extractS3KeyFromUrl(url);
             
             if (key == null) {
-                log.error("Failed to extract S3 key from URL: {}", url);
                 return;
             }
             
-            log.info("Deleting S3 object with key: {}", key);
-            
             // 키가 포함되면 S3에서 삭제
             s3Client.deleteObject(this.buildDeleteObjectRequest(key));
-            log.info("S3 object deleted successfully: {}", key);
         } catch (Exception e) {
-            log.error("Error deleting S3 object with URL {}: {}", url, e.getMessage(), e);
             throw ErrorCode.S3_OBJECT_DELETE_FAILED.throwServiceException();
         }
     }
