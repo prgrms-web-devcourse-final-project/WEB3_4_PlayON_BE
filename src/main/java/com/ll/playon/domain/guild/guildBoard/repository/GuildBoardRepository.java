@@ -63,4 +63,11 @@ public interface GuildBoardRepository extends JpaRepository<GuildBoard, Long> {
     List<GuildBoard> findTop2ByGuildIdAndTagOrderByCreatedAtDesc(Long guildId, BoardTag boardTag);
     List<GuildBoard> findTop4ByGuildIdOrderByCreatedAtDesc(Long guildId);
     void deleteByAuthor(GuildMember author);
+
+    @Query("SELECT gb FROM GuildBoard gb " +
+            "LEFT JOIN FETCH gb.author a " +
+            "LEFT JOIN FETCH a.member " +
+            "WHERE gb.id = :boardId")
+    Optional<GuildBoard> findWithAuthorAndMemberById(Long boardId);
+
 }
