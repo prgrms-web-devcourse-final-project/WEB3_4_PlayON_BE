@@ -2,7 +2,6 @@ package com.ll.playon.domain.image.listener;
 
 import com.ll.playon.domain.image.event.ImageDeleteEvent;
 import com.ll.playon.domain.image.service.ImageService;
-import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.exceptions.EventListenerException;
 import com.ll.playon.global.exceptions.ServiceException;
@@ -30,7 +29,7 @@ public class ImageEventListener {
     )
     public void handle(ImageDeleteEvent event) {
         try {
-            this.imageService.deleteImageById(ImageType.LOG, event.id());
+            this.imageService.deleteImageById(event.imageType(), event.id());
         } catch (ServiceException ex) {
             // TODO: 이벤트 실패 시 알람?
             // TODO: 실패한 S3 삭제(처리) 방법 고안

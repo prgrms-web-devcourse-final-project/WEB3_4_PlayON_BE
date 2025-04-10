@@ -46,7 +46,7 @@ public class GuildBoardController {
 
         long timestamp = Instant.now().getEpochSecond();
 
-        URL presignedUrl = s3Service.generatePresignedUrl(ImageType.BOARD, timestamp, fileType);
+        URL presignedUrl = s3Service.generatePresignedUrl(ImageType.GUILDBOARD, timestamp, fileType);
 
         return RsData.success(HttpStatus.OK, presignedUrl);
     }
