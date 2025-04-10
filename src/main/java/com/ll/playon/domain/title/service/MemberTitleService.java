@@ -1,9 +1,10 @@
-package com.ll.playon.domain.title.repository;
+package com.ll.playon.domain.title.service;
 
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.title.entity.MemberTitle;
 import com.ll.playon.domain.title.entity.Title;
 import com.ll.playon.domain.title.entity.TitleDto;
+import com.ll.playon.domain.title.repository.MemberTitleRepository;
 import com.ll.playon.global.exceptions.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MemberTitleService {
 
-    private final  MemberTitleRepository memberTitleRepository;
+    private final MemberTitleRepository memberTitleRepository;
 
     public void acquireTitle(Member member, Title title) {
         if(memberTitleRepository.findByMemberAndTitle(member, title).isPresent()) return;
