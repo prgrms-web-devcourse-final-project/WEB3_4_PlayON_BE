@@ -39,6 +39,7 @@ out/
 ### Custom ###
 db_dev.mv.db
 db_dev.trace.db
+db_dev.trace.db.old
 .DS_Store
 src/main/generated
 application-secret.yml
