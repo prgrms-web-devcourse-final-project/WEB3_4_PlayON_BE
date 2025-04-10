@@ -10,7 +10,7 @@ import com.ll.playon.domain.title.entity.Title;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.repository.MemberStatRepository;
 import com.ll.playon.domain.title.repository.MemberTitleRepository;
-import com.ll.playon.domain.title.repository.MemberTitleService;
+import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.domain.title.repository.TitleRepository;
 import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.domain.title.service.TitleService;
