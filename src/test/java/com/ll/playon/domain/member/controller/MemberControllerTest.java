@@ -253,9 +253,10 @@ public class MemberControllerTest {
     @DisplayName("닉네임으로 사용자 조회")
     void getMembersWithNickname() throws Exception {
         String nickname = "sampleUser";
-        ResultActions resultActions = mvc.perform(
-                get("/api/members/nickname?nickname=" + nickname)
-        );
+        String authMember = "sampleUser1";
+        MockHttpServletRequestBuilder request = get("/api/members/nickname?nickname=" + nickname);
+        ResultActions resultActions = testMemberHelper.requestWithUserAuth(authMember, request);
+
 
         int memberWithSameNicknameCount = memberService.findByNickname(nickname).size();
 

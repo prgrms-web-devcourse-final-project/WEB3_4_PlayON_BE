@@ -33,7 +33,33 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (List.of("/api/auth/steam","/api/auth/steam/callback", "/api/auth/steam/logout").contains(request.getRequestURI())) {
+        if (List.of(
+                "/api/guilds/*/board",
+                "/api/guilds/recommend",
+                "/api/guilds/popular",
+                "/api/guilds/list",
+                "/api/parties/main/pending",
+                "/api/parties/main/completed",
+                "/api/parties/*",
+                "/api/parties/*/result",
+                "/api/logs/party/*",
+                "/api/members/signup",
+                "/api/members/login",
+                "/api/auth/steam/signup",
+                "/api/auth/steam/callback/signup",
+                "/api/auth/steam/login",
+                "/api/auth/steam/callback/login",
+                "/api/auth/steam/logout",
+                "/api/games/popular",
+                "/api/games/ranking",
+                "/api/games/recommend/playtime/top",
+                "/api/games/list",
+                "/api/games/search",
+                "/api/games/*/party",
+                "/api/games/*/logs",
+                "/api/games/*/details",
+                "/api/batch/steam-game"
+        ).contains(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;
         }

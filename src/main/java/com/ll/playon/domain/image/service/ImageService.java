@@ -73,7 +73,7 @@ public class ImageService {
     @Transactional
     public void deleteImagesByIdAndUrls(ImageType imageType, long referenceId, List<String> urls) {
         long imageDeleteCount = !CollectionUtils.isEmpty(urls)
-                ? this.imageRepository.deleteByReferenceIdAndImageUrl(imageType, referenceId, urls) : 0;
+                ? this.imageRepository.deleteByReferenceIdAndImageUrls(imageType, referenceId, urls) : 0;
 
         if (imageDeleteCount > 0) {
             this.s3Service.deleteObjectsByUrl(urls);
@@ -83,8 +83,9 @@ public class ImageService {
     // DB에서 해당 ID에 존재하는 URL 삭제
     @Transactional
     public void deleteImagesByIdAndUrl(ImageType imageType, long referenceId, String url) {
-        int imageDeleteCount = StringUtils.isNotBlank(url)
-                ? this.imageRepository.deleteByReferenceIdAndImageUrl(imageType, referenceId, url) : 0;
+        String dbUrl = "\"" + url + "\"";
+        long imageDeleteCount = StringUtils.isNotBlank(url)
+                ? this.imageRepository.deleteImageByReferenceIdAndImageTypeAndImageUrl(referenceId, imageType, dbUrl) : 0;
 
         if (imageDeleteCount > 0) {
             this.s3Service.deleteObjectByUrl(url);

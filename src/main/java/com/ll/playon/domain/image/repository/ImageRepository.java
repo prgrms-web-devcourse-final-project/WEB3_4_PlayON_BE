@@ -23,21 +23,10 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
             AND i.imageUrl IN :imageUrls
             """
     )
-    long deleteByReferenceIdAndImageUrl(
+    long deleteByReferenceIdAndImageUrls(
             @Param("imageType") ImageType imageType,
             @Param("referenceId") long referenceId,
             @Param("imageUrls") List<String> imageUrls);
 
-    @Modifying
-    @Query("""
-            DELETE FROM Image i
-            WHERE i.referenceId = :referenceId
-            And i.imageType = :imageType
-            AND i.imageUrl = :imageUrl
-            """
-    )
-    int deleteByReferenceIdAndImageUrl(
-            @Param("imageType") ImageType imageType,
-            @Param("referenceId") long referenceId,
-            @Param("imageUrl") String imageUrl);
+    long deleteImageByReferenceIdAndImageTypeAndImageUrl(long referenceId, ImageType imageType, String imageUrl);
 }

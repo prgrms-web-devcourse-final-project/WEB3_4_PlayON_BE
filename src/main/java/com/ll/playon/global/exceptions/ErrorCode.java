@@ -88,6 +88,7 @@ public enum ErrorCode {
     PENDING_PARTY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "파티 참가를 신청한 사용자가 아닙니다."),
 
     // PartyRoom
+    PARTY_ROOM_NOT_OPEN(HttpStatus.FORBIDDEN, "채팅방 입장 가능 시간이 아닙니다. 시작 5분 전부터 입장이 가능합니다"),
     PARTY_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "파티 채팅방이 존재하지 않습니다."),
     PARTY_ROOM_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파티 채팅방 제거에 문제가 생겨 모든 채팅방 제거가 불가능합니다."),
 
