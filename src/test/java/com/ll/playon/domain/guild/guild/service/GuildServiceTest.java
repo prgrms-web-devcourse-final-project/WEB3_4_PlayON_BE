@@ -71,7 +71,7 @@ class GuildServiceTest {
     void createGuild_fail_duplicate() {
         //given
         PostGuildRequest request = new PostGuildRequest(
-                "중복용", "소개글", 10, true, 730L, "imgUrl", null
+                "중복용", "소개글", 10, true, 730L, "", null
         );
 
         when(guildRepository.existsByName("중복용")).thenReturn(true);
@@ -285,7 +285,7 @@ class GuildServiceTest {
                 15,
                 730L,
                 false,
-                "new-img.png",
+                "",
                 getGuildTagRequests()
         );
     }
