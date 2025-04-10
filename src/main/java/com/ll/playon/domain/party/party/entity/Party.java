@@ -144,4 +144,8 @@ public class Party {
     public void updateTotal(boolean isPlus) {
         this.total = isPlus ? this.total + 1 : this.total - 1;
     }
+
+    public void updatePartyStatus(PartyStatus partyStatus) {
+        this.partyStatus = partyStatus;
+    }
 }

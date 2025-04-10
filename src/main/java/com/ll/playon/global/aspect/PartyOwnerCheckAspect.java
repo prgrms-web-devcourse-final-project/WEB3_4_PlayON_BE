@@ -29,7 +29,7 @@ public class PartyOwnerCheckAspect {
         Party party = this.partyRepository.findById(partyId)
                 .orElseThrow(ErrorCode.PARTY_NOT_FOUND::throwServiceException);
 
-        if (!isNotPartyOwner(actor, party)) {
+        if (isNotPartyOwner(actor, party)) {
             throw ErrorCode.IS_NOT_PARTY_OWNER.throwServiceException();
         }
 
@@ -44,7 +44,7 @@ public class PartyOwnerCheckAspect {
 
     private boolean isNotPartyOwner(Member actor, Party party) {
         return party.getPartyMembers().stream()
-                .anyMatch(pm -> pm.getPartyRole().equals(PartyRole.OWNER)
+                .noneMatch(pm -> pm.getPartyRole().equals(PartyRole.OWNER)
                                 && pm.getMember().getId().equals(actor.getId()));
     }
 }

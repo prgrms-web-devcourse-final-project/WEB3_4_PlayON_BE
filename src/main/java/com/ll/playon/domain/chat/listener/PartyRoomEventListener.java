@@ -2,7 +2,7 @@ package com.ll.playon.domain.chat.listener;
 
 import com.ll.playon.domain.chat.dto.ChatMemberCountDto;
 import com.ll.playon.domain.chat.event.ChatRoomDetectedAfterGameStartedEvent;
-import com.ll.playon.domain.chat.policy.PartyRoomDeletePolicy;
+import com.ll.playon.domain.chat.policy.PartyRoomPolicy;
 import com.ll.playon.domain.chat.repository.ChatMemberRepository;
 import com.ll.playon.domain.chat.repository.PartyRoomRepository;
 import com.ll.playon.global.exceptions.ErrorCode;
@@ -37,7 +37,7 @@ public class PartyRoomEventListener {
             Long remainCount = remainCountMap.getOrDefault(partyRoomId, 0L);
 
             try {
-                if (PartyRoomDeletePolicy.shouldDeletePartyRoom(remainCount)) {
+                if (PartyRoomPolicy.shouldDeletePartyRoom(remainCount)) {
                     this.partyRoomRepository.deleteById(partyRoomId);
                     successCount++;
                 }

@@ -7,12 +7,16 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class PartyRoomDeletePolicy {
+public class PartyRoomPolicy {
     public static boolean shouldDeletePartyRoom(long count, Party party) {
         return count == 0 && party.getPartyAt().plusMinutes(5).isBefore(LocalDateTime.now());
     }
 
     public static boolean shouldDeletePartyRoom(long count) {
         return count == 0;
+    }
+
+    public static boolean canEnterPartyRoom(Party party) {
+        return LocalDateTime.now().isAfter(party.getPartyAt().minusMinutes(5));
     }
 }
