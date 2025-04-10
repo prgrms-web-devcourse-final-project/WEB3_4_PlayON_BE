@@ -87,8 +87,8 @@ public class ImageService {
         long imageDeleteCount = StringUtils.isNotBlank(url)
                 ? this.imageRepository.deleteImageByReferenceIdAndImageTypeAndImageUrl(referenceId, imageType, dbUrl) : 0;
 
-//        if (imageDeleteCount > 0) {
+        if (imageDeleteCount > 0) {
             this.s3Service.deleteObjectByUrl(url);
-//        }
+        }
     }
 }
