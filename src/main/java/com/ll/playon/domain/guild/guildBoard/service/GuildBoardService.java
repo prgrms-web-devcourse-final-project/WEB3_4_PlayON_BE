@@ -74,7 +74,9 @@ public class GuildBoardService {
     @Transactional
     public void updateBoard(Long guildId, Long boardId, GuildBoardUpdateRequest request, Member actor) {
         GuildBoard board = getBoardInGuild(guildId, boardId);
-        validateAuthor(board, actor);
+        GuildMember guildMember = getGuildMember(board.getGuild(), actor);
+
+        validateAuthor(board, guildMember);
         validateNoticePermission(request.tag(), board.getAuthor());
 
         board.update(request.title(), request.content(), request.tag(), request.imageUrl());
@@ -83,8 +85,9 @@ public class GuildBoardService {
     @Transactional
     public void deleteBoard(Long guildId, Long boardId, Member actor) {
         GuildBoard board = getBoardInGuild(guildId, boardId);
-        validateAuthor(board, actor);
+        GuildMember guildMember = getGuildMember(board.getGuild(), actor);
 
+        validateAuthor(board, guildMember);
         guildBoardRepository.delete(board);
     }
 
@@ -155,9 +158,10 @@ public class GuildBoardService {
     public void updateComment(Long guildId, Long boardId, Long commentId, GuildBoardCommentUpdateRequest request, Member actor) {
         GuildBoard board = getBoardInGuild(guildId, boardId);
         GuildBoardComment comment = getComment(commentId);
+        GuildMember guildMember = getGuildMember(board.getGuild(), actor); // 👈 변경됨
 
         validateCommentBelongsToBoard(comment, board);
-        validateAuthor(comment, actor);
+        validateAuthor(comment, guildMember);
 
         comment.update(request.comment());
     }
@@ -166,9 +170,10 @@ public class GuildBoardService {
     public void deleteComment(Long guildId, Long boardId, Long commentId, Member actor) {
         GuildBoard board = getBoardInGuild(guildId, boardId);
         GuildBoardComment comment = getComment(commentId);
+        GuildMember guildMember = getGuildMember(board.getGuild(), actor); // 👈 변경됨
 
         validateCommentBelongsToBoard(comment, board);
-        validateAuthor(comment, actor);
+        validateAuthor(comment, guildMember);
 
         guildBoardCommentRepository.delete(comment);
     }
@@ -200,17 +205,18 @@ public class GuildBoardService {
                 .orElseThrow(ErrorCode.GUILD_BOARD_COMMENT_NOT_FOUND::throwServiceException);
     }
 
-    private void validateAuthor(GuildBoard board, Member actor) {
-        if (!board.getAuthor().getMember().getId().equals(actor.getId())) {
+    private void validateAuthor(GuildBoard board, GuildMember actorGuildMember) {
+        if (!board.getAuthor().getId().equals(actorGuildMember.getId())) {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
     }
 
-    private void validateAuthor(GuildBoardComment comment, Member actor) {
-        if (!comment.getAuthor().getMember().getId().equals(actor.getId())) {
+    private void validateAuthor(GuildBoardComment comment, GuildMember actorGuildMember) {
+        if (!comment.getAuthor().getId().equals(actorGuildMember.getId())) {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
     }
+
 
     private void validateCommentBelongsToBoard(GuildBoardComment comment, GuildBoard board) {
         if (!comment.getBoard().getId().equals(board.getId())) {

@@ -50,8 +50,8 @@ public interface GuildBoardRepository extends JpaRepository<GuildBoard, Long> {
     void deleteByAuthor(GuildMember author);
 
     @Query("SELECT gb FROM GuildBoard gb " +
-            "JOIN FETCH gb.author a " +
-            "JOIN FETCH a.member " +
+            "LEFT JOIN FETCH gb.author a " +
+            "LEFT JOIN FETCH a.member " +
             "WHERE gb.id = :boardId")
     Optional<GuildBoard> findWithAuthorAndMemberById(Long boardId);
 
