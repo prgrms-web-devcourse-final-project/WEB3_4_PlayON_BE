@@ -29,6 +29,13 @@ public class GuildJoinRequestService {
         Guild guild = guildRepository.findById(guildId)
                 .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
 
+        boolean isAlreadyMember = guild.getMembers().stream()
+                .anyMatch(gm -> gm.getMember().getId().equals(member.getId()));
+
+        if (isAlreadyMember) {
+            throw ErrorCode.ALREADY_GUILD_MEMBER.throwServiceException();
+        }
+
         boolean alreadyRequested = guildJoinRequestRepository
                 .existsByGuildAndMemberAndApprovalState(guild, member, ApprovalState.PENDING);
 
