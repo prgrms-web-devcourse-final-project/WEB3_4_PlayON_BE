@@ -146,8 +146,6 @@ public class GuildMemberService {
         guildBoardCommentRepository.deleteByAuthor(targetMember);
         guildBoardRepository.deleteByAuthor(targetMember);
         guildMemberRepository.delete(targetMember);
-
-
     }
 
     @Transactional
@@ -157,7 +155,7 @@ public class GuildMemberService {
         GuildMember requester = getGuildMember(guildId, actor.getId());
         GuildPermissionValidator.checkManagerOrLeader(requester);
 
-        Member target = memberRepository.findByUsername(request.nickname())
+        Member target = memberRepository.findByUsername(request.username())
                 .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
 
         boolean alreadyInGuild = guildMemberRepository.existsByGuildAndMember(guild, target);
