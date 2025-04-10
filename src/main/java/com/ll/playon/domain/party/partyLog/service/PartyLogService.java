@@ -29,6 +29,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -93,7 +94,7 @@ public class PartyLogService {
     @ActivePartyMemberOnly
     @Transactional
     public void saveImageUrl(Member actor, long partyId, long logId, String url) {
-        if (url == null) {
+        if (StringUtils.isBlank(url)) {
             return;
         }
 

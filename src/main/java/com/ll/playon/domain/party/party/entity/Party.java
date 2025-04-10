@@ -48,7 +48,6 @@ public class Party {
     @Setter(AccessLevel.PROTECTED)
     private Long id;
 
-    // TODO : Game 엔티티 개설되면 연결
     @ManyToOne(fetch = FetchType.LAZY)
     private SteamGame game;
 
@@ -97,8 +96,6 @@ public class Party {
     @Setter(AccessLevel.PRIVATE)
     private LocalDateTime modifiedAt;
 
-    // TODO : 파티 룸
-
     @Builder
     public Party(SteamGame game, String name, String description, LocalDateTime partyAt, boolean publicFlag,
                  int minimum,
@@ -134,11 +131,6 @@ public class Party {
         this.publicFlag = request.isPublic();
         this.minimum = request.minimum();
         this.maximum = request.maximum();
-        ;
         this.game = game;
-    }
-
-    public void closeParty() {
-        this.endedAt = LocalDateTime.now();
     }
 }
