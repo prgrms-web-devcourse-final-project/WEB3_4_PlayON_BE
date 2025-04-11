@@ -3,6 +3,7 @@ package com.ll.playon.domain.guild.guildBoard.dto.response;
 import com.ll.playon.domain.guild.guildBoard.dto.GuildSimpleDto;
 import com.ll.playon.domain.guild.guildBoard.entity.GuildBoard;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
+import com.ll.playon.domain.member.entity.Member;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
@@ -19,9 +20,10 @@ public record GuildBoardSummaryResponse(
         int hit,
         String imageUrl,
         LocalDateTime createdAt,
-        GuildSimpleDto guild
+        GuildSimpleDto guild,
+        boolean isAuthor
 ) {
-    public static GuildBoardSummaryResponse from(GuildBoard board, int commentCount) {
+    public static GuildBoardSummaryResponse from(GuildBoard board, int commentCount, Member actor) {
         return GuildBoardSummaryResponse.builder()
                 .id(board.getId())
                 .title(board.getTitle())
@@ -34,6 +36,7 @@ public record GuildBoardSummaryResponse(
                 .imageUrl(board.getImageUrl())
                 .createdAt(board.getCreatedAt())
                 .guild(GuildSimpleDto.from(board.getGuild()))
+                .isAuthor(board.getAuthor().getMember().getId().equals(actor.getId()))
                 .build();
     }
 }

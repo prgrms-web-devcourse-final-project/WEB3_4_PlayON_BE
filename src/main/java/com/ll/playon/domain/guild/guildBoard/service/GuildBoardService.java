@@ -45,14 +45,14 @@ public class GuildBoardService {
     private final ImageService imageService;
 
     @Transactional(readOnly = true)
-    public Page<GuildBoardSummaryResponse> getBoardList(Long guildId, BoardTag tag, String keyword, Pageable pageable) {
+    public Page<GuildBoardSummaryResponse> getBoardList(Long guildId, BoardTag tag, String keyword, Pageable pageable, Member actor) {
         Guild guild = getGuild(guildId);
 
         Page<GuildBoard> boards = guildBoardRepository.searchWithFilter(guild, tag, keyword, pageable);
 
         return boards.map(board -> {
             int commentCount = guildBoardCommentRepository.countByBoard(board);
-            return GuildBoardSummaryResponse.from(board, commentCount);
+            return GuildBoardSummaryResponse.from(board, commentCount, actor);
         });
     }
 
@@ -136,10 +136,10 @@ public class GuildBoardService {
         List<GuildBoardCommentDto> comments = guildBoardCommentRepository
                 .findByBoardOrderByCreatedAtAsc(board)
                 .stream()
-                .map(GuildBoardCommentDto::from)
+                .map(comment -> GuildBoardCommentDto.from(comment, actor))
                 .toList();
 
-        return GuildBoardDetailResponse.from(board, comments);
+        return GuildBoardDetailResponse.from(board, comments, actor);
     }
 
     @Transactional

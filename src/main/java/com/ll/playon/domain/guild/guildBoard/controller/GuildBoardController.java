@@ -51,7 +51,8 @@ public class GuildBoardController {
         }
 
         Pageable pageable = PageRequest.of(page, pageSize, sort.getSort());
-        Page<GuildBoardSummaryResponse> result = guildBoardService.getBoardList(guildId, tag, keyword, pageable);
+        Member actor=userContext.getActor();
+        Page<GuildBoardSummaryResponse> result = guildBoardService.getBoardList(guildId, tag, keyword, pageable,actor);
 
         return RsData.success(HttpStatus.OK, result);
     }
