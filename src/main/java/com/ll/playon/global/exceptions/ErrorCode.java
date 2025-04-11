@@ -79,6 +79,7 @@ public enum ErrorCode {
     IS_NOT_PARTY_PENDING(HttpStatus.FORBIDDEN, "참여 가능한 파티가 아닙니다."),
     IS_ALREADY_REQUEST_PARTY(HttpStatus.FORBIDDEN, "파티 신청이 진행 중입니다."),
     IS_ALREADY_INVITING_PARTY(HttpStatus.FORBIDDEN, "파티 초대가 진행 중입니다."),
+    PARTY_IS_FULL(HttpStatus.FORBIDDEN, "파티 정원이 가득 찼습니다."),
     PARTY_NOT_FOUND(HttpStatus.NOT_FOUND, "파티가 존재하지 않습니다."),
 
     // PartyMember

@@ -323,10 +323,9 @@ public class PartyService {
 
     // 파티 참가 신청 리스트 조회
     // AOP에 필요한 파라미터
-    @PartyOwnerOnly
     @Transactional(readOnly = true)
     public GetAllPendingMemberResponse getPartyPendingMembers(Member actor, long partyId) {
-        Party party = PartyContext.getParty();
+        Party party = this.getParty(partyId);
 
         List<PartyMember> partyMembers = party.getPartyMembers().stream()
                 .filter(pm -> pm.getPartyRole().equals(PartyRole.PENDING))
@@ -349,6 +348,7 @@ public class PartyService {
         Party party = this.getParty(partyId);
 
         PartyValidation.checkPartyCanJoin(party);
+        PartyValidation.checkPartyIsNotFull(party);
 
         Optional<PartyMember> opPartyMember = this.getPartyMember(actor, party);
 
@@ -378,6 +378,7 @@ public class PartyService {
         Party party = PartyContext.getParty();
 
         PartyValidation.checkPartyCanJoin(party);
+        PartyValidation.checkPartyIsNotFull(party);
 
         PartyMember pendingMember = this.getPendingMember(memberId, party);
 
@@ -405,6 +406,7 @@ public class PartyService {
         Party party = PartyContext.getParty();
 
         PartyValidation.checkPartyCanJoin(party);
+        PartyValidation.checkPartyIsNotFull(party);
 
         Member invitedActor = this.memberService.findById(memberId)
                 .orElseThrow(ErrorCode.USER_NOT_REGISTERED::throwServiceException);
