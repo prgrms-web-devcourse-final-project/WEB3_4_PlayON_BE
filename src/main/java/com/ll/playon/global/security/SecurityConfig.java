@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -27,36 +28,46 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))  //TODO: 제거
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers(
-                                        "/api/guilds/*/board",
-                                        "/api/guilds/recommend",
-                                        "/api/guilds/popular",
-                                        "/api/guilds/list",
-                                        "/api/parties/main/pending",
-                                        "/api/parties/main/completed",
-                                        "/api/parties/*",
-                                        "/api/parties/*/result",
-                                        "/api/logs/party/*",
-                                        "/api/members/signup",
-                                        "/api/members/login",
-                                        "/api/auth/steam/signup",
-                                        "/api/auth/steam/callback/signup",
-                                        "/api/auth/steam/login",
-                                        "/api/auth/steam/callback/login",
-                                        "/api/auth/steam/logout",
-                                        "/api/games/popular",
-                                        "/api/games/ranking",
-                                        "/api/games/recommend/playtime/top",
-                                        "/api/games/list",
-                                        "/api/games/search",
-                                        "/api/games/*/party",
-                                        "/api/games/*/logs",
-                                        "/api/games/*/details",
-                                        "/api/batch/steam-game"
-                                ).permitAll()
+                                // 길드 부분
+                                .requestMatchers(HttpMethod.GET, "/api/guilds/*/board").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/guilds/recommend").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/guilds/popular").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/guilds/list").permitAll()
 
+                                // 파티, 파티로그 부분
+                                .requestMatchers(HttpMethod.GET, "/api/parties/main/pending").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/parties/main/completed").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/parties/*").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/parties/*/result").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/logs/party/*").permitAll()
+
+                                // 사용자 부분
+                                .requestMatchers(HttpMethod.POST, "/api/members/signup").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/members/login").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/members/member/*").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/auth/steam/signup").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/auth/steam/callback/signup").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/auth/steam/login").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/auth/steam/callback/login").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/auth/steam/logout").permitAll()
+
+                                // 게임 부분
+                                .requestMatchers(HttpMethod.GET, "/api/games/popular").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/games/ranking").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/games/recommend/playtime/top").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/games/list").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/games/search").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/games/*/party").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/games/*/logs").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/games/*/details").permitAll()
+
+                                // 배치
+                                .requestMatchers(HttpMethod.POST, "/api/batch/steam-game").permitAll()
+
+                                // 나머지 api 요청들은 인증 필요
                                 .requestMatchers("/api/**").authenticated()
 
+                                // h2 콘솔, swagger 등 요청은 열림
                                 .anyRequest().permitAll()
                 )
                 .headers(
