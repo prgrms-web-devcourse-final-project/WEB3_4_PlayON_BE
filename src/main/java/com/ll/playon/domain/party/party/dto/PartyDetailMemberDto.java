@@ -2,6 +2,7 @@ package com.ll.playon.domain.party.party.dto;
 
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import java.util.Map;
+import java.util.Objects;
 import lombok.NonNull;
 
 public record PartyDetailMemberDto(
@@ -22,7 +23,7 @@ public record PartyDetailMemberDto(
                 partyMember.getMember().getUsername(),
                 titleMap.getOrDefault(partyMember.getMember().getId(), ""),
                 partyMember.getMember().getNickname(),
-                partyMember.getMember().getProfileImg()
+                Objects.requireNonNullElse(partyMember.getMember().getProfileImg(), "")
         );
     }
 }
