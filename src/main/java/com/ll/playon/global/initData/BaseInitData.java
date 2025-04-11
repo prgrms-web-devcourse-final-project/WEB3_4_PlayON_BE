@@ -1,5 +1,7 @@
 package com.ll.playon.global.initData;
 
+import com.ll.playon.domain.chat.entity.PartyRoom;
+import com.ll.playon.domain.chat.repository.PartyRoomRepository;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.entity.SteamImage;
@@ -80,6 +82,7 @@ public class BaseInitData {
     private final PasswordEncoder passwordEncoder;
     private final TitleRepository titleRepository;
     private final GameRepository gameRepository;
+    private final PartyRoomRepository partyRoomRepository;
 
     @Autowired
     @Lazy
@@ -449,7 +452,6 @@ public class BaseInitData {
         ).getContent();
 
         Random random = new Random();
-        int partyCount = 0;
 
         for (Member owner : owners) {
             for (int i = 0; i < 3; i++) {
@@ -514,7 +516,12 @@ public class BaseInitData {
                 party.setPartyTags(partyTags);
 
                 partyRepository.save(party);
-                partyCount++;
+
+                PartyRoom partyRoom = PartyRoom.builder()
+                        .party(party)
+                        .build();
+
+                partyRoomRepository.save(partyRoom);
             }
         }
     }
