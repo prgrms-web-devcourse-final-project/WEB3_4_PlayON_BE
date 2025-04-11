@@ -20,7 +20,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws") // 프론트의 WebSocket 연결 주소
 //                .setAllowedOrigins("*")
                 .setAllowedOriginPatterns("*")
-//                .addInterceptors(jwtHandshakeInterceptor)
+                .addInterceptors(jwtHandshakeInterceptor)
                 .withSockJS()   // SockJs Fallback
         ;
     }
