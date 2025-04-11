@@ -19,6 +19,7 @@ import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.global.annotation.PartyInviterOnly;
+import com.ll.playon.global.annotation.PartyPendingOnly;
 import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
@@ -288,6 +289,14 @@ public class MemberService {
         }
 
         return toGameListResponse(ownedGames);
+    }
+
+    @PartyPendingOnly
+    @Transactional
+    public void cancelPendingParty(Member actor, long partyId) {
+        PartyMember me = PartyMemberContext.getPartyMember();
+
+        me.delete();
     }
 
     // 파티 초대 승인
