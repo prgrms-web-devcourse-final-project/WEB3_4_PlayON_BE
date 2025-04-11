@@ -1,6 +1,10 @@
 package com.ll.playon.global.initData;
 
-import com.ll.playon.domain.game.game.entity.*;
+import com.ll.playon.domain.game.game.entity.SteamGame;
+import com.ll.playon.domain.game.game.entity.SteamGenre;
+import com.ll.playon.domain.game.game.entity.SteamImage;
+import com.ll.playon.domain.game.game.entity.SteamMovie;
+import com.ll.playon.domain.game.game.entity.WeeklyPopularGame;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
@@ -36,6 +40,19 @@ import com.ll.playon.domain.title.repository.TitleRepository;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import jakarta.transaction.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -44,12 +61,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
 
 
 @Configuration
@@ -424,18 +436,22 @@ public class BaseInitData {
             return;
         }
 
-        List<Member> members = memberRepository.findAll().stream()
-                .skip(Math.max(0, this.memberRepository.findAll().size() - 4))
+        // OWNER 후보 멤버 (5~8번 고정)
+        List<Member> owners = memberRepository.findAll().stream()
+                .filter(member -> member.getId() >= 5 && member.getId() <= 8)
+                .sorted(Comparator.comparing(Member::getId)) // 순서를 보장하기 위해 정렬
                 .toList();
 
+        Map<Long, Member> memberMap = owners.stream().collect(Collectors.toMap(Member::getId, m -> m));
         List<TagType> tagTypes = new ArrayList<>(List.of(TagType.values()));
         List<SteamGame> steamGames = this.gameRepository.findAll(
-                PageRequest.of(0, 100, Sort.by(Direction.DESC, "id"))
+                PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "id"))
         ).getContent();
 
         Random random = new Random();
+        int partyCount = 0;
 
-        for (Member member : members) {
+        for (Member owner : owners) {
             for (int i = 0; i < 3; i++) {
                 String randomName = "파티_" + UUID.randomUUID().toString().substring(0, 6);
                 String randomDescription = "랜덤 파티 설명 " + UUID.randomUUID().toString().substring(0, 6);
@@ -445,7 +461,6 @@ public class BaseInitData {
                 int maximum = random.nextInt(10, 51);
                 SteamGame steamGame = steamGames.get(random.nextInt(steamGames.size()));
 
-                // Party 생성
                 Party party = Party.builder()
                         .name(randomName)
                         .description(randomDescription)
@@ -456,22 +471,39 @@ public class BaseInitData {
                         .game(steamGame)
                         .build();
 
-                // PartyMember 생성 (OWNER)
-                PartyMember partyMember = PartyMember.builder()
-                        .member(member)
+                // OWNER 등록
+                PartyMember ownerMember = PartyMember.builder()
+                        .member(owner)
                         .party(party)
                         .partyRole(PartyRole.OWNER)
                         .mvpPoint(0)
                         .build();
-                party.addPartyMember(partyMember);  // total 증가 포함
+                party.addPartyMember(ownerMember);
 
-                // PartyTag 생성
+                // 참가자 등록 - 다음 순번의 멤버
+                long participantId = switch ((int) (long) owner.getId()) {
+                    case 5 -> 6;
+                    case 6 -> 7;
+                    case 7 -> 8;
+                    case 8 -> 5;
+                    default -> throw new IllegalStateException("잘못된 멤버 ID");
+                };
+                Member participant = memberMap.get(participantId);
+
+                PartyMember participantMember = PartyMember.builder()
+                        .member(participant)
+                        .party(party)
+                        .partyRole(PartyRole.MEMBER)
+                        .mvpPoint(0)
+                        .build();
+                party.addPartyMember(participantMember);
+
+                // 태그 설정
                 List<PartyTag> partyTags = new ArrayList<>();
                 for (TagType tagType : tagTypes) {
                     List<TagValue> tagValuesForType = Arrays.stream(TagValue.values())
                             .filter(tv -> isValidTagValueForType(tv, tagType))
                             .toList();
-
                     TagValue randomTagValue = tagValuesForType.get(random.nextInt(tagValuesForType.size()));
                     partyTags.add(PartyTag.builder()
                             .party(party)
@@ -479,10 +511,10 @@ public class BaseInitData {
                             .value(randomTagValue)
                             .build());
                 }
-                party.setPartyTags(partyTags);  // 연관관계 설정
+                party.setPartyTags(partyTags);
 
-                // Party 저장
                 partyRepository.save(party);
+                partyCount++;
             }
         }
     }
@@ -542,7 +574,7 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleWeeklyPopularGames() {
-        if(weeklyGameRepository.count() > 0) {
+        if (weeklyGameRepository.count() > 0) {
             return;
         }
 
@@ -570,7 +602,7 @@ public class BaseInitData {
 
     @Transactional
     public void makeSampleWeeklyPopularGuild() {
-        if(weeklyPopularGuildRepository.count() > 0) {
+        if (weeklyPopularGuildRepository.count() > 0) {
             return;
         }
 
