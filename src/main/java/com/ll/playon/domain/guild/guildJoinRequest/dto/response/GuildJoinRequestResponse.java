@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public record GuildJoinRequestResponse(
         Long requestId,
         Long memberId,
-        String username,
+        String nickname,
         String titleName,
         String profileImg,
         LocalDateTime requestedAt,
@@ -18,7 +18,7 @@ public record GuildJoinRequestResponse(
         return new GuildJoinRequestResponse(
                 entity.getId(),
                 entity.getMember().getId(),
-                entity.getMember().getUsername(),
+                entity.getMember().getNickname(),
                 titleName,
                 entity.getMember().getProfileImg(),
                 entity.getCreatedAt(),
