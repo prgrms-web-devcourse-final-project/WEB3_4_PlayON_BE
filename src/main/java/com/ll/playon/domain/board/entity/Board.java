@@ -63,4 +63,8 @@ public class Board extends BaseTime {
         this.content = content;
         this.category = category;
     }
+
+    public void addComment(BoardComment comment) {
+        this.comments.add(comment);
+    }
 }

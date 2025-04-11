@@ -22,4 +22,8 @@ public class BoardComment extends BaseTime {
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String comment;
+
+    public void updateComment(String comment) {
+        this.comment = comment;
+    }
 }

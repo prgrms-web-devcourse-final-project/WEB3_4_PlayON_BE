@@ -17,8 +17,6 @@ import com.ll.playon.domain.image.service.ImageService;
 import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.repository.MemberRepository;
-import com.ll.playon.domain.member.service.MemberService;
-import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.validation.FileValidator;
@@ -44,8 +42,6 @@ public class BoardService {
     private final S3Service s3Service;
     private final ImageService imageService;
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final MemberService memberService;
-    private final MemberTitleService memberTitleService;
     private final MemberRepository memberRepository;
 
     @Transactional

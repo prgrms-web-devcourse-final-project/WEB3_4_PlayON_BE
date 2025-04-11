@@ -118,7 +118,9 @@ public enum ErrorCode {
 
     // board
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
-    NO_BOARD_PERMISSION(HttpStatus.FORBIDDEN, "게시글 권한이 없습니다.");
+    NO_BOARD_PERMISSION(HttpStatus.FORBIDDEN, "게시글 권한이 없습니다."),
+    BOARD_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
+    NO_BOARD_COMMENT_PERMISSION(HttpStatus.FORBIDDEN, "댓글 권한이 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
