@@ -7,6 +7,7 @@ import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.service.TitleEvaluator;
+import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.steamAPI.SteamAPI;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,10 @@ public class SteamAsyncService {
 
     @Async
     @Transactional
-    public void getUserGamesAndCheckGenres(Member member) {
+    public void getUserGamesAndCheckGenres(Member actor) {
+        Member member = memberRepository.findById(actor.getId())
+                .orElseThrow(ErrorCode.MEMBER_NOT_FOUND::throwServiceException);
+
         int before = member.getGames().size();
 
         List<Long> userGames = steamAPI.getUserGames(member.getSteamId());
