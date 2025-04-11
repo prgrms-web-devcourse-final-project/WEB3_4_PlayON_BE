@@ -42,6 +42,7 @@ public enum ErrorCode {
     USER_NOT_REGISTERED(HttpStatus.NOT_FOUND, "가입되지 않은 사용자입니다."),
     USER_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 가입된 사용자입니다."),
     PASSWORD_INCORRECT(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."),
 
     // EventListener
     EVENT_LISTENER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "이벤트 리스너에서 오류가 발생했습니다."),
@@ -76,13 +77,17 @@ public enum ErrorCode {
     GUILD_BOARD_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
 
     // Party
+    IS_NOT_PARTY_PENDING(HttpStatus.FORBIDDEN, "참여 가능한 파티가 아닙니다."),
     IS_ALREADY_REQUEST_PARTY(HttpStatus.FORBIDDEN, "파티 신청이 진행 중입니다."),
+    IS_ALREADY_INVITING_PARTY(HttpStatus.FORBIDDEN, "파티 초대가 진행 중입니다."),
+    PARTY_IS_FULL(HttpStatus.FORBIDDEN, "파티 정원이 가득 찼습니다."),
     PARTY_NOT_FOUND(HttpStatus.NOT_FOUND, "파티가 존재하지 않습니다."),
 
     // PartyMember
-    IS_NOT_PARTY_OWNER(HttpStatus.FORBIDDEN, "해당 파티의 파티장이 아닙니다."),
-    IS_NOT_PARTY_MEMBER(HttpStatus.FORBIDDEN, "해당 파티의 파티원이 아닙니다."),
-    IS_NOT_PARTY_INVITER(HttpStatus.FORBIDDEN, "해당 파티에 초대되지 않았습니다"),
+    IS_NOT_PARTY_MEMBER_OWNER(HttpStatus.FORBIDDEN, "해당 파티의 파티장이 아닙니다."),
+    IS_NOT_PARTY_MEMBER_MEMBER(HttpStatus.FORBIDDEN, "해당 파티의 파티원이 아닙니다."),
+    IS_NOT_PARTY_MEMBER_INVITER(HttpStatus.FORBIDDEN, "해당 파티에 초대되지 않았습니다."),
+    IS_NOT_PARTY_MEMBER_PENDING(HttpStatus.FORBIDDEN, "해당 파티에 가입 신청하지 않았습니다."),
     IS_NOT_PARTY_MEMBER_OWN(HttpStatus.FORBIDDEN, "파티원 본인이 아닙니다."),
     IS_ALREADY_PARTY_MEMBER(HttpStatus.FORBIDDEN, "이미 해당 파티의 파티원입니다."),
     IS_PARTY_MEMBER_OWN(HttpStatus.FORBIDDEN, "파티원 본인 스스로에 대한 처리는 불가능합니다."),

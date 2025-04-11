@@ -323,10 +323,9 @@ public class PartyService {
 
     // 파티 참가 신청 리스트 조회
     // AOP에 필요한 파라미터
-    @PartyOwnerOnly
     @Transactional(readOnly = true)
     public GetAllPendingMemberResponse getPartyPendingMembers(Member actor, long partyId) {
-        Party party = PartyContext.getParty();
+        Party party = this.getParty(partyId);
 
         List<PartyMember> partyMembers = party.getPartyMembers().stream()
                 .filter(pm -> pm.getPartyRole().equals(PartyRole.PENDING))
@@ -347,20 +346,24 @@ public class PartyService {
     @Transactional
     public void requestParticipation(Member actor, long partyId) {
         Party party = this.getParty(partyId);
+
+        PartyValidation.checkPartyCanJoin(party);
+        PartyValidation.checkPartyIsNotFull(party);
+
         Optional<PartyMember> opPartyMember = this.getPartyMember(actor, party);
 
         // 이미 해당 파티의 파티원일 경우
         if (opPartyMember.isPresent()) {
             PartyMember partyMember = opPartyMember.get();
 
-            // 본인일 경우
-            PartyMemberValidation.checkIsPartyMemberOwn(partyMember, actor);
-
             // 이미 해당 파티에 신청한 경우
-            PartyMemberValidation.checkPendingMember(partyMember);
+            PartyMemberValidation.checkAlreadyPendingMember(partyMember);
 
             // 파티원일 경우
             ErrorCode.IS_ALREADY_PARTY_MEMBER.throwServiceException();
+
+            // 본인일 경우
+            PartyMemberValidation.checkIsPartyMemberOwn(partyMember, actor);
         }
 
         party.addPartyMember(PartyMemberMapper.of(actor, PartyRole.PENDING));
@@ -373,6 +376,9 @@ public class PartyService {
     @Transactional
     public void approveParticipation(Member actor, long partyId, long memberId) {
         Party party = PartyContext.getParty();
+
+        PartyValidation.checkPartyCanJoin(party);
+        PartyValidation.checkPartyIsNotFull(party);
 
         PartyMember pendingMember = this.getPendingMember(memberId, party);
 
@@ -398,23 +404,27 @@ public class PartyService {
     @Transactional
     public void inviteParty(Member actor, long partyId, long memberId) {
         Party party = PartyContext.getParty();
+
+        PartyValidation.checkPartyCanJoin(party);
+        PartyValidation.checkPartyIsNotFull(party);
+
         Member invitedActor = this.memberService.findById(memberId)
                 .orElseThrow(ErrorCode.USER_NOT_REGISTERED::throwServiceException);
 
-        Optional<PartyMember> opPartyMember = this.getPartyMember(actor, party);
+        Optional<PartyMember> opPartyMember = this.getPartyMember(invitedActor, party);
 
         // 이미 해당 파티의 파티원일 경우
         if (opPartyMember.isPresent()) {
             PartyMember partyMember = opPartyMember.get();
 
-            // 본인일 경우
-            PartyMemberValidation.checkIsPartyMemberOwn(partyMember, actor);
-
             // 이미 해당 파티에 신청한 경우
-            PartyMemberValidation.checkPendingMember(partyMember);
+            PartyMemberValidation.checkAlreadyInvitedMember(partyMember);
 
             // 파티원일 경우
             ErrorCode.IS_ALREADY_PARTY_MEMBER.throwServiceException();
+
+            // 본인일 경우
+            PartyMemberValidation.checkIsPartyMemberOwn(partyMember, actor);
         }
 
         party.addPartyMember(PartyMemberMapper.of(invitedActor, PartyRole.INVITER));

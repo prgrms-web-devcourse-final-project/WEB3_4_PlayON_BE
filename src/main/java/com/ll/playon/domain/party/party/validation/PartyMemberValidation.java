@@ -25,14 +25,21 @@ public class PartyMemberValidation {
     // 파티멤버가 맞는지 확인
     public static void checkPartyMember(Party party, PartyMember partyMember) {
         if (!party.getPartyMembers().contains(partyMember)) {
-            ErrorCode.IS_NOT_PARTY_MEMBER.throwServiceException();
+            ErrorCode.IS_NOT_PARTY_MEMBER_MEMBER.throwServiceException();
         }
     }
 
     // 이미 파티에 신청했는지 확인
-    public static void checkPendingMember(PartyMember partyMember) {
+    public static void checkAlreadyPendingMember(PartyMember partyMember) {
         if (partyMember.getPartyRole().equals(PartyRole.PENDING)) {
             ErrorCode.IS_ALREADY_REQUEST_PARTY.throwServiceException();
+        }
+    }
+
+    // 이미 파티 초대를 보냈는지 확인
+    public static void checkAlreadyInvitedMember(PartyMember partyMember) {
+        if (partyMember.getPartyRole().equals(PartyRole.INVITER)) {
+            ErrorCode.IS_ALREADY_INVITING_PARTY.throwServiceException();
         }
     }
 }
