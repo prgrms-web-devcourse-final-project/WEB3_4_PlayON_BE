@@ -238,9 +238,9 @@ public class PartyService {
         );
     }
 
-    // 메인용 종료된 파티 조회 (limit 만큼)
+    // 메인용 파티 로그가 작성되었고 종료된 파티 리스트 조회 (limit 만큼)
     @Transactional(readOnly = true)
-    public GetPartyMainResponse getCompletedPartyMain(int limit) {
+    public GetPartyMainResponse getCompletedPartyWithLogMain(int limit) {
         Pageable pageable = PageRequest.of(0, limit * 10);
 
         List<Party> completedParties = this.partyRepository.findRecentCompletedPartiesWithLogs(

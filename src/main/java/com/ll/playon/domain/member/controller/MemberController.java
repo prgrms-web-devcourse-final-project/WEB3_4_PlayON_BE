@@ -156,7 +156,7 @@ public class MemberController {
     }
 
     @GetMapping("/me/parties/logs")
-    @Operation(summary = "내가 파티 로그를 작성한 적 있는 파티들을 최근에 끝난 순으로 조회")
+    @Operation(summary = "내가 파티 로그를 작성한 적 있는 종료된 파티들을 최근에 끝난 순으로 조회")
     public RsData<PageDto<GetPartyResponse>> getLoggedPartiesByMe(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "6") int pageSize
@@ -177,7 +177,7 @@ public class MemberController {
     }
 
     @GetMapping("/{memberId}/parties/logs")
-    @Operation(summary = "유저가 파티 로그를 작성한 적 있는 파티들을 최근에 끝난 순으로 조회")
+    @Operation(summary = "유저가 파티 로그를 작성한 적 있는 종료된 파티들을 최근에 끝난 순으로 조회")
     public RsData<PageDto<GetPartyResponse>> getLoggedPartiesByMembers(
             @PathVariable long memberId,
             @RequestParam(defaultValue = "1") int page,
