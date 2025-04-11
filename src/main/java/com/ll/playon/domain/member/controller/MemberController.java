@@ -10,9 +10,11 @@ import com.ll.playon.domain.member.dto.PutMemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.domain.member.service.SteamAsyncService;
+import com.ll.playon.domain.party.party.dto.response.GetPartyMainResponse;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
+import com.ll.playon.standard.page.dto.PageDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -142,5 +144,48 @@ public class MemberController {
         Member actor = this.userContext.getActualActor();
 
         this.memberService.rejectPartyInvitation(actor, partyId);
+    }
+
+    @GetMapping("/me/parties")
+    @Operation(summary = "내 참여중인 파티 조회")
+    public RsData<GetPartyMainResponse> getMyParties() {
+        Member actor = this.userContext.getActor();
+
+        return RsData.success(HttpStatus.OK, this.memberService.getMyParties(actor));
+    }
+
+    @GetMapping("/me/parties/logs")
+    @Operation(summary = "내가 파티 로그를 작성한 적 있는 파티들을 최근에 끝난 순으로 조회")
+    public RsData<PageDto<GetPartyMainResponse>> getLoggedPartiesByMe(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "6") int pageSize
+    ) {
+        Member actor = this.userContext.getActor();
+
+        return RsData.success(
+                HttpStatus.OK,
+                new PageDto<>(this.memberService.getPartiesLoggedByMe(actor, page, pageSize)));
+    }
+
+    @GetMapping("/{memberId}/parties")
+    @Operation(summary = "타 유저 참여중인 파티 조회")
+    public RsData<GetPartyMainResponse> getMembersParties(@PathVariable long memberId) {
+        // TODO: 정책 확인
+
+        return RsData.success(HttpStatus.OK, this.memberService.getMembersParties(memberId));
+    }
+
+    @GetMapping("/{memberId}/parties/logs")
+    @Operation(summary = "유저가 파티 로그를 작성한 적 있는 파티들을 최근에 끝난 순으로 조회")
+    public RsData<PageDto<GetPartyMainResponse>> getLoggedPartiesByMembers(
+            @PathVariable long memberId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "6") int pageSize
+    ) {
+        // TODO: 정책 확인
+
+        return RsData.success(
+                HttpStatus.OK,
+                new PageDto<>(this.memberService.getPartiesLoggedByMember(memberId, page, pageSize)));
     }
 }

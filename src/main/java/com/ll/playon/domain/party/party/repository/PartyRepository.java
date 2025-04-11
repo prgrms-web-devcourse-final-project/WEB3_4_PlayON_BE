@@ -6,6 +6,7 @@ import com.ll.playon.domain.game.game.projection.TopPlaytimeGameProjection;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
+import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.party.party.type.PartyStatus;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -88,8 +89,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             FROM PartyMember pm
             JOIN FETCH pm.party p
             WHERE p.id IN :partyIds
-            AND pm.partyRole = 'MEMBER'
-            OR pm.partyRole = 'OWNER'
+            AND (pm.partyRole = 'MEMBER' OR pm.partyRole = 'OWNER')
             """)
     List<PartyMember> findPartyMembersByPartyIds(@Param("partyIds") List<Long> partyIds);
 
@@ -98,8 +98,14 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
     List<Party> findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtAscCreatedAtDesc(PartyStatus partyStatus,
                                                                                     Pageable pageable);
 
-    List<Party> findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtDescCreatedAtDesc(PartyStatus partyStatus,
-                                                                                     Pageable pageable);
+    @Query("""
+            SELECT p
+            FROM Party p
+            WHERE p.partyStatus = :partyStatus
+            AND p.publicFlag = true
+            ORDER BY p.endedAt DESC
+            """)
+    List<Party> findRecentCompletedPartiesWithLogs(@Param("partyStatus") PartyStatus partyStatus, Pageable pageable);
 
     @Query("""
                 SELECT p
@@ -142,4 +148,25 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             @Param("toDate") LocalDateTime toDate,
             Pageable pageable
     );
+
+    @Query("""
+            SELECT pm.party
+            FROM PartyMember pm
+            WHERE pm.member.id = :memberId
+            AND pm.partyRole IN :partyRoles
+            AND pm.party.partyStatus != :partyStatus
+            """)
+    List<Party> findMembersActiveParties(@Param("memberId") long memberId,
+                                         @Param("partyRoles") List<PartyRole> partyRoles,
+                                         @Param("partyStatus") PartyStatus partyStatus);
+
+    @Query("""
+            SELECT pm.party
+            FROM PartyMember pm
+            JOIN FETCH pm.party p
+            WHERE pm.member.id = :memberId
+            AND p.publicFlag = true
+            ORDER BY p.endedAt DESC
+            """)
+    Page<Party> findMembersRecentCompletedParties(@Param("memberId") Long memberId, Pageable pageable);
 }
