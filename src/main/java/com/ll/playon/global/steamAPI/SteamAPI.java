@@ -38,8 +38,6 @@ public class SteamAPI {
 
     private static final int MAX_GAMES_TO_ANALYZE = 30;
 
-    // TODO : 스팀 API 장애 대응
-
     @Value("${custom.steam.apikey}")
     private String apikey;
 

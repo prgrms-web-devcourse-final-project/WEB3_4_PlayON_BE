@@ -20,6 +20,9 @@ public enum ErrorCode {
     EXTERNAL_API_UNEXPECTED_RESPONSE(HttpStatus.INTERNAL_SERVER_ERROR, "API 응답이 올바르지 않습니다"),
     EXTERNAL_API_UNEXPECTED_REQUEST(HttpStatus.BAD_REQUEST, "API 요청이 올바르지 않습니다"),
     EXTERNAL_API_COMMUNICATION_ERROR(HttpStatus.BAD_GATEWAY, "API 요청 중 오류가 발생했습니다."),
+    STEAM_TOO_MANY_REQUEST(HttpStatus.TOO_MANY_REQUESTS, "현재 요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
+    STEAM_NOT_RESPONDED(HttpStatus.SERVICE_UNAVAILABLE, "스팀 서버가 일시적으로 응답하지 않습니다. 잠시 후 다시 시도해주세요."),
+    STEAM_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "현재 스팀 서버가 불안정하여 요청이 차단되었습니다. 잠시 후 다시 시도해주세요."),
 
     // S3
     S3_PRESIGNED_URL_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PresignedURL 생성에 실패하였습니다."),

@@ -1,5 +1,6 @@
 package com.ll.playon.global.webSocket.config;
 
+import com.ll.playon.global.webSocket.security.CustomHandshakeHandler;
 import com.ll.playon.global.webSocket.security.JwtHandshakeInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -14,15 +15,24 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
+    private final CustomHandshakeHandler customHandshakeHandler;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws") // 프론트의 WebSocket 연결 주소
 //                .setAllowedOrigins("*")
                 .setAllowedOriginPatterns("*")
-//                .addInterceptors(jwtHandshakeInterceptor)
+                .addInterceptors(jwtHandshakeInterceptor)
+                .setHandshakeHandler(customHandshakeHandler)
+                .addInterceptors(jwtHandshakeInterceptor)
                 .withSockJS()   // SockJs Fallback
         ;
+
+        registry.addEndpoint("/ws") // 프론트의 WebSocket 연결 주소
+//                .setAllowedOrigins("*")
+                .setAllowedOriginPatterns("*")
+                .setHandshakeHandler(customHandshakeHandler)
+                .addInterceptors(jwtHandshakeInterceptor);
     }
 
     @Override

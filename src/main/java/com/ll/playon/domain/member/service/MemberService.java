@@ -4,14 +4,10 @@ import com.ll.playon.domain.game.game.dto.GameListResponse;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
+import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.game.game.service.GameService;
 import com.ll.playon.domain.image.type.ImageType;
-import com.ll.playon.domain.member.dto.GetMembersResponse;
-import com.ll.playon.domain.member.dto.MemberDetailDto;
-import com.ll.playon.domain.member.dto.MemberProfileResponse;
-import com.ll.playon.domain.member.dto.PresignedUrlResponse;
-import com.ll.playon.domain.member.dto.ProfileMemberDetailDto;
-import com.ll.playon.domain.member.dto.PutMemberDetailDto;
+import com.ll.playon.domain.member.dto.*;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
@@ -27,17 +23,19 @@ import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -53,6 +51,9 @@ public class MemberService {
     private final GameRepository gameRepository;
     private final TitleEvaluator titleEvaluator;
     private final S3Service s3Service;
+    private final WeeklyGameRepository weeklyGameRepository;
+    private final SteamAsyncService steamAsyncService;
+    private final ApplicationEventPublisher publisher;
 
     public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
@@ -148,9 +149,9 @@ public class MemberService {
                 .role(Role.USER)
                 .nickname(profile.get("nickname"))
                 .build();
-        memberRepository.save(newMember);
+        memberRepository.saveAndFlush(newMember);
 
-        getUserGamesAndCheckGenres(newMember);
+        publisher.publishEvent(new SignupEvent(newMember));
 
         return newMember;
     }
@@ -162,18 +163,6 @@ public class MemberService {
                 .role(Role.USER)
                 .nickname(username)
                 .build());
-    }
-
-    public void saveUserGameList(List<Long> gameList, Member member) {
-        List<MemberSteamData> games = gameList.stream()
-                .map(appId -> MemberSteamData.builder()
-                        .appId(appId)
-                        .member(member)
-                        .build())
-                .toList();
-
-        member.getGames().addAll(games);
-        memberSteamDataRepository.saveAll(games);
     }
 
     private void handleSuccessfulLogin(Member member) {
@@ -193,30 +182,11 @@ public class MemberService {
                     targetMember.setSteamId(steamId);
                     memberRepository.save(targetMember);
 
-                    getUserGamesAndCheckGenres(targetMember);
+                    steamAsyncService.getUserGamesAndCheckGenres(targetMember);
 
                     return targetMember;
                 })
                 .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
-    }
-
-    public void getUserGamesAndCheckGenres(Member actor) {
-        Member member = memberRepository.findById(actor.getId())
-                .orElseThrow(ErrorCode.MEMBER_NOT_FOUND::throwServiceException);
-
-        int before = member.getGames().size();
-
-        List<Long> userGames = steamAPI.getUserGames(member.getSteamId());
-        if (!userGames.isEmpty()) {
-            SteamGenre preferredGenre = steamAPI.getPreferredGenre(userGames);
-            memberRepository.save(member.toBuilder().preferredGenre(preferredGenre.getName()).build());
-            saveUserGameList(userGames, member);
-        }
-
-        int after = userGames.size();
-
-        // 스팀 게임 소유 칭호
-        titleEvaluator.gameCountCheck(ConditionType.STEAM_GAME_COUNT, member, after - before);
     }
 
     public PresignedUrlResponse modifyMember(PutMemberDetailDto req, Member actor) {

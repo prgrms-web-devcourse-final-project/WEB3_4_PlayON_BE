@@ -34,6 +34,9 @@ import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
+import com.ll.playon.domain.member.service.SteamAsyncService;
+import com.ll.playon.domain.party.party.dto.request.PartyTagRequest;
+import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.title.entity.Title;
@@ -83,6 +86,7 @@ public class BaseInitData {
     private final TitleRepository titleRepository;
     private final GameRepository gameRepository;
     private final PartyRoomRepository partyRoomRepository;
+    private final SteamAsyncService steamAsyncService;
 
     @Autowired
     @Lazy
@@ -275,18 +279,18 @@ public class BaseInitData {
                 .role(Role.USER).build();
         memberRepository.save(sampleMember1);
         List<Long> gameAppIds = Arrays.asList(1L, 2L, 3L);
-        memberService.saveUserGameList(gameAppIds, sampleMember1);
+        steamAsyncService.saveUserGameList(gameAppIds, sampleMember1);
 
         Member sampleMember2 = Member.builder()
                 .steamId(456L).username("sampleUser2").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember2);
-        memberService.saveUserGameList(gameAppIds, sampleMember2);
+        steamAsyncService.saveUserGameList(gameAppIds, sampleMember2);
 
         Member sampleMember3 = Member.builder()
                 .steamId(789L).username("sampleUser3").lastLoginAt(LocalDateTime.now()).role(Role.USER).build();
         memberRepository.save(sampleMember3);
 
-        memberService.saveUserGameList(gameAppIds, sampleMember3);
+        steamAsyncService.saveUserGameList(gameAppIds, sampleMember3);
 
         Member noSteamMember = Member.builder()
                 .username("noSteamMember").nickname("noSteamUser").password(passwordEncoder.encode("noSteam123"))
@@ -305,7 +309,7 @@ public class BaseInitData {
                 .build();
         memberRepository.save(owner);
 
-        memberService.saveUserGameList(gameAppIds, owner);
+        steamAsyncService.saveUserGameList(gameAppIds, owner);
 
         Member partyOwner = Member.builder()
                 .steamId(555L)
@@ -318,7 +322,7 @@ public class BaseInitData {
                 .build();
         memberRepository.save(partyOwner);
 
-        memberService.saveUserGameList(gameAppIds, partyOwner);
+        steamAsyncService.saveUserGameList(gameAppIds, partyOwner);
 
         Member partyOwner2 = Member.builder()
                 .steamId(556L)
@@ -331,7 +335,7 @@ public class BaseInitData {
                 .build();
         memberRepository.save(partyOwner2);
 
-        memberService.saveUserGameList(gameAppIds, partyOwner2);
+        steamAsyncService.saveUserGameList(gameAppIds, partyOwner2);
 
         Member partyMember = Member.builder()
                 .steamId(2252L)
@@ -344,7 +348,7 @@ public class BaseInitData {
                 .build();
         memberRepository.save(partyMember);
 
-        memberService.saveUserGameList(gameAppIds, partyMember);
+        steamAsyncService.saveUserGameList(gameAppIds, partyMember);
     }
 
     @Transactional

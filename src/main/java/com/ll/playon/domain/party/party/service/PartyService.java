@@ -106,34 +106,29 @@ public class PartyService {
         Sort sort = PartySortUtils.getSort(orderBy);
         Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
 
-        boolean isPersonalSort = PartySortUtils.isPersonalSort(orderBy);
-
         return actor == null
-                ? this.getPublicParties(pageable, partyAt, orderBy, isPersonalSort, request)
-                : this.getPartiesByLoginUser(actor, pageable, partyAt, orderBy, isPersonalSort, request);
+                ? this.getPublicParties(pageable, partyAt, request)
+                : this.getPartiesByLoginUser(actor, pageable, partyAt, request);
     }
 
     // 공개 파티들 조회
     private Page<GetPartyResponse> getPublicParties(Pageable pageable, LocalDateTime partyAt,
-                                                    String orderBy, boolean isPersonalSort,
                                                     GetAllPartiesRequest request) {
-        return getPartiesByConditions(Collections.emptyList(), pageable, partyAt, orderBy, isPersonalSort, request);
+        return getPartiesByConditions(Collections.emptyList(), pageable, partyAt, request);
     }
 
     // 내 파티 우선 조회 + 공개 파티들 조회
     private Page<GetPartyResponse> getPartiesByLoginUser(Member actor, Pageable pageable, LocalDateTime partyAt,
-                                                         String orderBy, boolean isPersonalSort,
                                                          GetAllPartiesRequest request) {
         List<Long> myPartyIds = this.partyRepository.findPartyIdsByMember(actor.getId(), partyAt);
 
-        return getPartiesByConditions(myPartyIds, pageable, partyAt, orderBy, isPersonalSort, request);
+        return getPartiesByConditions(myPartyIds, pageable, partyAt, request);
     }
 
     // TODO: 추후 리팩토링 진행, 성능 개선 필요할 것 같음
     // 최종 파티 페이징 리스트 조회
     private Page<GetPartyResponse> getPartiesByConditions(List<Long> myPartyIds, Pageable pageable,
-                                                          LocalDateTime partyAt, String orderBy,
-                                                          boolean isPersonalSort, GetAllPartiesRequest request) {
+                                                          LocalDateTime partyAt, GetAllPartiesRequest request) {
         List<String> tagValues = request.tags().stream()
                 .map(tag -> TagValue.fromValue(tag.value()).name())
                 .toList();
@@ -172,12 +167,6 @@ public class PartyService {
                 .map(responseMap::get)
                 .filter(Objects::nonNull)
                 .toList());
-
-        if (isPersonalSort) {
-            Map<Long, Party> partyMap = PartySortUtils.convertToMap(parties);
-            Map<Long, Long> totalCountMap = PartySortUtils.convertToTotalCountMap(partyMembers);
-            orderedResponse.sort(PartySortUtils.compare(orderBy, partyMap, totalCountMap));
-        }
 
         return new PageImpl<>(orderedResponse, pageable, partyIds.getTotalElements());
     }
