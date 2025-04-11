@@ -7,15 +7,23 @@ import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.game.game.service.GameService;
 import com.ll.playon.domain.image.type.ImageType;
-import com.ll.playon.domain.member.dto.*;
+import com.ll.playon.domain.member.dto.GetMembersResponse;
+import com.ll.playon.domain.member.dto.MemberDetailDto;
+import com.ll.playon.domain.member.dto.MemberProfileResponse;
+import com.ll.playon.domain.member.dto.PresignedUrlResponse;
+import com.ll.playon.domain.member.dto.ProfileMemberDetailDto;
+import com.ll.playon.domain.member.dto.PutMemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
+import com.ll.playon.domain.party.party.context.PartyContext;
 import com.ll.playon.domain.party.party.context.PartyMemberContext;
+import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.type.PartyRole;
+import com.ll.playon.domain.party.party.validation.PartyValidation;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.global.annotation.PartyInviterOnly;
@@ -24,6 +32,11 @@ import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
@@ -31,12 +44,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -291,6 +298,8 @@ public class MemberService {
         return toGameListResponse(ownedGames);
     }
 
+    // 파티 참가 취소
+    // AOP에 필요한 파라미터
     @PartyPendingOnly
     @Transactional
     public void cancelPendingParty(Member actor, long partyId) {
@@ -304,6 +313,10 @@ public class MemberService {
     @PartyInviterOnly
     @Transactional
     public void approvePartyInvitation(Member actor, long partyId) {
+        Party party = PartyContext.getParty();
+
+        PartyValidation.checkPartyCanJoin(party);
+
         PartyMember me = PartyMemberContext.getPartyMember();
 
         me.promoteRole(PartyRole.MEMBER);

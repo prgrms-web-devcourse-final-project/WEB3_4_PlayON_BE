@@ -347,6 +347,9 @@ public class PartyService {
     @Transactional
     public void requestParticipation(Member actor, long partyId) {
         Party party = this.getParty(partyId);
+
+        PartyValidation.checkPartyCanJoin(party);
+
         Optional<PartyMember> opPartyMember = this.getPartyMember(actor, party);
 
         // 이미 해당 파티의 파티원일 경우
@@ -374,6 +377,8 @@ public class PartyService {
     public void approveParticipation(Member actor, long partyId, long memberId) {
         Party party = PartyContext.getParty();
 
+        PartyValidation.checkPartyCanJoin(party);
+
         PartyMember pendingMember = this.getPendingMember(memberId, party);
 
         pendingMember.promoteRole(PartyRole.MEMBER);
@@ -398,6 +403,9 @@ public class PartyService {
     @Transactional
     public void inviteParty(Member actor, long partyId, long memberId) {
         Party party = PartyContext.getParty();
+
+        PartyValidation.checkPartyCanJoin(party);
+
         Member invitedActor = this.memberService.findById(memberId)
                 .orElseThrow(ErrorCode.USER_NOT_REGISTERED::throwServiceException);
 

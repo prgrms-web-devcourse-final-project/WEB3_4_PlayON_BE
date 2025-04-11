@@ -32,7 +32,7 @@ public class ActivePartyMemberCheckAspect {
                 .orElseThrow(ErrorCode.PARTY_NOT_FOUND::throwServiceException);
 
         if (isNotActivePartyMember(actor, party)) {
-            throw ErrorCode.IS_NOT_PARTY_MEMBER.throwServiceException();
+            throw ErrorCode.IS_NOT_PARTY_MEMBER_MEMBER.throwServiceException();
         }
 
         PartyMember partyMember = this.partyMemberRepository.findByMemberAndParty(actor, party)
