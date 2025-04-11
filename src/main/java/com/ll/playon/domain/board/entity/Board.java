@@ -16,6 +16,9 @@ import java.util.List;
 @AllArgsConstructor
 public class Board extends BaseTime {
 
+    @Version  // 낙관적락
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private Member author;
@@ -66,5 +69,19 @@ public class Board extends BaseTime {
 
     public void addComment(BoardComment comment) {
         this.comments.add(comment);
+    }
+
+    public void removeComment(BoardComment comment) {
+        this.comments.remove(comment);
+    }
+
+    public void addLike(BoardLike like) {
+        this.likes.add(like);
+        this.increaseLikeCount();
+    }
+
+    public void removeLike(BoardLike like) {
+        this.likes.remove(like);
+        this.decreaseLikeCount();
     }
 }

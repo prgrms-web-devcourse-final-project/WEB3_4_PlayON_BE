@@ -1,11 +1,8 @@
 package com.ll.playon.domain.board.entity;
 
 import com.ll.playon.domain.member.entity.Member;
-import com.ll.playon.global.jpa.entity.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.ll.playon.global.jpa.entity.BaseTime;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -13,7 +10,13 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class BoardLike extends BaseEntity {
+@Table(
+        indexes = {
+                @Index(name = "idx_board_like_member_board", columnList = "member_id, board_id"),
+                @Index(name = "idx_board_like_board", columnList = "board_id")
+        }
+)
+public class BoardLike extends BaseTime {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)

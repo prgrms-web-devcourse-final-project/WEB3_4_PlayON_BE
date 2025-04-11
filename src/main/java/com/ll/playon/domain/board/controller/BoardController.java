@@ -72,8 +72,4 @@ public class BoardController {
     ) {
         return RsData.success(HttpStatus.OK, boardService.getBoardList(page, pageSize, sort, keyword, category));
     }
-
-
-
-
 }

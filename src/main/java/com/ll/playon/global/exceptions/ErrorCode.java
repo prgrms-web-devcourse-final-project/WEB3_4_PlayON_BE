@@ -119,8 +119,15 @@ public enum ErrorCode {
     // board
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
     NO_BOARD_PERMISSION(HttpStatus.FORBIDDEN, "게시글 권한이 없습니다."),
+
+    // boardComment
     BOARD_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
-    NO_BOARD_COMMENT_PERMISSION(HttpStatus.FORBIDDEN, "댓글 권한이 없습니다.");
+    NO_BOARD_COMMENT_PERMISSION(HttpStatus.FORBIDDEN, "댓글 권한이 없습니다."),
+
+    // boardLike
+    ALREADY_LIKED(HttpStatus.BAD_REQUEST, "이미 좋아요를 눌렀습니다."),
+    BOARD_LIKE_NOT_FOUND(HttpStatus.BAD_REQUEST, "좋아요를 찾을 수 없습니다."),
+    CONCURRENCY_CONFLICT(HttpStatus.CONFLICT, "다른 사용자에 의해 데이터가 변경되었습니다. 다시 시도해주세요.");
 
     private final HttpStatus httpStatus;
     private final String message;

@@ -85,13 +85,10 @@ public class BoardService {
 
     @Transactional
     public PutBoardResponse modifyBoard(long boardId, @Valid PutBoardRequest request, Member actor) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(ErrorCode.BOARD_NOT_FOUND::throwServiceException);
+        Board board = findBoardOrElseThrow(boardId);
 
         // 작성자 본인만 수정 가능
-        if (!board.getAuthor().getId().equals(actor.getId())) {
-            throw ErrorCode.NO_BOARD_PERMISSION.throwServiceException();
-        }
+        validateBoardAuthor(board, actor);
 
         // 이미지 수정
         if (!request.newFileType().isBlank()) {
@@ -111,13 +108,10 @@ public class BoardService {
 
     @Transactional
     public void deleteBoard(long boardId, Member actor) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(ErrorCode.BOARD_NOT_FOUND::throwServiceException);
+        Board board = findBoardOrElseThrow(boardId);
 
         // 작성자 본인만 삭제 가능
-        if (!board.getAuthor().getId().equals(actor.getId())) {
-            throw ErrorCode.NO_BOARD_PERMISSION.throwServiceException();
-        }
+        validateBoardAuthor(board, actor);
 
         boardRepository.delete(board);
 
@@ -126,8 +120,7 @@ public class BoardService {
 
     @Transactional
     public GetBoardDetailResponse getBoardDetail(long boardId) {
-        Board board = boardRepository.findByIdWithAuthor(boardId)
-                .orElseThrow(ErrorCode.BOARD_NOT_FOUND::throwServiceException);
+        Board board = findBoardOrElseThrow(boardId);
 
         // 조회수 증가
         board.increaseHit();
@@ -159,8 +152,21 @@ public class BoardService {
     @Transactional(readOnly = true)
     public PageDto<GetBoardListResponse> getBoardList(int page, int pageSize, BoardSortType sort, String keyword, BoardCategory category) {
         GlobalValidation.checkPageSize(pageSize);
+
         Pageable pageable = PageRequest.of(page - 1, pageSize);
         Page<GetBoardListResponse> result = boardRepository.findBoardList(category, keyword, sort.name(), pageable);
+
         return new PageDto<>(result);
+    }
+
+    private Board findBoardOrElseThrow(Long boardId) {
+        return boardRepository.findById(boardId)
+                .orElseThrow(ErrorCode.BOARD_NOT_FOUND::throwServiceException);
+    }
+
+    private void validateBoardAuthor(Board board, Member actor) {
+        if (!board.getAuthor().getId().equals(actor.getId())) {
+            throw ErrorCode.NO_BOARD_PERMISSION.throwServiceException();
+        }
     }
 }

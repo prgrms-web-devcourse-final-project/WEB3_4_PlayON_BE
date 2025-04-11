@@ -29,7 +29,7 @@ public class BoardCommentService {
     @Transactional
     public PostBoardCommentResponse createComment(Long boardId, PostBoardCommentRequest request, Member actor) {
         // 게시글 존재 여부 체크
-        Board board = boardRepository.findById(boardId).orElseThrow(ErrorCode.BOARD_NOT_FOUND::throwServiceException);
+        Board board = findBoardOrElseThrow(boardId);
 
         // 댓글 저장
         BoardComment comment = BoardComment.builder()
@@ -49,15 +49,13 @@ public class BoardCommentService {
     @Transactional
     public PutBoardCommentResponse modifyComment(Long boardId, Long commentId, PutBoardCommentRequest request, Member actor) {
         // 게시글 존재 여부 체크
-        boardRepository.findById(boardId).orElseThrow(ErrorCode.BOARD_NOT_FOUND::throwServiceException);
+        findBoardOrElseThrow(boardId);
 
         // 댓글 존재 여부 체크
-        BoardComment comment = boardCommentRepository.findById(commentId).orElseThrow(ErrorCode.BOARD_COMMENT_NOT_FOUND::throwServiceException);
+        BoardComment comment = findCommentOrElseThrow(commentId);
 
-        // 권한 체크 (댓글 작성자만 수정 가능)
-        if (!comment.getAuthor().getId().equals(actor.getId())) {
-            ErrorCode.NO_BOARD_COMMENT_PERMISSION.throwServiceException();
-        }
+        // 댓글 작성자만 수정
+        validateCommentAuthor(comment, actor);
 
         // 수정
         comment.updateComment(request.comment());
@@ -67,34 +65,46 @@ public class BoardCommentService {
                 .build();
     }
 
+    @Transactional
     public void deleteComment(Long boardId, Long commentId, Member actor) {
         // 게시글 존재 여부 체크
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(ErrorCode.BOARD_NOT_FOUND::throwServiceException);
+        Board board = findBoardOrElseThrow(boardId);
 
         // 댓글 존재 여부 체크
-        BoardComment comment = boardCommentRepository.findById(commentId)
-                .orElseThrow(ErrorCode.BOARD_COMMENT_NOT_FOUND::throwServiceException);
+        BoardComment comment = findCommentOrElseThrow(commentId);
 
-        // 권한 체크 (댓글 작성자만 삭제 가능)
-        if (!comment.getAuthor().getId().equals(actor.getId())) {
-            ErrorCode.NO_BOARD_COMMENT_PERMISSION.throwServiceException();
-        }
+        // 댓글 작성자만 삭제
+        validateCommentAuthor(comment, actor);
 
         // 댓글 삭제
+        board.removeComment(comment);
         boardCommentRepository.delete(comment);
     }
 
     @Transactional(readOnly = true)
     public PageDto<GetBoardCommentResponse> getComments(Long boardId, int page, int pageSize) {
         // 게시글 존재 여부 체크
-        boardRepository.findById(boardId)
-                .orElseThrow(ErrorCode.BOARD_NOT_FOUND::throwServiceException);
+        findBoardOrElseThrow(boardId);
 
         Pageable pageable = PageRequest.of(page - 1, pageSize);
-
         Page<GetBoardCommentResponse> comments = boardCommentRepository.findByBoardId(boardId, pageable);
 
         return new PageDto<>(comments);
+    }
+
+    private Board findBoardOrElseThrow(Long boardId) {
+        return boardRepository.findById(boardId)
+                .orElseThrow(ErrorCode.BOARD_NOT_FOUND::throwServiceException);
+    }
+
+    private BoardComment findCommentOrElseThrow(Long commentId) {
+        return boardCommentRepository.findById(commentId)
+                .orElseThrow(ErrorCode.BOARD_COMMENT_NOT_FOUND::throwServiceException);
+    }
+
+    private void validateCommentAuthor(BoardComment comment, Member actor) {
+        if (!comment.getAuthor().getId().equals(actor.getId())) {
+            ErrorCode.NO_BOARD_COMMENT_PERMISSION.throwServiceException();
+        }
     }
 }
