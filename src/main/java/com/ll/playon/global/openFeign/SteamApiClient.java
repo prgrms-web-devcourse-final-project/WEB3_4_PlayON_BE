@@ -1,8 +1,11 @@
 package com.ll.playon.global.openFeign;
 
+import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.openFeign.dto.ownedGames.SteamGameResponse;
 import com.ll.playon.global.openFeign.dto.playerSummaries.SteamResponse;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
@@ -38,11 +41,23 @@ public interface SteamApiClient {
 
     default SteamGameResponse fallbackOwnedGames(String apiKey, String steamId, Throwable t) {
         log.warn("GetOwnedGames fallback: {}", t.getMessage());
-        return new SteamGameResponse();
+        if (t instanceof CallNotPermittedException) {
+            throw ErrorCode.STEAM_UNAVAILABLE.throwServiceException();
+        } else if (t instanceof RequestNotPermitted) {
+            throw ErrorCode.STEAM_TOO_MANY_REQUEST.throwServiceException();
+        } else {
+            throw ErrorCode.STEAM_NOT_RESPONDED.throwServiceException();
+        }
     }
 
     default SteamResponse fallbackPlayerSummary(String apiKey, String steamIds, Throwable t) {
         log.warn("GetPlayerSummaries fallback: {}", t.getMessage());
-        return new SteamResponse();
+        if (t instanceof CallNotPermittedException) {
+            throw ErrorCode.STEAM_UNAVAILABLE.throwServiceException();
+        } else if (t instanceof RequestNotPermitted) {
+            throw ErrorCode.STEAM_TOO_MANY_REQUEST.throwServiceException();
+        } else {
+            throw ErrorCode.STEAM_NOT_RESPONDED.throwServiceException();
+        }
     }
 }

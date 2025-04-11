@@ -60,20 +60,20 @@ resilience4j:
     instances:
       steamApiRetry:
         max-attempts: 3
-        wait-duration: 1s
+        wait-duration: 2s
 
   ratelimiter:
     instances:
       steamApiRateLimiter:
-        limit-for-period: 20
-        limit-refresh-period: 30s
-        timeout-duration: 1000ms
+        limit-for-period: 38
+        limit-refresh-period: 60s
+        timeout-duration: 2000ms
 
   circuitbreaker:
     instances:
       steamApiCircuitBreaker:
         register-health-indicator: true
-        failure-rate-threshold: 50
-        sliding-window-size: 10
-        minimum-number-of-calls: 5
-        wait-duration-in-open-state: 30s
+        failure-rate-threshold: 30
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+        wait-duration-in-open-state: 60s
