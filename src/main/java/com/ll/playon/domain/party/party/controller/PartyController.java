@@ -107,7 +107,7 @@ public class PartyController {
 //        정책 고민 (회원만 조회 가능하게 할 것인지)
 //        Member actor = this.userContext.getActor();
 
-        return RsData.success(HttpStatus.OK, this.partyService.getCompletedPartyMain(limit));
+        return RsData.success(HttpStatus.OK, this.partyService.getCompletedPartyWithLogMain(limit));
     }
 
     @GetMapping("/{partyId}")
