@@ -101,8 +101,8 @@ public class PartyController {
     }
 
     @GetMapping("/main/completed")
-    @Operation(summary = "메인용 종료된 파티 리스트 조회")
-    public RsData<GetPartyMainResponse> getCompletedPartyMain(@RequestParam(defaultValue = "3") int limit) {
+    @Operation(summary = "메인용 파티 로그가 작성되었고 종료된 파티 리스트 조회")
+    public RsData<GetPartyMainResponse> getCompletedPartyWithLogMain(@RequestParam(defaultValue = "3") int limit) {
         // TODO : 추후 롤백
 //        정책 고민 (회원만 조회 가능하게 할 것인지)
 //        Member actor = this.userContext.getActor();

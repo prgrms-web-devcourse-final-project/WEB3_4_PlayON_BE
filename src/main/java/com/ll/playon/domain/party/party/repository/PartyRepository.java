@@ -167,7 +167,10 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             JOIN pm.party p
             WHERE pm.member.id = :memberId
             AND p.publicFlag = true
+            AND p.partyStatus = :partyStatus
+            AND pm.partyLog IS NOT NULL
             ORDER BY p.endedAt DESC
             """)
-    Page<Party> findMembersRecentCompletedParties(@Param("memberId") Long memberId, Pageable pageable);
+    Page<Party> findMembersRecentCompletedParties(@Param("memberId") Long memberId,
+                                                  @Param("partyStatus") PartyStatus partyStatus, Pageable pageable);
 }
