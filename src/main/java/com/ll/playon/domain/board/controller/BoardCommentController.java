@@ -59,6 +59,7 @@ public class BoardCommentController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
-        return RsData.success(HttpStatus.OK, boardCommentService.getComments(boardId, page, pageSize));
+
+        return RsData.success(HttpStatus.OK, boardCommentService.getComments(boardId, page, pageSize, userContext.getActor()));
     }
 }

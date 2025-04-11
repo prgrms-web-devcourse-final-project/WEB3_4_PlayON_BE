@@ -10,6 +10,7 @@ import com.ll.playon.domain.board.dto.response.PutBoardResponse;
 import com.ll.playon.domain.board.entity.Board;
 import com.ll.playon.domain.board.enums.BoardCategory;
 import com.ll.playon.domain.board.enums.BoardSortType;
+import com.ll.playon.domain.board.repository.BoardLikeRepository;
 import com.ll.playon.domain.board.repository.BoardRepository;
 import com.ll.playon.domain.guild.guild.dto.request.PostImageUrlRequest;
 import com.ll.playon.domain.image.event.ImageDeleteEvent;
@@ -43,6 +44,7 @@ public class BoardService {
     private final ImageService imageService;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final MemberRepository memberRepository;
+    private final BoardLikeRepository boardLikeRepository;
 
     @Transactional
     public PostBoardResponse createBoard(PostBoardRequest request, Member actor) {
@@ -118,8 +120,8 @@ public class BoardService {
         applicationEventPublisher.publishEvent(new ImageDeleteEvent(board.getId(), ImageType.BOARD));
     }
 
-    @Transactional
-    public GetBoardDetailResponse getBoardDetail(long boardId) {
+    @Transactional(readOnly = true)
+    public GetBoardDetailResponse getBoardDetail(long boardId, Member actor) {
         Board board = findBoardOrElseThrow(boardId);
 
         // 조회수 증가
@@ -139,6 +141,8 @@ public class BoardService {
                 .authorNickname(authorProfile.nickname())
                 .profileImg(authorProfile.profileImg()) // 프로필 이미지
                 .title(authorProfile.title()) // 대표 칭호
+                .isAuthor(isAuthor(board.getAuthor(), actor)) // 작성자 본인 여부
+                .isLiked(isLiked(boardId, actor))
                 .boardTitle(board.getTitle())
                 .createAt(board.getCreatedAt())
                 .imgUrl(imageService.getImageById(ImageType.BOARD, board.getId())) // 게시글 이미지
@@ -168,5 +172,13 @@ public class BoardService {
         if (!board.getAuthor().getId().equals(actor.getId())) {
             throw ErrorCode.NO_BOARD_PERMISSION.throwServiceException();
         }
+    }
+
+    private boolean isAuthor(Member author, Member actor) {
+        return actor != null && actor.getId().equals(author.getId());
+    }
+
+    private boolean isLiked(long boardId, Member actor) {
+        return actor != null && boardLikeRepository.existsByBoardIdAndMemberId(boardId, actor.getId());
     }
 }

@@ -82,12 +82,13 @@ public class BoardCommentService {
     }
 
     @Transactional(readOnly = true)
-    public PageDto<GetBoardCommentResponse> getComments(Long boardId, int page, int pageSize) {
+    public PageDto<GetBoardCommentResponse> getComments(Long boardId, int page, int pageSize, Member actor) {
         // 게시글 존재 여부 체크
         findBoardOrElseThrow(boardId);
 
         Pageable pageable = PageRequest.of(page - 1, pageSize);
-        Page<GetBoardCommentResponse> comments = boardCommentRepository.findByBoardId(boardId, pageable);
+        Long currentMemberId = actor != null ? actor.getId() : null;
+        Page<GetBoardCommentResponse> comments = boardCommentRepository.findByBoardId(boardId, pageable, currentMemberId);
 
         return new PageDto<>(comments);
     }
