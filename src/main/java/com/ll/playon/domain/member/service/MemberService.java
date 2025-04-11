@@ -316,6 +316,7 @@ public class MemberService {
         Party party = PartyContext.getParty();
 
         PartyValidation.checkPartyCanJoin(party);
+        PartyValidation.checkPartyIsNotFull(party);
 
         PartyMember me = PartyMemberContext.getPartyMember();
 
