@@ -6,8 +6,6 @@ import com.ll.playon.global.exceptions.ErrorCode;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Arrays;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +14,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
+
+import java.util.Arrays;
+import java.util.Optional;
 
 @RequestScope
 @Component
@@ -26,13 +27,10 @@ public class UserContext {
     private final HttpServletResponse resp;
     private final HttpServletRequest req;
 
-    private static final String COOKIE_DOMAIN = "localhost";
-
     // 쿠키 생성
     public void setCookie(String name, String value) {
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .path("/")
-                .domain(COOKIE_DOMAIN)
                 .httpOnly(true)
                 .build();
 
@@ -84,7 +82,6 @@ public class UserContext {
     public void deleteCookie(String name) {
         ResponseCookie cookie = ResponseCookie.from(name, null)
                 .path("/")
-                .domain("localhost")
                 .httpOnly(true)
                 .maxAge(0)
                 .build();
