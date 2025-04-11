@@ -10,14 +10,12 @@ import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.global.exceptions.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
 @Aspect
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PartyInviterCheckAspect {
@@ -53,7 +51,7 @@ public class PartyInviterCheckAspect {
 
     private boolean isNotPartyInviter(Member actor, Party party) {
         return party.getPartyMembers().stream()
-                .anyMatch(pm -> pm.getPartyRole().equals(PartyRole.INVITER)
+                .noneMatch(pm -> pm.getPartyRole().equals(PartyRole.INVITER)
                                 && pm.getMember().getId().equals(actor.getId()));
     }
 }

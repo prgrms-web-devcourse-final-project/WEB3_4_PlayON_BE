@@ -1,7 +1,12 @@
 package com.ll.playon.domain.member.controller;
 
 import com.ll.playon.domain.game.game.dto.GameListResponse;
-import com.ll.playon.domain.member.dto.*;
+import com.ll.playon.domain.member.dto.GetMembersResponse;
+import com.ll.playon.domain.member.dto.MemberAuthRequest;
+import com.ll.playon.domain.member.dto.MemberDetailDto;
+import com.ll.playon.domain.member.dto.MemberProfileResponse;
+import com.ll.playon.domain.member.dto.PresignedUrlResponse;
+import com.ll.playon.domain.member.dto.PutMemberDetailDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.domain.member.service.SteamAsyncService;
@@ -11,13 +16,21 @@ import com.ll.playon.global.security.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/members")
@@ -89,14 +102,25 @@ public class MemberController {
     @Operation(summary = "사용자의 보유게임 갱신")
     public RsData<String> linkSteamGames() {
         Member actor = userContext.getActor();
-        if(ObjectUtils.isEmpty(actor)) throw ErrorCode.UNAUTHORIZED.throwServiceException();
+        if (ObjectUtils.isEmpty(actor)) {
+            throw ErrorCode.UNAUTHORIZED.throwServiceException();
+        }
         steamAsyncService.getUserGamesAndCheckGenres(actor);
         return RsData.success(HttpStatus.OK, "성공");
     }
 
+    @DeleteMapping("/me/parties/pending/{partyId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "파티 신청 취소")
+    public void cancelPendingParty(@PathVariable long partyId) {
+        Member actor = this.userContext.getActualActor();
+
+        this.memberService.cancelPendingParty(actor, partyId);
+    }
+
     @PutMapping("/me/parties/{partyId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "파티 초대 승락")
+    @Operation(summary = "파티 초대 승낙")
     public void approvePartyInvitation(@PathVariable long partyId) {
         Member actor = this.userContext.getActualActor();
 

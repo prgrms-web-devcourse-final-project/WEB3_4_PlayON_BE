@@ -353,14 +353,14 @@ public class PartyService {
         if (opPartyMember.isPresent()) {
             PartyMember partyMember = opPartyMember.get();
 
-            // 본인일 경우
-            PartyMemberValidation.checkIsPartyMemberOwn(partyMember, actor);
-
             // 이미 해당 파티에 신청한 경우
-            PartyMemberValidation.checkPendingMember(partyMember);
+            PartyMemberValidation.checkAlreadyPendingMember(partyMember);
 
             // 파티원일 경우
             ErrorCode.IS_ALREADY_PARTY_MEMBER.throwServiceException();
+
+            // 본인일 경우
+            PartyMemberValidation.checkIsPartyMemberOwn(partyMember, actor);
         }
 
         party.addPartyMember(PartyMemberMapper.of(actor, PartyRole.PENDING));
@@ -401,20 +401,20 @@ public class PartyService {
         Member invitedActor = this.memberService.findById(memberId)
                 .orElseThrow(ErrorCode.USER_NOT_REGISTERED::throwServiceException);
 
-        Optional<PartyMember> opPartyMember = this.getPartyMember(actor, party);
+        Optional<PartyMember> opPartyMember = this.getPartyMember(invitedActor, party);
 
         // 이미 해당 파티의 파티원일 경우
         if (opPartyMember.isPresent()) {
             PartyMember partyMember = opPartyMember.get();
 
-            // 본인일 경우
-            PartyMemberValidation.checkIsPartyMemberOwn(partyMember, actor);
-
             // 이미 해당 파티에 신청한 경우
-            PartyMemberValidation.checkPendingMember(partyMember);
+            PartyMemberValidation.checkAlreadyInvitedMember(partyMember);
 
             // 파티원일 경우
             ErrorCode.IS_ALREADY_PARTY_MEMBER.throwServiceException();
+
+            // 본인일 경우
+            PartyMemberValidation.checkIsPartyMemberOwn(partyMember, actor);
         }
 
         party.addPartyMember(PartyMemberMapper.of(invitedActor, PartyRole.INVITER));

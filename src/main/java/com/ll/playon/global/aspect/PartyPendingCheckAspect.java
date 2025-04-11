@@ -2,7 +2,10 @@ package com.ll.playon.global.aspect;
 
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.party.party.context.PartyContext;
+import com.ll.playon.domain.party.party.context.PartyMemberContext;
 import com.ll.playon.domain.party.party.entity.Party;
+import com.ll.playon.domain.party.party.entity.PartyMember;
+import com.ll.playon.domain.party.party.repository.PartyMemberRepository;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.global.exceptions.ErrorCode;
@@ -15,11 +18,12 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 @RequiredArgsConstructor
-public class PartyOwnerCheckAspect {
+public class PartyPendingCheckAspect {
     private final PartyRepository partyRepository;
+    private final PartyMemberRepository partyMemberRepository;
 
-    @Around("@annotation(com.ll.playon.global.annotation.PartyOwnerOnly)")
-    public Object checkPartyOwner(ProceedingJoinPoint joinPoint) throws Throwable {
+    @Around("@annotation(com.ll.playon.global.annotation.PartyPendingOnly)")
+    public Object checkPartyPending(ProceedingJoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
 
         Member actor = (Member) args[0];
@@ -27,22 +31,27 @@ public class PartyOwnerCheckAspect {
         Party party = this.partyRepository.findById(partyId)
                 .orElseThrow(ErrorCode.PARTY_NOT_FOUND::throwServiceException);
 
-        if (isNotPartyOwner(actor, party)) {
-            throw ErrorCode.IS_NOT_PARTY_OWNER.throwServiceException();
+        if (isNotPartyPending(actor, party)) {
+            throw ErrorCode.IS_NOT_PARTY_PENDING.throwServiceException();
         }
 
+        PartyMember partyMember = this.partyMemberRepository.findByMemberAndParty(actor, party)
+                .orElseThrow(ErrorCode.PARTY_MEMBER_NOT_FOUND::throwServiceException);
+
         PartyContext.setParty(party);
+        PartyMemberContext.setPartyMember(partyMember);
 
         try {
             return joinPoint.proceed(args);
         } finally {
             PartyContext.clear();
+            PartyMemberContext.clear();
         }
     }
 
-    private boolean isNotPartyOwner(Member actor, Party party) {
+    private boolean isNotPartyPending(Member actor, Party party) {
         return party.getPartyMembers().stream()
-                .noneMatch(pm -> pm.getPartyRole().equals(PartyRole.OWNER)
-                                && pm.getMember().getId().equals(actor.getId()));
+                .noneMatch(pm -> pm.getPartyRole().equals(PartyRole.PENDING)
+                                 && pm.getMember().getId().equals(actor.getId()));
     }
 }
