@@ -1,12 +1,15 @@
 package com.ll.playon.global.initData;
 
+import com.ll.playon.domain.board.entity.Board;
+import com.ll.playon.domain.board.entity.BoardComment;
+import com.ll.playon.domain.board.entity.BoardLike;
+import com.ll.playon.domain.board.enums.BoardCategory;
+import com.ll.playon.domain.board.repository.BoardCommentRepository;
+import com.ll.playon.domain.board.repository.BoardLikeRepository;
+import com.ll.playon.domain.board.repository.BoardRepository;
 import com.ll.playon.domain.chat.entity.PartyRoom;
 import com.ll.playon.domain.chat.repository.PartyRoomRepository;
-import com.ll.playon.domain.game.game.entity.SteamGame;
-import com.ll.playon.domain.game.game.entity.SteamGenre;
-import com.ll.playon.domain.game.game.entity.SteamImage;
-import com.ll.playon.domain.game.game.entity.SteamMovie;
-import com.ll.playon.domain.game.game.entity.WeeklyPopularGame;
+import com.ll.playon.domain.game.game.entity.*;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
@@ -30,13 +33,10 @@ import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.enums.Role;
 import com.ll.playon.domain.member.repository.MemberRepository;
-import com.ll.playon.domain.member.service.MemberService;
+import com.ll.playon.domain.member.service.SteamAsyncService;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
-import com.ll.playon.domain.member.service.SteamAsyncService;
-import com.ll.playon.domain.party.party.dto.request.PartyTagRequest;
-import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.title.entity.Title;
@@ -45,19 +45,6 @@ import com.ll.playon.domain.title.repository.TitleRepository;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import jakarta.transaction.Transactional;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -67,6 +54,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Configuration
@@ -80,7 +72,6 @@ public class BaseInitData {
     private final GuildBoardRepository guildBoardRepository;
     private final GuildBoardCommentRepository guildBoardCommentRepository;
     private final GuildBoardLikeRepository guildBoardLikeRepository;
-    private final MemberService memberService;
     private final PartyRepository partyRepository;
     private final PasswordEncoder passwordEncoder;
     private final TitleRepository titleRepository;
@@ -95,6 +86,12 @@ public class BaseInitData {
     private WeeklyGameRepository weeklyGameRepository;
     @Autowired
     private WeeklyPopularGuildRepository weeklyPopularGuildRepository;
+    @Autowired
+    private BoardCommentRepository boardCommentRepository;
+    @Autowired
+    private BoardLikeRepository boardLikeRepository;
+    @Autowired
+    private BoardRepository boardRepository;
 
     @Bean
     public ApplicationRunner baseInitDataApplicationRunner() {
@@ -108,6 +105,7 @@ public class BaseInitData {
             self.makeSampleGuildJoinRequests();
             self.makeSampleGuildBoards();
             self.makeSampleWeeklyPopularGuild();
+            self.makeSampleBoards();
         };
     }
 
@@ -356,83 +354,68 @@ public class BaseInitData {
         if (guildRepository.count() != 0) {
             return;
         }
+        List<Member> members = memberRepository.findAll();
+        List<SteamGame> games = gameRepository.findAll();
 
-        List<Member> members = memberRepository.findAll().stream()
-                .limit(3)
-                .toList();
+        // 고정된 샘플 길드 데이터
+        List<Guild> guilds = List.of(
+                Guild.builder()
+                        .owner(members.get(0))
+                        .name("공개 길드 A")
+                        .description("누구나 가입 가능한 길드")
+                        .maxMembers(20)
+                        .game(games.get(0))
+                        .isPublic(true)
+                        .isDeleted(false)
+                        .build(),
 
-        List<Long> gameAppIds = List.of(1L, 2L, 3L); // 샘플 SteamGame ID들
-        List<SteamGame> games = gameRepository.findAllByAppidIn(gameAppIds);
+                Guild.builder()
+                        .owner(members.get(1))
+                        .name("비공개 길드 B")
+                        .description("비공개 길드입니다")
+                        .maxMembers(10)
+                        .game(games.get(1))
+                        .isPublic(false)
+                        .isDeleted(false)
+                        .build(),
 
-        List<String> guildNames = List.of(
-                "게임 마스터즈", "프로 플레이어스", "데빌 헌터즈",
-                "판타지 길드", "엘리트 스쿼드", "레전드 레이더스",
-                "나이트 워리어스", "프리스타일 게이머즈", "드래곤 슬레이어즈",
-                "캐주얼 크루"
+                Guild.builder()
+                        .owner(members.get(2))
+                        .name("DELETED_" + UUID.randomUUID().toString())
+                        .description("DELETED")
+                        .maxMembers(15)
+                        .game(games.get(2))
+                        .guildImg("DELETED")
+                        .isPublic(true)
+                        .isDeleted(true)
+                        .build()
         );
 
-        List<String> descriptions = List.of(
-                "하드코어 게이머들의 모임",
-                "캐주얼하게 즐기는 길드",
-                "전략과 협동을 중시하는 길드입니다.",
-                "PVP 특화 길드입니다.",
-                "스피드런을 즐기는 길드입니다.",
-                "초보자 환영 길드입니다.",
-                "밤에 주로 활동하는 길드입니다.",
-                "도전과제를 함께 하는 길드입니다.",
-                "친목을 중시하는 길드입니다.",
-                "경쟁을 좋아하는 사람들의 길드입니다."
-        );
-
-        Random random = new Random();
-        for (int i = 0; i < 10; i++) {
-            Member owner = members.get(random.nextInt(members.size()));
-            SteamGame selectedGame = games.get(random.nextInt(games.size()));
-
-            Guild guild = Guild.builder()
-                    .owner(owner)
-                    .name(guildNames.get(i))
-                    .description(descriptions.get(i))
-                    .maxMembers(5 + random.nextInt(16))
-                    .game(selectedGame)
-                    .guildImg("a.png")
-                    .isPublic(random.nextBoolean())
-                    .isDeleted(false)
-                    .build();
-
-            List<GuildTag> sampleGuildTags = createSampleGuildTags(guild);
-            guild.setGuildTags(sampleGuildTags);
+        for (Guild guild : guilds) {
+            guild.setGuildTags(createSampleGuildTags(guild));
             guildRepository.save(guild);
 
-            // 길드장 저장
+            // 길드장 등록
             guildMemberRepository.save(GuildMember.builder()
                     .guild(guild)
-                    .member(owner)
+                    .member(guild.getOwner())
                     .guildRole(GuildRole.LEADER)
                     .build());
 
-            // 후보 멤버 리스트에서 owner 제외
-            List<Member> candidates = new ArrayList<>(members);
-            candidates.remove(owner);
-            Collections.shuffle(candidates);
+            // 추가 멤버 등록
+            List<Member> extraMembers = members.stream()
+                    .filter(m -> !m.equals(guild.getOwner()))
+                    .limit(3) // 길드마다 최대 3명
+                    .toList();
 
-            // 추가 멤버 수 랜덤 (0 ~ 2명)
-            int memberCount = random.nextInt(3);
-            int added = 0;
+            GuildRole[] roles = {GuildRole.MANAGER, GuildRole.MEMBER};
 
-            for (Member candidate : candidates) {
-                if (added >= memberCount) {
-                    break;
-                }
-
-                // 이미 같은 길드에 들어간 멤버는 패스
-                GuildMember guildMember = GuildMember.builder()
+            for (int i = 0; i < extraMembers.size(); i++) {
+                guildMemberRepository.save(GuildMember.builder()
                         .guild(guild)
-                        .member(candidate)
-                        .guildRole(random.nextBoolean() ? GuildRole.MANAGER : GuildRole.MEMBER)
-                        .build();
-                guildMemberRepository.save(guildMember);
-                added++;
+                        .member(extraMembers.get(i))
+                        .guildRole(roles[i % roles.length])
+                        .build());
             }
         }
     }
@@ -739,5 +722,62 @@ public class BaseInitData {
         }
     }
 
+    @Transactional
+    public void makeSampleBoards() {
+        if (boardRepository.count() > 0) {
+            return;
+        }
 
+        List<Member> members = memberRepository.findAll().stream()
+                .limit(3)
+                .toList();
+
+        List<String> titles = List.of(
+                "자유게시판 샘플 제목1",
+                "자유게시판 샘플 제목2",
+                "자유게시판 샘플 제목3"
+        );
+
+        List<String> contents = List.of(
+                "샘플 내용1입니다.",
+                "샘플 내용2입니다.",
+                "샘플 내용3입니다."
+        );
+
+        Random random = new Random();
+
+        for (int i = 0; i < 3; i++) {
+            Member author = members.get(random.nextInt(members.size()));
+
+            Board board = Board.builder()
+                    .author(author)
+                    .title(titles.get(i))
+                    .content(contents.get(i))
+                    .category(BoardCategory.DAILY)
+                    .build();
+
+            boardRepository.save(board);
+
+            // 댓글 추가
+            for (int j = 0; j < random.nextInt(3); j++) {
+                BoardComment comment = BoardComment.builder()
+                        .board(board)
+                        .author(author)
+                        .comment("댓글 " + (j + 1))
+                        .build();
+                board.addComment(comment);
+                boardCommentRepository.save(comment);
+            }
+
+            // 좋아요 추가
+            if (random.nextBoolean()) {
+                BoardLike like = BoardLike.builder()
+                        .board(board)
+                        .member(author)
+                        .build();
+                boardLikeRepository.save(like);
+                board.increaseLikeCount();
+            }
+        }
+    }
 }
