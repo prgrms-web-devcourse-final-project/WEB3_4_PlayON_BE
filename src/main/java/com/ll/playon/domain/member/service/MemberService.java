@@ -351,9 +351,10 @@ public class MemberService {
 
     // 내가 파티 로그를 작성한 적 있는 파티들을 최근에 끝난 순으로 조회
     @Transactional(readOnly = true)
-    public Page<GetPartyMainResponse> getPartiesLoggedByMe(Member actor, int page, int pageSize) {
+    public Page<GetPartyResponse> getPartiesLoggedByMe(Member actor, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize);
-        Page<Party> partiesLoggedByMe = this.partyRepository.findMembersRecentCompletedParties(actor.getId(), pageable);
+        Page<Party> partiesLoggedByMe = this.partyRepository.findMembersRecentCompletedParties(
+                actor.getId(), PartyStatus.COMPLETED, pageable);
 
         if (partiesLoggedByMe.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
@@ -372,12 +373,12 @@ public class MemberService {
 
     // 유저가 파티 로그를 작성한 적 있는 파티들을 최근에 끝난 순으로 조회
     @Transactional(readOnly = true)
-    public Page<GetPartyMainResponse> getPartiesLoggedByMember(long memberId, int page, int pageSize) {
+    public Page<GetPartyResponse> getPartiesLoggedByMember(long memberId, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize);
         Member actor = this.getActor(memberId);
 
-        Page<Party> partiesLoggedByMember = this.partyRepository.findMembersRecentCompletedParties(actor.getId(),
-                pageable);
+        Page<Party> partiesLoggedByMember = this.partyRepository.findMembersRecentCompletedParties(
+                actor.getId(), PartyStatus.COMPLETED, pageable);
 
         if (partiesLoggedByMember.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
@@ -425,7 +426,7 @@ public class MemberService {
     }
 
     // 최근 유저에 의해 로그가 작성된 종료된 파티 조회
-    private PageImpl<GetPartyMainResponse> getLoggedPartiesByMembers(Page<Party> partiesLoggedByMe, Pageable pageable) {
+    private PageImpl<GetPartyResponse> getLoggedPartiesByMembers(Page<Party> partiesLoggedByMe, Pageable pageable) {
         List<Long> partyIdsLoggedByMe = partiesLoggedByMe.stream()
                 .map(Party::getId)
                 .toList();
@@ -437,7 +438,7 @@ public class MemberService {
         );
 
         return new PageImpl<>(
-                List.of(new GetPartyMainResponse(mergedList)),
+                mergedList,
                 pageable,
                 partiesLoggedByMe.getTotalElements());
     }

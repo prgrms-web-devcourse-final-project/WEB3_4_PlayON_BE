@@ -252,7 +252,7 @@ public class PartyService {
         }
 
         List<Party> partiesWithLog = completedParties.stream()
-                .filter(PartyLogUtils::hasAnyPartyLog)
+                .filter(PartyLogUtils::hasPartyLog)
                 .limit(limit)
                 .toList();
 
