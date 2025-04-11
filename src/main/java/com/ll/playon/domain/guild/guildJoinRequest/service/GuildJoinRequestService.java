@@ -6,8 +6,11 @@ import com.ll.playon.domain.guild.guildJoinRequest.dto.response.GuildJoinRequest
 import com.ll.playon.domain.guild.guildJoinRequest.entity.GuildJoinRequest;
 import com.ll.playon.domain.guild.guildJoinRequest.enums.ApprovalState;
 import com.ll.playon.domain.guild.guildJoinRequest.repository.GuildJoinRequestRepository;
+import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
+import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.global.exceptions.ErrorCode;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +25,7 @@ public class GuildJoinRequestService {
 
     private final GuildRepository guildRepository;
     private final GuildJoinRequestRepository guildJoinRequestRepository;
+    private final GuildMemberRepository guildMemberRepository;
     private final MemberTitleService memberTitleService;
 
     @Transactional
@@ -84,6 +88,15 @@ public class GuildJoinRequestService {
 
         joinRequest.setApprovalState(targetState);
         joinRequest.setApprovedBy(approver);
+
+        if (targetState == ApprovalState.APPROVED) {
+            GuildMember newMember = GuildMember.builder()
+                    .guild(joinRequest.getGuild())
+                    .member(joinRequest.getMember())
+                    .guildRole(GuildRole.MEMBER)
+                    .build();
+            guildMemberRepository.save(newMember);
+        }
     }
 
     @Transactional(readOnly = true)
