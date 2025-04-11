@@ -214,7 +214,7 @@ public class GuildService {
 
     @Transactional(readOnly = true)
     public PageDto<GetGuildListResponse> searchGuilds(int page, int pageSize, String sort, GetGuildListRequest request) {
-        Page<Guild> guilds = guildRepository.searchGuilds(request, PageRequest.of(page, pageSize), sort);
+        Page<Guild> guilds = guildRepository.searchGuilds(request, PageRequest.of(page - 1, pageSize), sort);
 
         return new PageDto<>(guilds.map(GetGuildListResponse::from));
     }

@@ -114,7 +114,11 @@ public enum ErrorCode {
     TAG_VALUE_CONVERT_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "태그 이름 변환에 실패하였습니다."),
 
     // Title
-    TITLE_NOT_FOUND(HttpStatus.NOT_FOUND, "칭호를 찾지 못했습니다.");
+    TITLE_NOT_FOUND(HttpStatus.NOT_FOUND, "칭호를 찾지 못했습니다."),
+
+    // board
+    BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
+    NO_BOARD_PERMISSION(HttpStatus.FORBIDDEN, "게시글 권한이 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

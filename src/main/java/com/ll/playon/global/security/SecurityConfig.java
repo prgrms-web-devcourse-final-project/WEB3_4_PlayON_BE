@@ -61,6 +61,9 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/games/*/logs").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/games/*/details").permitAll()
 
+                                // 자유 게시판 부분
+                                .requestMatchers(HttpMethod.GET, "/api/boards/**").permitAll()
+
                                 // 배치
                                 .requestMatchers(HttpMethod.POST, "/api/batch/steam-game").permitAll()
 
