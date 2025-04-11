@@ -86,6 +86,14 @@ public class MemberController {
         return RsData.success(HttpStatus.OK, memberService.me(userContext.getActor()));
     }
 
+    @GetMapping("/member/{memberId}")
+    @Operation(summary = "남 정보")
+    public RsData<MemberProfileResponse> getMemberProfile(@PathVariable Long memberId) {
+        return RsData.success(HttpStatus.OK,
+                memberService.me(memberService.findById(memberId)
+                        .orElseThrow(ErrorCode.USER_NOT_FOUND::throwServiceException)));
+    }
+
     @GetMapping("/nickname")
     @Operation(summary = "닉네임으로 사용자 리스트 조회")
     public RsData<List<GetMembersResponse>> getMembersByNickname(@RequestParam String nickname) {
