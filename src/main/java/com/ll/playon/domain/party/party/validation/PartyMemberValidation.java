@@ -25,7 +25,7 @@ public class PartyMemberValidation {
     // 파티멤버가 맞는지 확인
     public static void checkPartyMember(Party party, PartyMember partyMember) {
         if (!party.getPartyMembers().contains(partyMember)) {
-            ErrorCode.IS_NOT_PARTY_MEMBER.throwServiceException();
+            ErrorCode.IS_NOT_PARTY_MEMBER_MEMBER.throwServiceException();
         }
     }
 
