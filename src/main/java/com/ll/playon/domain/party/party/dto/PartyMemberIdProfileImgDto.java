@@ -1,6 +1,7 @@
 package com.ll.playon.domain.party.party.dto;
 
 import com.ll.playon.domain.party.party.entity.PartyMember;
+import java.util.Objects;
 
 public record PartyMemberIdProfileImgDto(
         long memberId,
@@ -10,7 +11,7 @@ public record PartyMemberIdProfileImgDto(
     public PartyMemberIdProfileImgDto(PartyMember partyMember) {
         this(
                 partyMember.getMember().getId(),
-                partyMember.getMember().getProfileImg()
+                Objects.requireNonNullElse(partyMember.getMember().getProfileImg(), "")
         );
     }
 }
