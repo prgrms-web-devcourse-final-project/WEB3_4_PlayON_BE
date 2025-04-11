@@ -5,12 +5,13 @@ import com.ll.playon.domain.image.mapper.ImageMapper;
 import com.ll.playon.domain.image.repository.ImageRepository;
 import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.global.aws.s3.S3Service;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -83,9 +84,9 @@ public class ImageService {
     // DB에서 해당 ID에 존재하는 URL 삭제
     @Transactional
     public void deleteImagesByIdAndUrl(ImageType imageType, long referenceId, String url) {
-        String dbUrl = "\"" + url + "\"";
+//        String dbUrl = "\"" + url + "\"";
         long imageDeleteCount = StringUtils.isNotBlank(url)
-                ? this.imageRepository.deleteImageByReferenceIdAndImageTypeAndImageUrl(referenceId, imageType, dbUrl) : 0;
+                ? this.imageRepository.deleteImageByReferenceIdAndImageTypeAndImageUrl(referenceId, imageType, url) : 0;
 
         if (imageDeleteCount > 0) {
             this.s3Service.deleteObjectByUrl(url);

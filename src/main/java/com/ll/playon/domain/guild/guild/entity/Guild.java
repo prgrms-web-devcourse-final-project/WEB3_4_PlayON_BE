@@ -62,6 +62,10 @@ public class Guild extends BaseTime {
     private List<GuildBoard> boards = new ArrayList<>();
 
 
+    public void changeGuildImg(String guildImgUrl) {
+        this.guildImg = guildImgUrl;
+    }
+
     public void softDelete() {
         this.isDeleted = true;
         this.name = "DELETED_" + UUID.randomUUID();
