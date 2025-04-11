@@ -2,11 +2,12 @@ package com.ll.playon.global.webSocket.security;
 
 import com.ll.playon.domain.member.service.AuthTokenService;
 import com.ll.playon.domain.member.service.MemberService;
+import jakarta.servlet.http.Cookie;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
@@ -19,23 +20,43 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
     // TODO: 배포 환경에서 주석 해제 및 아래 메서드 삭제
     @Override
-    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
-                                   Map<String, Object> attributes) throws Exception {
-        String token = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
+                                   WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
 
-        if (token.startsWith("Bearer ")) {
-            token = token.substring("Bearer ".length());
+        if (request instanceof ServletServerHttpRequest servletRequest) {
+            Cookie[] cookies = servletRequest.getServletRequest().getCookies();
 
-            Map<String, Object> payload = this.authTokenService.payload(token);
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("accessToken".equals(cookie.getName())) {
+                        String token = cookie.getValue();
 
-            if (payload != null) {
-                Long userId = ((Number) payload.get("id")).longValue();
-                attributes.put("userId", userId);
-                return true;
+                        if (validateToken(token, attributes)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            String token = servletRequest.getServletRequest().getHeader("Authorization");
+            if (token != null && token.startsWith("Bearer ")) {
+                token = token.substring(7);
+                return validateToken(token, attributes);
             }
         }
 
-        // 인증 실패 시 -> WebSocket 연결 거부
+        // 인증 실패 시 연결 거부
+        return false;
+    }
+
+    private boolean validateToken(String token, Map<String, Object> attributes) {
+        Map<String, Object> payload = this.authTokenService.payload(token);
+        if (payload != null) {
+            Long userId = ((Number) payload.get("id")).longValue();
+            attributes.put("userId", userId);
+            return true;
+        }
+
         return false;
     }
 
