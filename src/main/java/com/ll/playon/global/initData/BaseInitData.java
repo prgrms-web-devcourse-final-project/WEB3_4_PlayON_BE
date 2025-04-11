@@ -9,7 +9,11 @@ import com.ll.playon.domain.board.repository.BoardLikeRepository;
 import com.ll.playon.domain.board.repository.BoardRepository;
 import com.ll.playon.domain.chat.entity.PartyRoom;
 import com.ll.playon.domain.chat.repository.PartyRoomRepository;
-import com.ll.playon.domain.game.game.entity.*;
+import com.ll.playon.domain.game.game.entity.SteamGame;
+import com.ll.playon.domain.game.game.entity.SteamGenre;
+import com.ll.playon.domain.game.game.entity.SteamImage;
+import com.ll.playon.domain.game.game.entity.SteamMovie;
+import com.ll.playon.domain.game.game.entity.WeeklyPopularGame;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
@@ -37,14 +41,30 @@ import com.ll.playon.domain.member.service.SteamAsyncService;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.entity.PartyTag;
+import com.ll.playon.domain.party.party.repository.PartyMemberRepository;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.party.type.PartyRole;
+import com.ll.playon.domain.party.partyLog.entity.PartyLog;
+import com.ll.playon.domain.party.partyLog.repository.PartyLogRepository;
 import com.ll.playon.domain.title.entity.Title;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.repository.TitleRepository;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import jakarta.transaction.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -54,11 +74,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Configuration
@@ -72,6 +87,8 @@ public class BaseInitData {
     private final GuildBoardRepository guildBoardRepository;
     private final GuildBoardCommentRepository guildBoardCommentRepository;
     private final GuildBoardLikeRepository guildBoardLikeRepository;
+    private final PartyMemberRepository partyMemberRepository;
+    private final PartyLogRepository partyLogRepository;
     private final PartyRepository partyRepository;
     private final PasswordEncoder passwordEncoder;
     private final TitleRepository titleRepository;
@@ -106,6 +123,7 @@ public class BaseInitData {
             self.makeSampleGuildBoards();
             self.makeSampleWeeklyPopularGuild();
             self.makeSampleBoards();
+            self.makeSamplePartyLogs();
         };
     }
 
@@ -528,6 +546,36 @@ public class BaseInitData {
 
     private boolean isValidTagValueForType(TagValue tagValue, TagType tagType) {
         return VALID_TAG_VALUE_MAP.getOrDefault(tagType, Collections.emptySet()).contains(tagValue);
+    }
+
+    @Transactional
+    public void makeSamplePartyLogs() {
+        if (partyLogRepository.count() > 0) {
+            return;
+        }
+
+        List<PartyMember> partyMembers = partyMemberRepository.findAll();
+        if (partyMembers.isEmpty()) {
+            return;
+        }
+
+        List<PartyLog> logs = new ArrayList<>();
+        for (int i = 0; i < Math.min(5, partyMembers.size()); i++) {
+            PartyMember partyMember = partyMembers.get(i);
+
+            PartyLog log = PartyLog.builder()
+                    .partyMember(partyMember)
+                    .comment("이 파티 정말 재밌었어요! 추천합니다 :) #" + (i + 1))
+                    .content("파티 참여 경험을 공유합니다. 게임도 재밌고 팀원도 최고였어요.")
+                    .build();
+
+            // PartyMember <-> PartyLog 양방향 연결 (생략 가능. 필요 시 넣기)
+            partyMember.setPartyLog(log);
+
+            logs.add(log);
+        }
+
+        partyLogRepository.saveAll(logs);
     }
 
     private List<GuildTag> createSampleGuildTags(Guild guild) {
