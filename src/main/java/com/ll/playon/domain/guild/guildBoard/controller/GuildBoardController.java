@@ -1,9 +1,6 @@
 package com.ll.playon.domain.guild.guildBoard.controller;
 
-import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCommentCreateRequest;
-import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCommentUpdateRequest;
-import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardCreateRequest;
-import com.ll.playon.domain.guild.guildBoard.dto.request.GuildBoardUpdateRequest;
+import com.ll.playon.domain.guild.guildBoard.dto.request.*;
 import com.ll.playon.domain.guild.guildBoard.dto.response.*;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardSortType;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
@@ -65,11 +62,12 @@ public class GuildBoardController {
     public void saveBoardImageUrl(
             @PathVariable long guildId,
             @PathVariable long boardId,
-            @RequestBody String url
+            @RequestBody @Valid PostImageUrlRequest request
     ) {
         Member actor = userContext.getActor();
-        guildBoardService.saveBoardImageUrl(actor, guildId, boardId, url);
+        guildBoardService.saveBoardImageUrl(actor, guildId, boardId, request.url());
     }
+
 
     @PostMapping("/{guildId}/board")
     @Operation(summary = "길드 게시글 작성")
