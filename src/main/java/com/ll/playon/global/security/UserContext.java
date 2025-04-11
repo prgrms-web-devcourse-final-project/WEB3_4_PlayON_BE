@@ -92,7 +92,6 @@ public class UserContext {
     // JWT 생성하고 쿠키 생성
     public String makeAuthCookies(Member user) {
         String accessToken = memberService.genAccessToken(user);
-        System.out.println(accessToken);// TODO: 삭제
 
         setCookie("apiKey", user.getApiKey());
         setCookie("accessToken", accessToken);

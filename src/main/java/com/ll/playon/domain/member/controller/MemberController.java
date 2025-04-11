@@ -4,6 +4,7 @@ import com.ll.playon.domain.game.game.dto.GameListResponse;
 import com.ll.playon.domain.member.dto.*;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.service.MemberService;
+import com.ll.playon.domain.member.service.SteamAsyncService;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
@@ -25,6 +26,7 @@ import java.util.List;
 public class MemberController {
 
     private final MemberService memberService;
+    private final SteamAsyncService steamAsyncService;
     private final UserContext userContext;
 
     @PostMapping("/login")
@@ -88,7 +90,7 @@ public class MemberController {
     public RsData<String> linkSteamGames() {
         Member actor = userContext.getActor();
         if(ObjectUtils.isEmpty(actor)) throw ErrorCode.UNAUTHORIZED.throwServiceException();
-        memberService.getUserGamesAndCheckGenres(actor);
+        steamAsyncService.getUserGamesAndCheckGenres(actor);
         return RsData.success(HttpStatus.OK, "성공");
     }
 
