@@ -58,7 +58,7 @@ public class BoardController {
     @GetMapping("/{boardId}")
     @Operation(summary = "게시글 상세조회")
     public RsData<GetBoardDetailResponse> getBoard(@PathVariable long boardId) {
-        return RsData.success(HttpStatus.OK, boardService.getBoardDetail(boardId));
+        return RsData.success(HttpStatus.OK, boardService.getBoardDetail(boardId, userContext.getActor()));
     }
 
     @GetMapping("/list")

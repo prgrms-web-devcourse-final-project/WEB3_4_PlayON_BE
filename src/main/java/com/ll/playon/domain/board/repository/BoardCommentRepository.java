@@ -16,6 +16,7 @@ public interface BoardCommentRepository extends JpaRepository<BoardComment, Long
                 c.id,
                 COALESCE(m.nickname, m.username),
                 img.imageUrl,
+                CASE WHEN :currentMemberId IS NOT NULL AND m.id = :currentMemberId THEN true ELSE false END,
                 c.comment,
                 c.createdAt
             )
@@ -24,5 +25,6 @@ public interface BoardCommentRepository extends JpaRepository<BoardComment, Long
             LEFT JOIN Image img ON img.referenceId = m.id AND img.imageType = 'MEMBER'
             WHERE c.board.id = :boardId
         """)
-    Page<GetBoardCommentResponse> findByBoardId(@Param("boardId") Long boardId, Pageable pageable);
+    Page<GetBoardCommentResponse> findByBoardId(@Param("boardId") Long boardId, Pageable pageable, @Param("currentMemberId") Long currentMemberId);
+
 }

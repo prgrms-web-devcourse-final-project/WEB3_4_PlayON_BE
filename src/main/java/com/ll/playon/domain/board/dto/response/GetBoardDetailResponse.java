@@ -9,6 +9,8 @@ public record GetBoardDetailResponse(
         Long boardId,
         String authorNickname,
         String profileImg,
+        boolean isAuthor,
+        boolean isLiked,
         String title,
         String boardTitle,
         LocalDateTime createAt,

@@ -9,6 +9,7 @@ public record GetBoardCommentResponse(
         Long commentId,
         String nickname,
         String profileImg,
+        boolean isAuthor,
         String comment,
         LocalDateTime createAt
 ) {
