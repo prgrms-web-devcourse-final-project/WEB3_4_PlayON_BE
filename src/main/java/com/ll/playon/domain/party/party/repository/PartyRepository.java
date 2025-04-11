@@ -163,7 +163,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
     @Query("""
             SELECT pm.party
             FROM PartyMember pm
-            JOIN FETCH pm.party p
+            JOIN pm.party p
             WHERE pm.member.id = :memberId
             AND p.publicFlag = true
             ORDER BY p.endedAt DESC
