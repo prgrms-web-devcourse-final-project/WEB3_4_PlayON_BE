@@ -25,7 +25,6 @@ public class SteamAuthController {
     private final UserContext userContext;
     private final SteamAuthService steamAuthService;
 
-    private static final String REALM_URL = AppConfig.getSiteFrontUrl();
     private static final String STEAM_OPENID_URL = "https://steamcommunity.com/openid/login";
 
     @GetMapping("/login")
@@ -44,11 +43,12 @@ public class SteamAuthController {
         return redirectToSteam(SteamRedirectPaths.LINK);
     }
     private RsData<Map<String, String>> redirectToSteam(String url) {
+        final String realmUrl = AppConfig.getSiteFrontUrl();
         final String authUrl = STEAM_OPENID_URL + "?openid.ns=http://specs.openid.net/auth/2.0"
                 + "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
                 + "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
-                + "&openid.return_to=" + REALM_URL + url + "/steam"
-                + "&openid.realm=" + REALM_URL
+                + "&openid.return_to=" + realmUrl + url + "/steam"
+                + "&openid.realm=" + realmUrl
                 + "&openid.mode=checkid_setup";
 
         Map<String, String> response = new HashMap<>();
