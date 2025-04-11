@@ -153,6 +153,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             SELECT pm.party
             FROM PartyMember pm
             WHERE pm.member.id = :memberId
+            AND pm.party.publicFlag = true
             AND pm.partyRole IN :partyRoles
             AND pm.party.partyStatus != :partyStatus
             """)

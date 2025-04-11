@@ -352,7 +352,7 @@ public class MemberService {
     // 내가 파티 로그를 작성한 적 있는 파티들을 최근에 끝난 순으로 조회
     @Transactional(readOnly = true)
     public Page<GetPartyMainResponse> getPartiesLoggedByMe(Member actor, int page, int pageSize) {
-        Pageable pageable = PageRequest.of(page, pageSize);
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
         Page<Party> partiesLoggedByMe = this.partyRepository.findMembersRecentCompletedParties(actor.getId(), pageable);
 
         if (partiesLoggedByMe.isEmpty()) {
@@ -373,7 +373,7 @@ public class MemberService {
     // 유저가 파티 로그를 작성한 적 있는 파티들을 최근에 끝난 순으로 조회
     @Transactional(readOnly = true)
     public Page<GetPartyMainResponse> getPartiesLoggedByMember(long memberId, int page, int pageSize) {
-        Pageable pageable = PageRequest.of(page, pageSize);
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
         Member actor = this.getActor(memberId);
 
         Page<Party> partiesLoggedByMember = this.partyRepository.findMembersRecentCompletedParties(actor.getId(),
