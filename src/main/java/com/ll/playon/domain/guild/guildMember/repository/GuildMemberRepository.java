@@ -32,4 +32,8 @@ public interface GuildMemberRepository extends JpaRepository<GuildMember, Long> 
 """)
     List<String> findManagerNicknamesByGuildId(@Param("guildId") Long guildId);
 
+    List<GuildMember> findByMemberIdAndGuild_IsPublicTrue(Long memberId);
+
+    List<GuildMember> findByMember(Member actor);
+
 }

@@ -1,5 +1,6 @@
 package com.ll.playon.domain.guild.guildMember.service;
 
+import com.ll.playon.domain.guild.guild.dto.response.GetGuildListResponse;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardCommentRepository;
@@ -184,5 +185,22 @@ public class GuildMemberService {
     private GuildMember getGuildMember(Long guildId, Long memberId) {
         return guildMemberRepository.findByGuildIdAndMemberId(guildId, memberId)
                 .orElseThrow(ErrorCode.GUILD_MEMBER_NOT_FOUND::throwServiceException);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetGuildListResponse> getMyGuilds(Member actor) {
+        return guildMemberRepository.findByMember(actor).stream()
+                .map(guildMember -> GetGuildListResponse.from(guildMember.getGuild()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetGuildListResponse> getMemberGuilds(Long memberId) {
+        memberRepository.findById(memberId)
+                .orElseThrow(ErrorCode.MEMBER_NOT_FOUND::throwServiceException);
+
+        return guildMemberRepository.findByMemberIdAndGuild_IsPublicTrue(memberId).stream()
+                .map(guildMember -> GetGuildListResponse.from(guildMember.getGuild()))
+                .toList();
     }
 }
