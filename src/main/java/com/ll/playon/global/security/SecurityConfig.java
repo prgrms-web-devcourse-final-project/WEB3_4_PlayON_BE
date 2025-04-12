@@ -42,6 +42,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/parties/main/completed").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/parties/*").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/parties/*/result").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/parties/list").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/logs/party/*").permitAll()
 
                                 // 사용자 부분
