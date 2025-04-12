@@ -219,10 +219,7 @@ public class PartyService {
     public GetPartyMainResponse getPendingPartyMain(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
 
-        List<Party> parties = this.partyRepository.findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtAscCreatedAtDesc(
-                        PartyStatus.PENDING, pageable).stream()
-                .filter(party -> party.getTotal() < party.getMaximum())
-                .toList();
+        List<Party> parties = this.partyRepository.findAllPublicPartyUpToLimit(PartyStatus.PENDING, pageable);
 
         if (parties.isEmpty()) {
             return new GetPartyMainResponse(Collections.emptyList());

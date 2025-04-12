@@ -96,8 +96,15 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
     Page<Party> findByGame(SteamGame game, Pageable pageable);
 
-    List<Party> findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtAscCreatedAtDesc(PartyStatus partyStatus,
-                                                                                    Pageable pageable);
+    @Query("""
+            SELECT p
+            FROM Party p
+            WHERE p.partyStatus = :partyStatus
+            AND p.publicFlag = true
+            AND p.total < p.maximum
+            ORDER BY p.partyAt ASC, p.createdAt DESC
+            """)
+    List<Party> findAllPublicPartyUpToLimit(@Param("partyStatus") PartyStatus partyStatus, Pageable pageable);
 
     @Query("""
             SELECT p
