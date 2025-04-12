@@ -8,6 +8,7 @@ import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.LongPlaytimeGameRepository;
 import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
+import com.ll.playon.domain.image.repository.ImageRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.repository.MemberRepository;
@@ -43,6 +44,7 @@ public class GameService {
     private final MemberRepository memberRepository;
     private final PartyRepository partyRepository;
     private final PartyLogRepository partyLogRepository;
+    private final ImageRepository imageRepository;
 
     private final static int TOP_FIVE = 5;
     private final WeeklyGameRepository weeklyGameRepository;
@@ -100,7 +102,6 @@ public class GameService {
         return makeGameListWithGenre(notOwnedGames, member.getPreferredGenre());
     }
 
-    @Transactional(readOnly = true)
     public GameDetailWithPartyResponse getGameDetailWithParties(
             Long appid,
             Pageable partyPageable,
@@ -115,7 +116,8 @@ public class GameService {
         return GameDetailWithPartyResponse.from(
                 game,
                 partyPage.getContent(),
-                logPage.getContent()
+                logPage.getContent(),
+                imageRepository
         );
     }
 
