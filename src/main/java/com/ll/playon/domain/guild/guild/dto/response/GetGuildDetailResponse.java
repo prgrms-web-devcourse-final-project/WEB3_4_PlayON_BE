@@ -1,6 +1,7 @@
 package com.ll.playon.domain.guild.guild.dto.response;
 
 import com.ll.playon.domain.guild.guild.entity.Guild;
+import com.ll.playon.domain.guild.guild.enums.GuildMemberRole;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
@@ -18,10 +19,10 @@ public record GetGuildDetailResponse(
         boolean isPublic,
         String guildImg,
         LocalDateTime createdAt,
-        String myRole,
+        GuildMemberRole myRole,
         List<GuildTagResponse> tags
 ) {
-    public static GetGuildDetailResponse from(Guild guild, String myRole) {
+    public static GetGuildDetailResponse from(Guild guild, GuildMemberRole myRole) {
         return GetGuildDetailResponse.builder()
                 .id(guild.getId())
                 .name(guild.getName())
