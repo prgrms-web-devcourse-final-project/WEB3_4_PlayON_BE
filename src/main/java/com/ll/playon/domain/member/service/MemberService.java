@@ -346,7 +346,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public Page<GetPartyResponse> getPartiesLoggedByMe(Member actor, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize);
-        Page<Party> partiesLoggedByMe = this.partyRepository.findMembersRecentCompletedParties(
+        Page<Party> partiesLoggedByMe = this.partyRepository.findMembersRecentCompletedPartiesWithLogs(
                 actor.getId(), PartyStatus.COMPLETED, pageable);
 
         if (partiesLoggedByMe.isEmpty()) {
@@ -370,7 +370,7 @@ public class MemberService {
         Pageable pageable = PageRequest.of(page - 1, pageSize);
         Member actor = this.getActor(memberId);
 
-        Page<Party> partiesLoggedByMember = this.partyRepository.findMembersRecentCompletedParties(
+        Page<Party> partiesLoggedByMember = this.partyRepository.findMembersRecentCompletedPartiesWithLogs(
                 actor.getId(), PartyStatus.COMPLETED, pageable);
 
         if (partiesLoggedByMember.isEmpty()) {
