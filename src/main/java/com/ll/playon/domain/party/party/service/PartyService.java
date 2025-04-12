@@ -220,8 +220,9 @@ public class PartyService {
         Pageable pageable = PageRequest.of(0, limit);
 
         List<Party> parties = this.partyRepository.findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtAscCreatedAtDesc(
-                PartyStatus.PENDING,
-                pageable);
+                        PartyStatus.PENDING, pageable).stream()
+                .filter(party -> party.getTotal() < party.getMaximum())
+                .toList();
 
         if (parties.isEmpty()) {
             return new GetPartyMainResponse(Collections.emptyList());
@@ -286,7 +287,7 @@ public class PartyService {
 
         Map<Long, String> titleMap = this.memberTitleService.getRepresentativeTitleMap(memberIds);
 
-        List<PartyDetailMemberDto> partyDetailMemberDtos = party.getPartyMembers().stream()
+        List<PartyDetailMemberDto> partyDetailMemberDtos = partyMembers.stream()
                 .map(pm -> new PartyDetailMemberDto(pm, titleMap))
                 .toList();
 
@@ -295,7 +296,7 @@ public class PartyService {
                 .toList();
 
         // 조회수 증가
-        party.setHit(party.getHit() + 1);
+        party.increaseHit();
 
         return new GetPartyDetailResponse(party, partyDetailMemberDtos, partyDetailTagDtos);
     }
