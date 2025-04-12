@@ -90,6 +90,7 @@ public class ChatService {
         if (PartyRoomPolicy.shouldDeletePartyRoom(remainCount, party)) {
             this.partyRoomRepository.delete(partyRoom);
             party.updatePartyStatus(PartyStatus.COMPLETED);
+            party.updateEndTime();
             return;
         }
 
