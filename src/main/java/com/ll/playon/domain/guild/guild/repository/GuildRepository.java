@@ -22,8 +22,6 @@ public interface GuildRepository extends JpaRepository<Guild, Long>, GuildReposi
     @Query("SELECT g FROM Guild g WHERE g.id = :guildId AND g.isDeleted = false")
     Optional<Guild> findWithTagsById(@Param("guildId") Long guildId);
 
-    List<Guild> findAllByIsDeletedFalseOrderByCreatedAtDesc(Pageable pageable);
-
     @Query("SELECT g FROM Guild g WHERE g.game.appid = :appid AND g.isDeleted = false AND g.isPublic = true ORDER BY g.id DESC")
     List<Guild> findTopNByGameAppid(@Param("appid") Long appid, Pageable pageable);
 }

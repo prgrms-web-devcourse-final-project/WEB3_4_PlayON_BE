@@ -5,14 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-import java.util.List;
-
 public interface GenreRepository extends JpaRepository<SteamGenre, Long> {
     Optional<SteamGenre> findByName(String mostFrequentGenre);
-    List<SteamGenre> findByIdIn(List<Long> genreIds);
-    
-//    Optional<SteamGenre> findByName(String genre);
-//
     default SteamGenre findOrCreate(String genre) {
         return findByName(genre)
                 .orElseGet(() -> save(new SteamGenre(genre)));

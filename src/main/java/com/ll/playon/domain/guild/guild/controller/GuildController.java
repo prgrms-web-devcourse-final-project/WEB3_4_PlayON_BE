@@ -45,7 +45,7 @@ public class GuildController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "길드 대표 이미지 URL 저장")
     public void saveImageUrl(@PathVariable long guildId, @RequestBody PostImageUrlRequest newImgUrl) {
-        guildService.saveImageUrl(userContext.getActor(), guildId, newImgUrl);
+        guildService.saveImageUrl(guildId, newImgUrl);
     }
 
     @PutMapping("/{guildId}")

@@ -28,20 +28,14 @@ public class GuildJoinRequest extends BaseTime {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "approval_state",nullable = false)
     @Builder.Default
     private ApprovalState approvalState=ApprovalState.PENDING;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by")
     private Member approvedBy;
-
-    public void setApprovalState(ApprovalState approvalState) {
-        this.approvalState = approvalState;
-    }
-
-    public void setApprovedBy(Member approvedBy) {
-        this.approvedBy = approvedBy;
-    }
 }

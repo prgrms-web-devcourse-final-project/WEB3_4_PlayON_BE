@@ -21,15 +21,12 @@ public class GuildMember extends BaseTime {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "guild_role", nullable = false)
     private GuildRole guildRole;
 
-    public void setGuildRole(GuildRole guildRole) {
-        this.guildRole = guildRole;
-    }
-
-    public boolean isManagerOrLeader() {
-        return guildRole == GuildRole.LEADER || guildRole == GuildRole.MANAGER;
+    public boolean isNotManagerOrLeader() {
+        return guildRole != GuildRole.LEADER && guildRole != GuildRole.MANAGER;
     }
 }

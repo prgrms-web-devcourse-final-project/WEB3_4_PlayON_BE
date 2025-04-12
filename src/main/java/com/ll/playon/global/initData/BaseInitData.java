@@ -9,11 +9,7 @@ import com.ll.playon.domain.board.repository.BoardLikeRepository;
 import com.ll.playon.domain.board.repository.BoardRepository;
 import com.ll.playon.domain.chat.entity.PartyRoom;
 import com.ll.playon.domain.chat.repository.PartyRoomRepository;
-import com.ll.playon.domain.game.game.entity.SteamGame;
-import com.ll.playon.domain.game.game.entity.SteamGenre;
-import com.ll.playon.domain.game.game.entity.SteamImage;
-import com.ll.playon.domain.game.game.entity.SteamMovie;
-import com.ll.playon.domain.game.game.entity.WeeklyPopularGame;
+import com.ll.playon.domain.game.game.entity.*;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.guild.guild.entity.Guild;
@@ -52,19 +48,6 @@ import com.ll.playon.domain.title.repository.TitleRepository;
 import com.ll.playon.global.type.TagType;
 import com.ll.playon.global.type.TagValue;
 import jakarta.transaction.Transactional;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -74,6 +57,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Configuration
@@ -399,7 +387,7 @@ public class BaseInitData {
 
                 Guild.builder()
                         .owner(members.get(2))
-                        .name("DELETED_" + UUID.randomUUID().toString())
+                        .name("DELETED_" + UUID.randomUUID())
                         .description("DELETED")
                         .maxMembers(15)
                         .game(games.get(2))

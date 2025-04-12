@@ -4,15 +4,9 @@ import com.ll.playon.domain.game.game.dto.GameListResponse;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
-import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.game.game.service.GameService;
 import com.ll.playon.domain.image.type.ImageType;
-import com.ll.playon.domain.member.dto.GetMembersResponse;
-import com.ll.playon.domain.member.dto.MemberDetailDto;
-import com.ll.playon.domain.member.dto.MemberProfileResponse;
-import com.ll.playon.domain.member.dto.PresignedUrlResponse;
-import com.ll.playon.domain.member.dto.ProfileMemberDetailDto;
-import com.ll.playon.domain.member.dto.PutMemberDetailDto;
+import com.ll.playon.domain.member.dto.*;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
@@ -37,12 +31,7 @@ import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import com.ll.playon.global.validation.FileValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -53,6 +42,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -69,7 +61,6 @@ public class MemberService {
     private final PartyRepository partyRepository;
     private final TitleEvaluator titleEvaluator;
     private final S3Service s3Service;
-    private final WeeklyGameRepository weeklyGameRepository;
     private final SteamAsyncService steamAsyncService;
     private final ApplicationEventPublisher publisher;
 
@@ -225,6 +216,8 @@ public class MemberService {
 
             // 수정하는 경우 presigned url 응답
             if (!ObjectUtils.isEmpty(req.newFileType())) {
+                FileValidator.validateFileType(req.newFileType());
+
                 return new PresignedUrlResponse(
                         s3Service.generatePresignedUrl(ImageType.MEMBER, member.getId(), req.newFileType())
                                 .toString()

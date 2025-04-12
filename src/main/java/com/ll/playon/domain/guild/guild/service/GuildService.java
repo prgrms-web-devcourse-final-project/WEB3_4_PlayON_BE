@@ -133,7 +133,7 @@ public class GuildService {
     }
 
     @Transactional
-    public void saveImageUrl(Member actor, long guildId, PostImageUrlRequest request) {
+    public void saveImageUrl(long guildId, PostImageUrlRequest request) {
         // URL 확인
         if (ObjectUtils.isEmpty(request.url())) {
             throw ErrorCode.URL_NOT_FOUND.throwServiceException();
@@ -184,7 +184,7 @@ public class GuildService {
         GuildMember member = guildMemberRepository.findByGuildAndMember(guild, actor)
                 .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
 
-        if (!member.isManagerOrLeader()) {
+        if (member.isNotManagerOrLeader()) {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
 

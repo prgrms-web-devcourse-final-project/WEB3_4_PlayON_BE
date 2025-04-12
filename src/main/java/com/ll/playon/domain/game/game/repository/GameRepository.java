@@ -12,9 +12,8 @@ import java.util.Optional;
 import java.util.List;
 
 @Repository
-public interface GameRepository extends JpaRepository<SteamGame, Long> {
+public interface GameRepository extends JpaRepository<SteamGame, Long>, GameRepositoryCustom {
     List<SteamGame> findAllByAppidIn(List<Long> appIds);
-    List<SteamGame> findTop5ByAppidIn(List<Long> appIds);
     Optional<SteamGame> findByAppid(Long appid);
     Optional<SteamGame> findSteamGameByAppid(Long appid);
     List<SteamGame> searchByGameName(String keyword);

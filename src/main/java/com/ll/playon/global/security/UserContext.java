@@ -2,7 +2,6 @@ package com.ll.playon.global.security;
 
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.service.MemberService;
-import com.ll.playon.global.exceptions.ErrorCode;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -124,24 +123,5 @@ public class UserContext {
                 .map(principal -> (SecurityUser) principal)
                 .flatMap(securityUser -> memberService.findById(securityUser.getId()))
                 .orElse(null);
-    }
-
-    // 요청을 보낸 사용자의 인증 정보를 가져와 실제 DB에 저장된 user 찾기
-    public Optional<Member> findActor() {
-        Member actor = getActor();
-
-        if (actor == null) {
-            return Optional.empty();
-        }
-
-        return memberService.findById(actor.getId());
-    }
-
-    /**
-     * 테스트용, 추후 삭제
-     */
-    public Member findById(long id) {
-        return this.memberService.findById(id)
-                .orElseThrow(ErrorCode.USER_NOT_REGISTERED::throwServiceException);
     }
 }

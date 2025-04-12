@@ -127,8 +127,6 @@ public class GuildBoardService {
 
     @Transactional
     public GuildBoardDetailResponse getBoardDetail(Long guildId, Long boardId, Member actor) {
-        Guild guild = getGuild(guildId);
-        GuildMember guildMember = getGuildMember(guild, actor);
         GuildBoard board = getBoardInGuild(guildId, boardId);
 
         board.increaseHit();
@@ -262,10 +260,6 @@ public class GuildBoardService {
         if (tag == BoardTag.NOTICE && !guildMember.getGuildRole().isManagerOrLeader()) {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
-    }
-
-    private Page<GuildBoard> switchBoardSearch(BoardTag tag, String keyword, Pageable pageable, Guild guild) {
-        return guildBoardRepository.searchWithFilter(guild, tag, keyword, pageable);
     }
 
     @Transactional(readOnly = true)

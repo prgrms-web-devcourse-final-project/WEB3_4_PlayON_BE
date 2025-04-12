@@ -54,7 +54,7 @@ public class GuildRepositoryImpl implements GuildRepositoryCustom {
 
             // 전체 한 개만 있으면 필터 생략 */
             if (vals.size() == 1) {
-                String val = vals.get(0);
+                String val = vals.getFirst();
                 if ("전체".equals(val)) {
                     continue;
                 }
