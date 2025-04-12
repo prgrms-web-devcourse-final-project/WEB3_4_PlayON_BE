@@ -25,6 +25,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             AND p.publicFlag = true
             AND (:partyAt IS NULL OR p.partyAt >= :partyAt)
             AND p.id NOT IN :excludedIds
+            AND p.total < p.maximum
             AND (1=:noTagCondition OR p.id IN (
                 SELECT pt.party.id
                 FROM PartyTag pt

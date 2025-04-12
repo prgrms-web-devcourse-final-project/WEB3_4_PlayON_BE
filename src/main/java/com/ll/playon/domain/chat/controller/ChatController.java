@@ -25,9 +25,7 @@ public class ChatController {
     @PostMapping("/enter/{partyId}")
     @Operation(summary = "채팅방 입장")
     public RsData<GetChatRoomResponse> enterPartyRoom(@PathVariable long partyId) {
-        // TODO: 배포 시 주석 해제, @RequestHeader 삭제
         Member actor = this.userContext.getActualActor();
-//        Member actor = this.userContext.findById(userId);
 
         return RsData.success(HttpStatus.OK, this.chatService.enterPartyRoom(actor, partyId));
     }
@@ -36,9 +34,7 @@ public class ChatController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "채팅방 퇴장")
     public void leavePartyRoom(@PathVariable long partyId) {
-        // TODO: 배포 시 주석 해제
         Member actor = this.userContext.getActualActor();
-//        Member actor = this.userContext.findById(userId);
 
         this.chatService.leavePartyRoom(actor, partyId);
     }
