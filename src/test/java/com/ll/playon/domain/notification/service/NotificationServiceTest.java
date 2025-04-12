@@ -56,7 +56,7 @@ class NotificationServiceTest {
     @Test
     void 알림_저장_및_전송_테스트() {
         // Given
-        Long senderId = sender.getId();  // senderId 분리
+        Long senderId = sender.getId();
 
         NotificationRequest request = new NotificationRequest(
                 receiver.getId(),
@@ -72,10 +72,9 @@ class NotificationServiceTest {
                 .redirectUrl(request.redirectUrl())
                 .build();
 
-        // receiver만 조회하도록 설정
+        // sender, receiver 모두 조회 가능하도록 설정
+        when(memberRepository.findById(sender.getId())).thenReturn(Optional.of(sender));
         when(memberRepository.findById(receiver.getId())).thenReturn(Optional.of(receiver));
-
-        // 저장 시 반환될 Notification 설정
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification);
 
         // When
@@ -85,11 +84,10 @@ class NotificationServiceTest {
         assertThat(response.content()).isEqualTo("새로운 파티 초대");
         assertThat(response.type()).isEqualTo(NotificationType.PARTY_INVITE);
         assertThat(response.redirectUrl()).isEqualTo("https://example.com");
-
-        // 저장 및 이벤트 발행 검증
         verify(notificationRepository, times(1)).save(any(Notification.class));
         verify(eventPublisher, times(1)).publishEvent(any(NotificationEvent.class));
     }
+
 
 
 
@@ -106,7 +104,7 @@ class NotificationServiceTest {
                 .redirectUrl("https://example.com")
                 .build();
 
-        when(notificationRepository.findByReceiverIdOrderByCreatedAtDesc(receiver.getId()))
+        when(notificationRepository.findByReceiverIdAndIsReadFalseOrderByCreatedAtDesc(receiver.getId()))
                 .thenReturn(List.of(notification));
 
         // When
@@ -116,6 +114,7 @@ class NotificationServiceTest {
         assertThat(notifications).isNotEmpty();
         assertThat(notifications.get(0).content()).isEqualTo("테스트 알림");
     }
+
 
     /**
      * 알림 읽음 처리 테스트
@@ -178,7 +177,7 @@ class NotificationServiceTest {
                 .redirectUrl("https://example.com/2")
                 .build();
 
-        when(notificationRepository.findByReceiverIdOrderByCreatedAtDesc(receiver.getId()))
+        when(notificationRepository.findByReceiverIdAndIsReadFalseOrderByCreatedAtDesc(receiver.getId()))
                 .thenReturn(List.of(notification1, notification2));
 
         // When
@@ -189,5 +188,6 @@ class NotificationServiceTest {
         assertThat(notifications.get(0).content()).isEqualTo("첫 번째 알림");
         assertThat(notifications.get(1).content()).isEqualTo("두 번째 알림");
     }
+
 
 }

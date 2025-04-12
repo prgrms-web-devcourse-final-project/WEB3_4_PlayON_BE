@@ -49,7 +49,7 @@ class NotificationSseServiceTest {
 
         NotificationResponse response = new NotificationResponse(
                 1L,
-                100L,
+                "홍길동",
                 "SSE 알림 테스트",
                 NotificationType.PARTY_INVITE,
                 false,
