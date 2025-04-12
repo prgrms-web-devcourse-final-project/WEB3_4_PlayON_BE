@@ -263,9 +263,9 @@ public class MemberService {
 
         // 사용자 정보 조회 후 Dto 에 담기
         ProfileMemberDetailDto profileMemberDetailDto = new ProfileMemberDetailDto(
-                member.getSteamId(), member.getUsername(), member.getNickname(), member.getProfileImg(),
-                member.getLastLoginAt(), member.getPlayStyle(), member.getSkillLevel(),
-                member.getGender(), member.getPreferredGenre()
+                member.getId(), member.getSteamId(), member.getUsername(), member.getNickname(),
+                member.getProfileImg(), member.getLastLoginAt(), member.getPlayStyle(),
+                member.getSkillLevel(), member.getGender(), member.getPreferredGenre()
         );
 
         // 보유한 게임 목록 조회
