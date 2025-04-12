@@ -104,7 +104,7 @@ class NotificationServiceTest {
                 .redirectUrl("https://example.com")
                 .build();
 
-        when(notificationRepository.findByReceiverIdOrderByCreatedAtDesc(receiver.getId()))
+        when(notificationRepository.findByReceiverIdAndIsReadFalseOrderByCreatedAtDesc(receiver.getId()))
                 .thenReturn(List.of(notification));
 
         // When
@@ -114,6 +114,7 @@ class NotificationServiceTest {
         assertThat(notifications).isNotEmpty();
         assertThat(notifications.get(0).content()).isEqualTo("테스트 알림");
     }
+
 
     /**
      * 알림 읽음 처리 테스트
@@ -176,7 +177,7 @@ class NotificationServiceTest {
                 .redirectUrl("https://example.com/2")
                 .build();
 
-        when(notificationRepository.findByReceiverIdOrderByCreatedAtDesc(receiver.getId()))
+        when(notificationRepository.findByReceiverIdAndIsReadFalseOrderByCreatedAtDesc(receiver.getId()))
                 .thenReturn(List.of(notification1, notification2));
 
         // When
@@ -187,5 +188,6 @@ class NotificationServiceTest {
         assertThat(notifications.get(0).content()).isEqualTo("첫 번째 알림");
         assertThat(notifications.get(1).content()).isEqualTo("두 번째 알림");
     }
+
 
 }
