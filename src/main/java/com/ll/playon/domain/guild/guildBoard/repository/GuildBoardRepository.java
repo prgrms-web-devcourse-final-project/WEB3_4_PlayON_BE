@@ -54,6 +54,6 @@ public interface GuildBoardRepository extends JpaRepository<GuildBoard, Long> {
     );
 
     List<GuildBoard> findTop2ByGuildIdAndTagOrderByCreatedAtDesc(Long guildId, BoardTag boardTag);
-    List<GuildBoard> findTop4ByGuildIdOrderByCreatedAtDesc(Long guildId);
+    List<GuildBoard> findTop4ByGuildIdAndTagNotOrderByCreatedAtDesc(Long guildId, BoardTag tag);
     void deleteByAuthor(GuildMember author);
 }

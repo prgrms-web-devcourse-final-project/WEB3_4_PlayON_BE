@@ -12,7 +12,8 @@ public record GetGuildBoardPreviewResponse(
         String authorAvatar,
         int likeCount,
         int commentCount,
-        String imageUrl
+        String imageUrl,
+        String tag
 ) {
     public static GetGuildBoardPreviewResponse from(GuildBoard board, int commentCount) {
         return GetGuildBoardPreviewResponse.builder()
@@ -24,6 +25,7 @@ public record GetGuildBoardPreviewResponse(
                 .likeCount(board.getLikeCount())
                 .commentCount(commentCount)
                 .imageUrl(board.getImageUrl())
+                .tag(board.getTag().getDisplayName())
                 .build();
     }
 }

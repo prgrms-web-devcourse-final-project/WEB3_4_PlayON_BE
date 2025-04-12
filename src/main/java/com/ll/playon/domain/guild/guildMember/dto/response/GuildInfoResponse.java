@@ -24,7 +24,7 @@ public record GuildInfoResponse(
 
         String leaderNickname = leaderMember.getMember().getNickname();
 
-        String imageUrl = leaderMember.getMember().getProfileImg();
+        String imageUrl = guild.getGuildImg();
 
         List<String> managers = members.stream()
                 .filter(m -> m.getGuildRole() == GuildRole.MANAGER)
@@ -37,7 +37,7 @@ public record GuildInfoResponse(
 
         return new GuildInfoResponse(
                 guild.getName(),
-                imageUrl,
+                guild.getGuildImg(),
                 tagStrings,
                 guild.getCreatedAt().toLocalDate(),
                 leaderNickname,
