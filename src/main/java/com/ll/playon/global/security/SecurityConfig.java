@@ -55,6 +55,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/auth/steam/login").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/auth/steam/callback/login").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/auth/steam/logout").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/members/{memberId:\\d+}/guilds").permitAll()
 
                                 // 게임 부분
                                 .requestMatchers(HttpMethod.GET, "/api/games/popular").permitAll()

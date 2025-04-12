@@ -363,7 +363,6 @@ public class BaseInitData {
         List<Member> members = memberRepository.findAll();
         List<SteamGame> games = gameRepository.findAll();
 
-        // 고정된 샘플 길드 데이터
         List<Guild> guilds = List.of(
                 Guild.builder()
                         .owner(members.get(0))
@@ -401,27 +400,30 @@ public class BaseInitData {
             guild.setGuildTags(createSampleGuildTags(guild));
             guildRepository.save(guild);
 
-            // 길드장 등록
-            guildMemberRepository.save(GuildMember.builder()
-                    .guild(guild)
-                    .member(guild.getOwner())
-                    .guildRole(GuildRole.LEADER)
-                    .build());
-
-            // 추가 멤버 등록
-            List<Member> extraMembers = members.stream()
-                    .filter(m -> !m.equals(guild.getOwner()))
-                    .limit(3) // 길드마다 최대 3명
-                    .toList();
-
-            GuildRole[] roles = {GuildRole.MANAGER, GuildRole.MEMBER};
-
-            for (int i = 0; i < extraMembers.size(); i++) {
+            // 삭제 안된 길드만 길드장, 멤버 추가
+            if (!guild.isDeleted()) {
+                // 길드장 등록
                 guildMemberRepository.save(GuildMember.builder()
                         .guild(guild)
-                        .member(extraMembers.get(i))
-                        .guildRole(roles[i % roles.length])
+                        .member(guild.getOwner())
+                        .guildRole(GuildRole.LEADER)
                         .build());
+
+                // 추가 멤버 등록
+                List<Member> extraMembers = members.stream()
+                        .filter(m -> !m.equals(guild.getOwner()))
+                        .limit(3)
+                        .toList();
+
+                GuildRole[] roles = {GuildRole.MANAGER, GuildRole.MEMBER};
+
+                for (int i = 0; i < extraMembers.size(); i++) {
+                    guildMemberRepository.save(GuildMember.builder()
+                            .guild(guild)
+                            .member(extraMembers.get(i))
+                            .guildRole(roles[i % roles.length])
+                            .build());
+                }
             }
         }
     }

@@ -1,6 +1,8 @@
 package com.ll.playon.domain.member.controller;
 
 import com.ll.playon.domain.game.game.dto.GameListResponse;
+import com.ll.playon.domain.guild.guild.dto.response.GetGuildListResponse;
+import com.ll.playon.domain.guild.guildMember.service.GuildMemberService;
 import com.ll.playon.domain.member.dto.*;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.service.MemberService;
@@ -31,6 +33,7 @@ public class MemberController {
     private final MemberService memberService;
     private final SteamAsyncService steamAsyncService;
     private final UserContext userContext;
+    private final GuildMemberService guildMemberService;
 
     @PostMapping("/login")
     @Transactional
@@ -173,5 +176,18 @@ public class MemberController {
         return RsData.success(
                 HttpStatus.OK,
                 new PageDto<>(this.memberService.getPartiesLoggedByMember(memberId, page, pageSize)));
+    }
+
+    @GetMapping("/me/guilds")
+    @Operation(summary = "내 가입 길드 조회")
+    public RsData<List<GetGuildListResponse>> getMyGuilds() {
+        Member actor = this.userContext.getActor();
+        return RsData.success(HttpStatus.OK, guildMemberService.getMyGuilds(actor));
+    }
+
+    @GetMapping("/{memberId}/guilds")
+    @Operation(summary = "특정 유저 가입 길드 조회")
+    public RsData<List<GetGuildListResponse>> getMemberGuilds(@PathVariable Long memberId) {
+        return RsData.success(HttpStatus.OK, guildMemberService.getMemberGuilds(memberId));
     }
 }
