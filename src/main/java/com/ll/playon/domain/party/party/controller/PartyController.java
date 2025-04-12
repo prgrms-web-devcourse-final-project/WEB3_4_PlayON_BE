@@ -52,9 +52,6 @@ public class PartyController {
             @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime partyAt,
             @RequestBody @Valid GetAllPartiesRequest getAllPartiesRequest
     ) {
-        // TODO : 추후 롤백
-//        정책 고민 (회원만 조회 가능하게 할 것인지)
-//        Member actor = this.userContext.getActor();
         Member actor = this.userContext.getActualActor();
 
         GlobalValidation.checkPageSize(pageSize);
@@ -67,10 +64,6 @@ public class PartyController {
     @GetMapping("/{partyId}/result")
     @Operation(summary = "파티 결과 조회")
     public RsData<GetPartyResultResponse> getPartyResult(@PathVariable long partyId) {
-        // TODO : 추후 롤백
-//        정책 고민 (회원만 조회 가능하게 할 것인지)
-//        Member actor = this.userContext.getActor();
-//        Member actor = this.userContext.findById(5L);
 
         return RsData.success(HttpStatus.OK, this.partyService.getPartyResult(partyId));
     }
@@ -78,10 +71,6 @@ public class PartyController {
     @GetMapping("/main/pending")
     @Operation(summary = "메인용 진행 예정 리스트 조회")
     public RsData<GetPartyMainResponse> getPendingPartyMain(@RequestParam(defaultValue = "2") int limit) {
-        // TODO : 추후 롤백
-//        정책 고민 (회원만 조회 가능하게 할 것인지)
-//        Member actor = this.userContext.getActor();
-//        Member actor = this.userContext.findById(5L);
 
         return RsData.success(HttpStatus.OK, this.partyService.getPendingPartyMain(limit));
     }
@@ -89,9 +78,6 @@ public class PartyController {
     @GetMapping("/main/completed")
     @Operation(summary = "메인용 파티 로그가 작성되었고 종료된 파티 리스트 조회")
     public RsData<GetPartyMainResponse> getCompletedPartyWithLogMain(@RequestParam(defaultValue = "3") int limit) {
-        // TODO : 추후 롤백
-//        정책 고민 (회원만 조회 가능하게 할 것인지)
-//        Member actor = this.userContext.getActor();
 
         return RsData.success(HttpStatus.OK, this.partyService.getCompletedPartyWithLogMain(limit));
     }
@@ -99,9 +85,6 @@ public class PartyController {
     @GetMapping("/{partyId}")
     @Operation(summary = "파티 상세 정보 조회")
     public RsData<GetPartyDetailResponse> getPartyDetail(@PathVariable long partyId) {
-        // TODO : 추후 롤백
-//        정책 고민 (회원만 조회 가능하게 할 것인지)
-//        Member actor = this.userContext.getActor();
 
         return RsData.success(HttpStatus.OK, this.partyService.getPartyDetail(partyId));
     }
@@ -110,8 +93,6 @@ public class PartyController {
     @Operation(summary = "파티 수정")
     public RsData<PutPartyResponse> updateParty(@PathVariable long partyId,
                                                 @RequestBody @Valid PutPartyRequest putPartyRequest) {
-        // TODO : 추후 롤백
-//        Member actor = this.userContext.getActor();
         Member actor = this.userContext.getActualActor();
 
         return RsData.success(HttpStatus.OK, this.partyService.updateParty(actor, partyId, putPartyRequest));
@@ -121,8 +102,6 @@ public class PartyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "파티 취소")
     public void deleteParty(@PathVariable long partyId) {
-        // TODO : 추후 롤백
-//        Member actor = this.userContext.getActor();
         Member actor = this.userContext.getActualActor();
 
         this.partyService.deleteParty(actor, partyId);
@@ -132,8 +111,6 @@ public class PartyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "파티 신청")
     public void requestParticipation(@PathVariable long partyId) {
-        // TODO : 추후 롤백
-//        Member actor = this.userContext.getActor();
         Member actor = this.userContext.getActualActor();
 
         this.partyService.requestParticipation(actor, partyId);
@@ -143,8 +120,6 @@ public class PartyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "파티 신청 수락")
     public void approveParticipation(@PathVariable long partyId, @PathVariable long memberId) {
-        // TODO : 추후 롤백
-//        Member actor = this.userContext.getActor();
         Member actor = this.userContext.getActualActor();
 
         this.partyService.approveParticipation(actor, partyId, memberId);
@@ -157,8 +132,6 @@ public class PartyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "파티 신청 거부")
     public void rejectParticipation(@PathVariable long partyId, @PathVariable long memberId) {
-        // TODO : 추후 롤백
-//        Member actor = this.userContext.getActor();
         Member actor = this.userContext.getActualActor();
 
         this.partyService.rejectParticipation(actor, partyId, memberId);
@@ -167,8 +140,6 @@ public class PartyController {
     @GetMapping("/{partyId}/pending")
     @Operation(summary = "파티 신청자 목록 확인")
     public RsData<GetAllPendingMemberResponse> getPartyPendingMembers(@PathVariable long partyId) {
-        // TODO : 추후 롤백
-//        Member actor = this.userContext.getActor();
         Member actor = this.userContext.getActualActor();
 
         return RsData.success(HttpStatus.OK, this.partyService.getPartyPendingMembers(actor, partyId));
@@ -178,8 +149,6 @@ public class PartyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "파티 초대")
     public void inviteParty(@PathVariable long partyId, @PathVariable long memberId) {
-        // TODO : 추후 롤백
-//        Member actor = this.userContext.getActor();
         Member actor = this.userContext.getActualActor();
 
         this.partyService.inviteParty(actor, partyId, memberId);
