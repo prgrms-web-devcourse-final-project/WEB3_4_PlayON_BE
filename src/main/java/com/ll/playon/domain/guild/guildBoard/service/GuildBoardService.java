@@ -293,11 +293,10 @@ public class GuildBoardService {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
 
-        // 최신글
-        return guildBoardRepository.findTop4ByGuildIdOrderByCreatedAtDesc(guild.getId())
+        // 최신글 (공지글 제외)
+        return guildBoardRepository.findTop4ByGuildIdAndTagNotOrderByCreatedAtDesc(guild.getId(), BoardTag.NOTICE)
                 .stream()
                 .map(board -> GetGuildBoardPreviewResponse.from(board, board.getComments().size()))
                 .toList();
-
     }
 }
