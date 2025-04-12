@@ -152,4 +152,8 @@ public class Party {
     public void increaseHit() {
         this.hit += 1;
     }
+
+    public void updateEndTime() {
+        this.endedAt = LocalDateTime.now();
+    }
 }
