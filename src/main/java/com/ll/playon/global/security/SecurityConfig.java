@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -14,6 +16,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 
 @Configuration
@@ -78,13 +81,11 @@ public class SecurityConfig {
                 .headers(
                         headers ->
                                 headers.frameOptions(
-                                        frameOptions ->
-                                                frameOptions.sameOrigin()
+                                        HeadersConfigurer.FrameOptionsConfig::sameOrigin
                                 )
                 )
                 .csrf(
-                        csrf ->
-                                csrf.disable()
+                        AbstractHttpConfigurer::disable
                 )
                 // 시큐리티 필터에 커스텀 필터 추가
                 .addFilterBefore(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -129,7 +130,7 @@ public class SecurityConfig {
         // 자격 증명 허용 설정
         configuration.setAllowCredentials(true);
         // 허용할 헤더 설정
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(List.of("*"));
         // CORS 설정을 소스에 등록
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

@@ -1,7 +1,6 @@
 package com.ll.playon.domain.guild.util;
 
 import com.ll.playon.domain.member.entity.Member;
-import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.global.exceptions.ErrorCode;
@@ -17,7 +16,7 @@ public class GuildPermissionValidator {
     }
 
     public static void checkManagerOrLeader(GuildMember member) {
-        if (!member.isManagerOrLeader()) {
+        if (member.isNotManagerOrLeader()) {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
     }
@@ -28,7 +27,7 @@ public class GuildPermissionValidator {
                 .findFirst()
                 .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
 
-        if (!actorMember.isManagerOrLeader()) {
+        if (actorMember.isNotManagerOrLeader()) {
             throw ErrorCode.GUILD_APPROVAL_UNAUTHORIZED.throwServiceException();
         }
     }

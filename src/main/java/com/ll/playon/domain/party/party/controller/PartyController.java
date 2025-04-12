@@ -5,13 +5,7 @@ import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.domain.party.party.dto.request.GetAllPartiesRequest;
 import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
 import com.ll.playon.domain.party.party.dto.request.PutPartyRequest;
-import com.ll.playon.domain.party.party.dto.response.GetAllPendingMemberResponse;
-import com.ll.playon.domain.party.party.dto.response.GetPartyDetailResponse;
-import com.ll.playon.domain.party.party.dto.response.GetPartyMainResponse;
-import com.ll.playon.domain.party.party.dto.response.GetPartyResponse;
-import com.ll.playon.domain.party.party.dto.response.GetPartyResultResponse;
-import com.ll.playon.domain.party.party.dto.response.PostPartyResponse;
-import com.ll.playon.domain.party.party.dto.response.PutPartyResponse;
+import com.ll.playon.domain.party.party.dto.response.*;
 import com.ll.playon.domain.party.party.service.PartyService;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.service.TitleEvaluator;
@@ -22,21 +16,13 @@ import com.ll.playon.standard.page.dto.PageDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -164,7 +150,7 @@ public class PartyController {
         this.partyService.approveParticipation(actor, partyId, memberId);
 
         // 파티 참여 칭호
-        titleEvaluator.check(ConditionType.PARTY_JOIN_COUNT, memberService.findById(memberId).get());
+        titleEvaluator.check(ConditionType.PARTY_JOIN_COUNT, actor);
     }
 
     @DeleteMapping("/{partyId}/members/{memberId}")
