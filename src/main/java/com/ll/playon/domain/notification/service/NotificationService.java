@@ -71,7 +71,7 @@ public class NotificationService {
      */
     @Transactional(readOnly = true)
     public List<NotificationResponse> getNotifications(Long memberId) {
-        return notificationRepository.findByReceiverIdOrderByCreatedAtDesc(memberId)
+        return notificationRepository.findByReceiverIdAndIsReadFalseOrderByCreatedAtDesc(memberId)
                 .stream()
                 .map(NotificationResponse::fromEntity)
                 .toList();
