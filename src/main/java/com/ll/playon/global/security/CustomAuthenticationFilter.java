@@ -33,6 +33,9 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
             "/api/members/signup",
             "/api/members/login",
+            "/api/members/member/*",
+            "/api/members/*/parties",
+            "/api/members/*/parties/logs",
             "/api/auth/steam/signup",
             "/api/auth/steam/callback/signup",
             "/api/auth/steam/login",

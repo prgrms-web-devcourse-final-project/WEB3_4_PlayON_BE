@@ -1,12 +1,7 @@
 package com.ll.playon.domain.member.controller;
 
 import com.ll.playon.domain.game.game.dto.GameListResponse;
-import com.ll.playon.domain.member.dto.GetMembersResponse;
-import com.ll.playon.domain.member.dto.MemberAuthRequest;
-import com.ll.playon.domain.member.dto.MemberDetailDto;
-import com.ll.playon.domain.member.dto.MemberProfileResponse;
-import com.ll.playon.domain.member.dto.PresignedUrlResponse;
-import com.ll.playon.domain.member.dto.PutMemberDetailDto;
+import com.ll.playon.domain.member.dto.*;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.domain.member.service.SteamAsyncService;
@@ -19,21 +14,13 @@ import com.ll.playon.standard.page.dto.PageDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/members")
@@ -62,7 +49,7 @@ public class MemberController {
 
     @PutMapping("/me")
     @Transactional
-    @Operation(summary = "사용자 정보 수정")
+    @Operation(summary = "내 정보 수정")
     public RsData<PresignedUrlResponse> modifyMember(@Valid @RequestBody PutMemberDetailDto req) {
         return RsData.success(HttpStatus.OK, memberService.modifyMember(req, userContext.getActor()));
     }
@@ -70,7 +57,7 @@ public class MemberController {
     @PostMapping("/me/image")
     @Transactional
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "사용자 프로필 이미지 URL 저장")
+    @Operation(summary = "내 프로필 이미지 URL 저장")
     public void saveProfileImage(@RequestBody String url) {
         memberService.saveProfileImage(userContext.getActor(), url);
     }
@@ -90,7 +77,7 @@ public class MemberController {
     }
 
     @GetMapping("/member/{memberId}")
-    @Operation(summary = "남 정보")
+    @Operation(summary = "다른 회원 정보")
     public RsData<MemberProfileResponse> getMemberProfile(@PathVariable Long memberId) {
         return RsData.success(HttpStatus.OK,
                 memberService.me(memberService.findById(memberId)
@@ -98,19 +85,19 @@ public class MemberController {
     }
 
     @GetMapping("/nickname")
-    @Operation(summary = "닉네임으로 사용자 리스트 조회")
+    @Operation(summary = "닉네임으로 회원 명단 조회")
     public RsData<List<GetMembersResponse>> getMembersByNickname(@RequestParam String nickname) {
         return RsData.success(HttpStatus.OK, memberService.findByNickname(nickname));
     }
 
     @GetMapping("/me/games")
-    @Operation(summary = "사용자의 보유게임 조회")
+    @Operation(summary = "나의 보유게임 조회")
     public RsData<List<GameListResponse>> getMembersByGame(@RequestParam(defaultValue = "3") int count) {
         return RsData.success(HttpStatus.OK, memberService.getOwnedGamesByMember(count, userContext.getActor()));
     }
 
     @PostMapping("/steamLink")
-    @Operation(summary = "사용자의 보유게임 갱신")
+    @Operation(summary = "나의 보유게임 갱신")
     public RsData<String> linkSteamGames() {
         Member actor = userContext.getActor();
         if (ObjectUtils.isEmpty(actor)) {
@@ -148,7 +135,7 @@ public class MemberController {
     }
 
     @GetMapping("/me/parties")
-    @Operation(summary = "내 참여중인 파티 조회")
+    @Operation(summary = "나의 참여중인 파티 조회")
     public RsData<GetPartyMainResponse> getMyParties() {
         Member actor = this.userContext.getActor();
 
@@ -156,7 +143,8 @@ public class MemberController {
     }
 
     @GetMapping("/me/parties/logs")
-    @Operation(summary = "내가 파티 로그를 작성한 적 있는 종료된 파티들을 최근에 끝난 순으로 조회")
+    @Operation(summary = "나의 파티로그 조회",
+            description = "내가 파티 로그를 작성한 적 있는 종료된 파티들을 최근에 끝난 순으로 조회")
     public RsData<PageDto<GetPartyResponse>> getLoggedPartiesByMe(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "6") int pageSize
@@ -169,22 +157,19 @@ public class MemberController {
     }
 
     @GetMapping("/{memberId}/parties")
-    @Operation(summary = "타 유저 참여중인 파티 조회")
+    @Operation(summary = "다른 회원의 참여중인 파티 조회")
     public RsData<GetPartyMainResponse> getMembersParties(@PathVariable long memberId) {
-        // TODO: 정책 확인
-
         return RsData.success(HttpStatus.OK, this.memberService.getMembersParties(memberId));
     }
 
     @GetMapping("/{memberId}/parties/logs")
-    @Operation(summary = "유저가 파티 로그를 작성한 적 있는 종료된 파티들을 최근에 끝난 순으로 조회")
+    @Operation(summary = "다른 회원의 파티로그 조회",
+            description = "유저가 파티 로그를 작성한 적 있는 종료된 파티들을 최근에 끝난 순으로 조회")
     public RsData<PageDto<GetPartyResponse>> getLoggedPartiesByMembers(
             @PathVariable long memberId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "6") int pageSize
     ) {
-        // TODO: 정책 확인
-
         return RsData.success(
                 HttpStatus.OK,
                 new PageDto<>(this.memberService.getPartiesLoggedByMember(memberId, page, pageSize)));
