@@ -31,6 +31,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
             "/api/parties/main/pending",
             "/api/parties/main/completed",
             "/api/parties/*/result",
+            "/api/parties/list",
 
             "/api/members/signup",
             "/api/members/login",
