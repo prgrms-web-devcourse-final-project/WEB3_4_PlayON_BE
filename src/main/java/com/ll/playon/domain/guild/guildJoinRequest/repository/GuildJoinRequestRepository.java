@@ -11,4 +11,6 @@ import java.util.List;
 public interface GuildJoinRequestRepository extends JpaRepository<GuildJoinRequest, Long> {
     boolean existsByGuildAndMemberAndApprovalState(Guild guild, Member member, ApprovalState approvalState);
     List<GuildJoinRequest> findAllByGuildAndApprovalState(Guild guild, ApprovalState approvalState);
+
+    boolean existsByGuildAndMember(Guild guild, Member actor);
 }
