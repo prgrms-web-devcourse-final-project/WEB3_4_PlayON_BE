@@ -45,6 +45,8 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/members/signup").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/members/login").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/members/member/*").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/members/*/parties").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/members/*/parties/logs").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/auth/steam/signup").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/auth/steam/callback/signup").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/auth/steam/login").permitAll()
