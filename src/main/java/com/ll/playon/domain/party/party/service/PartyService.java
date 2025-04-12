@@ -36,7 +36,6 @@ import com.ll.playon.domain.party.party.validation.PartyMemberValidation;
 import com.ll.playon.domain.party.party.validation.PartyValidation;
 import com.ll.playon.domain.party.partyLog.dto.response.GetAllPartyLogResponse;
 import com.ll.playon.domain.party.partyLog.service.PartyLogService;
-import com.ll.playon.domain.party.partyLog.util.PartyLogUtils;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.domain.title.service.TitleEvaluator;
@@ -219,10 +218,7 @@ public class PartyService {
     public GetPartyMainResponse getPendingPartyMain(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
 
-        List<Party> parties = this.partyRepository.findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtAscCreatedAtDesc(
-                        PartyStatus.PENDING, pageable).stream()
-                .filter(party -> party.getTotal() < party.getMaximum())
-                .toList();
+        List<Party> parties = this.partyRepository.findAllPublicPartyUpToLimit(PartyStatus.PENDING, pageable);
 
         if (parties.isEmpty()) {
             return new GetPartyMainResponse(Collections.emptyList());
@@ -242,26 +238,18 @@ public class PartyService {
     // 메인용 파티 로그가 작성되었고 종료된 파티 리스트 조회 (limit 만큼)
     @Transactional(readOnly = true)
     public GetPartyMainResponse getCompletedPartyWithLogMain(int limit) {
-        Pageable pageable = PageRequest.of(0, limit * 10);
+        Pageable pageable = PageRequest.of(0, limit);
 
         List<Party> completedParties = this.partyRepository.findRecentCompletedPartiesWithLogs(
-                PartyStatus.COMPLETED,
-                pageable);
+                PartyStatus.COMPLETED, pageable);
 
         if (completedParties.isEmpty()) {
             return new GetPartyMainResponse(Collections.emptyList());
         }
 
-        List<Party> partiesWithLog = completedParties.stream()
-                .filter(PartyLogUtils::hasPartyLog)
-                .limit(limit)
+        List<Long> partyIds = completedParties.stream()
+                .map(Party::getId)
                 .toList();
-
-        if (partiesWithLog.isEmpty()) {
-            return new GetPartyMainResponse(Collections.emptyList());
-        }
-
-        List<Long> partyIds = partiesWithLog.stream().map(Party::getId).toList();
 
         return new GetPartyMainResponse(
                 PartyMergeUtils.mergePartyWithJoinData(

@@ -96,17 +96,15 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 
     Page<Party> findByGame(SteamGame game, Pageable pageable);
 
-    List<Party> findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtAscCreatedAtDesc(PartyStatus partyStatus,
-                                                                                    Pageable pageable);
-
     @Query("""
             SELECT p
             FROM Party p
             WHERE p.partyStatus = :partyStatus
             AND p.publicFlag = true
-            ORDER BY p.endedAt DESC
+            AND p.total < p.maximum
+            ORDER BY p.partyAt ASC, p.createdAt DESC
             """)
-    List<Party> findRecentCompletedPartiesWithLogs(@Param("partyStatus") PartyStatus partyStatus, Pageable pageable);
+    List<Party> findAllPublicPartyUpToLimit(@Param("partyStatus") PartyStatus partyStatus, Pageable pageable);
 
     @Query("""
                 SELECT p
@@ -172,6 +170,17 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             AND pm.partyLog IS NOT NULL
             ORDER BY p.endedAt DESC
             """)
-    Page<Party> findMembersRecentCompletedParties(@Param("memberId") Long memberId,
-                                                  @Param("partyStatus") PartyStatus partyStatus, Pageable pageable);
+    Page<Party> findMembersRecentCompletedPartiesWithLogs(@Param("memberId") Long memberId,
+                                                          @Param("partyStatus") PartyStatus partyStatus, Pageable pageable);
+
+    @Query("""
+            SELECT pm.party
+            FROM PartyMember pm
+            JOIN pm.party p
+            WHERE p.publicFlag = true
+            AND p.partyStatus = :partyStatus
+            AND pm.partyLog IS NOT NULL
+            ORDER BY p.endedAt DESC
+            """)
+    List<Party> findRecentCompletedPartiesWithLogs(@Param("partyStatus") PartyStatus partyStatus, Pageable pageable);
 }

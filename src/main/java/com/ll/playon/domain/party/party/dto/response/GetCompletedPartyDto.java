@@ -8,6 +8,7 @@ import com.ll.playon.standard.time.dto.TotalPlayTimeDto;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import lombok.NonNull;
 
 public record GetCompletedPartyDto(
@@ -24,7 +25,6 @@ public record GetCompletedPartyDto(
 
         int mvpPoint,
 
-        @NonNull
         String mvpProfileImg,
 
         @NonNull
@@ -48,7 +48,7 @@ public record GetCompletedPartyDto(
                 party.getGame().getName(),
                 mvp.getMember().getNickname(),
                 mvp.getMvpPoint(),
-                mvp.getMember().getProfileImg(),
+                Objects.requireNonNullElse(mvp.getMember().getProfileImg(), ""),
                 party.getPartyAt(),
                 playTime,
                 partyMembers,
