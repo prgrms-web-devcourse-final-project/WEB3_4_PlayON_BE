@@ -30,6 +30,9 @@ public class NotificationService {
      */
     @Transactional
     public NotificationResponse sendNotification(Long senderId, NotificationRequest request) {
+        Member sender = memberRepository.findById(senderId)
+                .orElseThrow(() -> new EntityNotFoundException("발신자를 찾을 수 없습니다: " + senderId));
+
         Member receiver = memberRepository.findById(request.receiverId())
                 .orElseThrow(() -> new EntityNotFoundException("수신자를 찾을 수 없습니다: " + request.receiverId()));
 
@@ -40,11 +43,12 @@ public class NotificationService {
         Notification notification = Notification.create(receiver, content, type, redirectUrl);
         notificationRepository.save(notification);
 
-        NotificationResponse response = NotificationResponse.fromEntity(notification, senderId);
+        NotificationResponse response = NotificationResponse.fromEntity(notification, sender.getNickname());
         eventPublisher.publishEvent(new NotificationEvent(this, receiver.getId(), response));
 
         return response;
     }
+
 
 
     /**
