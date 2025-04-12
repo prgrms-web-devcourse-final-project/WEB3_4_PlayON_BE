@@ -1,7 +1,7 @@
 package com.ll.playon.domain.guild.guildMember.service;
 
+import com.ll.playon.domain.guild.guild.dto.response.GetGuildListResponse;
 import com.ll.playon.domain.guild.guild.entity.Guild;
-import com.ll.playon.domain.guild.guild.entity.GuildTag;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardCommentRepository;
 import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardLikeRepository;
@@ -156,7 +156,7 @@ public class GuildMemberService {
         GuildPermissionValidator.checkManagerOrLeader(requester);
 
         Member target = memberRepository.findByUsername(request.username())
-                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+                .orElseThrow(ErrorCode.MEMBER_NOT_FOUND::throwServiceException);
 
         boolean alreadyInGuild = guildMemberRepository.existsByGuildAndMember(guild, target);
         if (alreadyInGuild) {
@@ -174,16 +174,33 @@ public class GuildMemberService {
 
     private Guild getGuild(Long id) {
         return guildRepository.findById(id)
-                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
     }
 
     private Member getMember(Long id) {
         return memberRepository.findById(id)
-                .orElseThrow(() -> ErrorCode.MEMBER_NOT_FOUND.throwServiceException());
+                .orElseThrow(ErrorCode.MEMBER_NOT_FOUND::throwServiceException);
     }
 
     private GuildMember getGuildMember(Long guildId, Long memberId) {
         return guildMemberRepository.findByGuildIdAndMemberId(guildId, memberId)
-                .orElseThrow(() -> ErrorCode.GUILD_MEMBER_NOT_FOUND.throwServiceException());
+                .orElseThrow(ErrorCode.GUILD_MEMBER_NOT_FOUND::throwServiceException);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetGuildListResponse> getMyGuilds(Member actor) {
+        return guildMemberRepository.findByMember(actor).stream()
+                .map(guildMember -> GetGuildListResponse.from(guildMember.getGuild()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetGuildListResponse> getMemberGuilds(Long memberId) {
+        memberRepository.findById(memberId)
+                .orElseThrow(ErrorCode.MEMBER_NOT_FOUND::throwServiceException);
+
+        return guildMemberRepository.findByMemberIdAndGuild_IsPublicTrue(memberId).stream()
+                .map(guildMember -> GetGuildListResponse.from(guildMember.getGuild()))
+                .toList();
     }
 }

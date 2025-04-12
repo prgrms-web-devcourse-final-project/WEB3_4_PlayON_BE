@@ -10,14 +10,12 @@ import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.global.exceptions.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
 @Aspect
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ActivePartyMemberCheckAspect {
@@ -34,7 +32,7 @@ public class ActivePartyMemberCheckAspect {
                 .orElseThrow(ErrorCode.PARTY_NOT_FOUND::throwServiceException);
 
         if (isNotActivePartyMember(actor, party)) {
-            throw ErrorCode.IS_NOT_PARTY_MEMBER.throwServiceException();
+            throw ErrorCode.IS_NOT_PARTY_MEMBER_MEMBER.throwServiceException();
         }
 
         PartyMember partyMember = this.partyMemberRepository.findByMemberAndParty(actor, party)

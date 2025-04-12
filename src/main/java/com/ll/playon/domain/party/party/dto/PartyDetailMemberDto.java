@@ -8,6 +8,8 @@ import lombok.NonNull;
 public record PartyDetailMemberDto(
         long memberId,
 
+        long partyMemberId,
+
         String username,
 
         String title,
@@ -20,6 +22,7 @@ public record PartyDetailMemberDto(
     public PartyDetailMemberDto(PartyMember partyMember, Map<Long, String> titleMap) {
         this(
                 partyMember.getMember().getId(),
+                partyMember.getId(),
                 partyMember.getMember().getUsername(),
                 titleMap.getOrDefault(partyMember.getMember().getId(), ""),
                 partyMember.getMember().getNickname(),

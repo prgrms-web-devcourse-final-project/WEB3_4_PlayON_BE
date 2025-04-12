@@ -1,5 +1,6 @@
 package com.ll.playon.domain.guild.guildBoard.enums;
 
+import lombok.Getter;
 import org.springframework.data.domain.Sort;
 
 public enum BoardSortType {
@@ -7,6 +8,7 @@ public enum BoardSortType {
     POPULAR("인기순", Sort.by(Sort.Direction.DESC, "likeCount"));
 
     private final String label;
+    @Getter
     private final Sort sort;
 
     BoardSortType(String label, Sort sort) {
@@ -14,7 +16,4 @@ public enum BoardSortType {
         this.sort = sort;
     }
 
-    public Sort getSort(){
-        return sort;
-    }
 }

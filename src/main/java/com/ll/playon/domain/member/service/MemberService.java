@@ -4,7 +4,6 @@ import com.ll.playon.domain.game.game.dto.GameListResponse;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
-import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.game.game.service.GameService;
 import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.domain.member.dto.*;
@@ -13,29 +12,39 @@ import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.entity.enums.Role;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
+import com.ll.playon.domain.party.party.context.PartyContext;
 import com.ll.playon.domain.party.party.context.PartyMemberContext;
+import com.ll.playon.domain.party.party.dto.response.GetPartyMainResponse;
+import com.ll.playon.domain.party.party.dto.response.GetPartyResponse;
+import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
+import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.party.type.PartyRole;
+import com.ll.playon.domain.party.party.type.PartyStatus;
+import com.ll.playon.domain.party.party.util.PartyMergeUtils;
+import com.ll.playon.domain.party.party.validation.PartyValidation;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.global.annotation.PartyInviterOnly;
+import com.ll.playon.global.annotation.PartyPendingOnly;
 import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.security.UserContext;
 import com.ll.playon.global.steamAPI.SteamAPI;
+import com.ll.playon.global.validation.FileValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -49,9 +58,9 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final GameService gameService;
     private final GameRepository gameRepository;
+    private final PartyRepository partyRepository;
     private final TitleEvaluator titleEvaluator;
     private final S3Service s3Service;
-    private final WeeklyGameRepository weeklyGameRepository;
     private final SteamAsyncService steamAsyncService;
     private final ApplicationEventPublisher publisher;
 
@@ -207,6 +216,8 @@ public class MemberService {
 
             // 수정하는 경우 presigned url 응답
             if (!ObjectUtils.isEmpty(req.newFileType())) {
+                FileValidator.validateFileType(req.newFileType());
+
                 return new PresignedUrlResponse(
                         s3Service.generatePresignedUrl(ImageType.MEMBER, member.getId(), req.newFileType())
                                 .toString()
@@ -290,11 +301,26 @@ public class MemberService {
         return toGameListResponse(ownedGames);
     }
 
+    // 파티 참가 취소
+    // AOP에 필요한 파라미터
+    @PartyPendingOnly
+    @Transactional
+    public void cancelPendingParty(Member actor, long partyId) {
+        PartyMember me = PartyMemberContext.getPartyMember();
+
+        me.delete();
+    }
+
     // 파티 초대 승인
     // AOP에 필요한 파라미터
     @PartyInviterOnly
     @Transactional
     public void approvePartyInvitation(Member actor, long partyId) {
+        Party party = PartyContext.getParty();
+
+        PartyValidation.checkPartyCanJoin(party);
+        PartyValidation.checkPartyIsNotFull(party);
+
         PartyMember me = PartyMemberContext.getPartyMember();
 
         me.promoteRole(PartyRole.MEMBER);
@@ -310,6 +336,50 @@ public class MemberService {
         me.delete();
     }
 
+    // 내 참여중인 파티 조회
+    @Transactional(readOnly = true)
+    public GetPartyMainResponse getMyParties(Member actor) {
+        return this.getRecentActiveParty(actor);
+    }
+
+    // 내가 파티 로그를 작성한 적 있는 종료된 파티들을 최근에 끝난 순으로 조회
+    @Transactional(readOnly = true)
+    public Page<GetPartyResponse> getPartiesLoggedByMe(Member actor, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        Page<Party> partiesLoggedByMe = this.partyRepository.findMembersRecentCompletedParties(
+                actor.getId(), PartyStatus.COMPLETED, pageable);
+
+        if (partiesLoggedByMe.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        return this.getLoggedPartiesByMembers(partiesLoggedByMe, pageable);
+    }
+
+    // 타 유저 참여중인 파티 조회
+    @Transactional(readOnly = true)
+    public GetPartyMainResponse getMembersParties(long memberId) {
+        Member actor = this.getActor(memberId);
+
+        return this.getRecentActiveParty(actor);
+    }
+
+    // 유저가 파티 로그를 작성한 적 있는 종료된 파티들을 최근에 끝난 순으로 조회
+    @Transactional(readOnly = true)
+    public Page<GetPartyResponse> getPartiesLoggedByMember(long memberId, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        Member actor = this.getActor(memberId);
+
+        Page<Party> partiesLoggedByMember = this.partyRepository.findMembersRecentCompletedParties(
+                actor.getId(), PartyStatus.COMPLETED, pageable);
+
+        if (partiesLoggedByMember.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        return getLoggedPartiesByMembers(partiesLoggedByMember, pageable);
+    }
+
     private List<GameListResponse> toGameListResponse(List<Long> appIds) {
         return gameRepository.findAllByAppidIn(appIds).stream()
                 .map(game -> GameListResponse.builder()
@@ -323,5 +393,46 @@ public class MemberService {
                         )
                         .build())
                 .toList();
+    }
+
+    // memberId로 Member 조회
+    private Member getActor(long memberId) {
+        return this.memberRepository.findById(memberId)
+                .orElseThrow(ErrorCode.MEMBER_NOT_FOUND::throwServiceException);
+    }
+
+    // 최근 파티 조회
+    private GetPartyMainResponse getRecentActiveParty(Member actor) {
+        List<PartyRole> partyRoles = List.of(PartyRole.OWNER, PartyRole.MEMBER);
+
+        List<Party> myParties = this.partyRepository.findMembersActiveParties(actor.getId(), partyRoles,
+                PartyStatus.COMPLETED);
+
+        List<Long> myPartyIds = myParties.stream().map(Party::getId).toList();
+
+        return new GetPartyMainResponse(
+                PartyMergeUtils.mergePartyWithJoinData(
+                        myParties,
+                        this.partyRepository.findPartyTagsByPartyIds(myPartyIds),
+                        this.partyRepository.findPartyMembersByPartyIds(myPartyIds)
+                ));
+    }
+
+    // 최근 유저에 의해 로그가 작성된 종료된 파티 조회
+    private PageImpl<GetPartyResponse> getLoggedPartiesByMembers(Page<Party> partiesLoggedByMe, Pageable pageable) {
+        List<Long> partyIdsLoggedByMe = partiesLoggedByMe.stream()
+                .map(Party::getId)
+                .toList();
+
+        List<GetPartyResponse> mergedList = PartyMergeUtils.mergePartyWithJoinData(
+                partiesLoggedByMe.getContent(),
+                this.partyRepository.findPartyTagsByPartyIds(partyIdsLoggedByMe),
+                this.partyRepository.findPartyMembersByPartyIds(partyIdsLoggedByMe)
+        );
+
+        return new PageImpl<>(
+                mergedList,
+                pageable,
+                partiesLoggedByMe.getTotalElements());
     }
 }

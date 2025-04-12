@@ -22,6 +22,8 @@ public record GetCompletedPartyDto(
         @NonNull
         String mvpName,
 
+        int mvpPoint,
+
         @NonNull
         String mvpProfileImg,
 
@@ -45,6 +47,7 @@ public record GetCompletedPartyDto(
                 party.getName(),
                 party.getGame().getName(),
                 mvp.getMember().getNickname(),
+                mvp.getMvpPoint(),
                 mvp.getMember().getProfileImg(),
                 party.getPartyAt(),
                 playTime,

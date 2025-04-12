@@ -44,7 +44,7 @@ public class SteamGameProcessor implements ItemProcessor<SteamCsvDto, SteamGame>
                 String fixedJson = rawGenres.replace("'", "\"");
                 List<String> genreNames = objectMapper.readValue(fixedJson, new TypeReference<>() {});
                 genreEntities = genreNames.stream()
-                        .map(name -> genreRepository.findOrCreate(name))
+                        .map(genreRepository::findOrCreate)
                         .collect(Collectors.toList());
             }
         } catch (Exception e) {
@@ -103,7 +103,7 @@ public class SteamGameProcessor implements ItemProcessor<SteamCsvDto, SteamGame>
             try {
                 developers = developers.replace("'", "\"");
                 List<String> developerList = objectMapper.readValue(developers, new TypeReference<>() {});
-                developers = developerList.isEmpty() ? null : developerList.get(0);
+                developers = developerList.isEmpty() ? null : developerList.getFirst();
             } catch (Exception e) {
                 log.warn("developers 파싱 실패: {}", developers);
                 developers = null;
@@ -115,7 +115,7 @@ public class SteamGameProcessor implements ItemProcessor<SteamCsvDto, SteamGame>
             try {
                 publishers = publishers.replace("'", "\"");
                 List<String> publisherList = objectMapper.readValue(publishers, new TypeReference<>() {});
-                publishers = publisherList.isEmpty() ? null : publisherList.get(0);
+                publishers = publisherList.isEmpty() ? null : publisherList.getFirst();
             } catch (Exception e) {
                 log.warn("publishers 파싱 실패: {}", publishers);
                 publishers = null;

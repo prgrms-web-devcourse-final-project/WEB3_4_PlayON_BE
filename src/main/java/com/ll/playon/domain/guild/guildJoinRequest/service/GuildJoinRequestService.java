@@ -10,12 +10,11 @@ import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
 import com.ll.playon.domain.member.entity.Member;
-import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.global.exceptions.ErrorCode;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -31,7 +30,7 @@ public class GuildJoinRequestService {
     @Transactional
     public void requestToJoinGuild(Long guildId, Member member) {
         Guild guild = guildRepository.findById(guildId)
-                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
 
         boolean isAlreadyMember = guild.getMembers().stream()
                 .anyMatch(gm -> gm.getMember().getId().equals(member.getId()));
@@ -68,7 +67,7 @@ public class GuildJoinRequestService {
 
     private void processJoinRequest(Long guildId, Long requestId, Member approver, ApprovalState targetState) {
         GuildJoinRequest joinRequest = guildJoinRequestRepository.findById(requestId)
-                .orElseThrow(() -> ErrorCode.GUILD_JOIN_REQUEST_NOT_FOUND.throwServiceException());
+                .orElseThrow(ErrorCode.GUILD_JOIN_REQUEST_NOT_FOUND::throwServiceException);
 
         if (!joinRequest.getGuild().getId().equals(guildId)) {
             throw ErrorCode.GUILD_ID_MISMATCH.throwServiceException();
@@ -102,7 +101,7 @@ public class GuildJoinRequestService {
     @Transactional(readOnly = true)
     public List<GuildJoinRequestResponse> getPendingJoinRequests(Long guildId, Member viewer) {
         Guild guild = guildRepository.findById(guildId)
-                .orElseThrow(() -> ErrorCode.GUILD_NOT_FOUND.throwServiceException());
+                .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
 
         boolean isAuthorized = guild.getMembers().stream()
                 .anyMatch(gm -> gm.getMember().getId().equals(viewer.getId())

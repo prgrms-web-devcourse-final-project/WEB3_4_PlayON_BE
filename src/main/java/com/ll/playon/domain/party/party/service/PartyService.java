@@ -30,11 +30,13 @@ import com.ll.playon.domain.party.party.mapper.PartyTagMapper;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.party.party.type.PartyStatus;
+import com.ll.playon.domain.party.party.util.PartyMergeUtils;
 import com.ll.playon.domain.party.party.util.PartySortUtils;
 import com.ll.playon.domain.party.party.validation.PartyMemberValidation;
 import com.ll.playon.domain.party.party.validation.PartyValidation;
 import com.ll.playon.domain.party.partyLog.dto.response.GetAllPartyLogResponse;
 import com.ll.playon.domain.party.partyLog.service.PartyLogService;
+import com.ll.playon.domain.party.partyLog.util.PartyLogUtils;
 import com.ll.playon.domain.title.entity.enums.ConditionType;
 import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.domain.title.service.TitleEvaluator;
@@ -157,7 +159,8 @@ public class PartyService {
         List<PartyMember> partyMembers = this.partyRepository.findPartyMembersByPartyIds(partyIds.getContent());
         List<PartyTag> partyTags = this.partyRepository.findPartyTagsByPartyIds(partyIds.getContent());
 
-        List<GetPartyResponse> getPartyResponses = this.mergePartyWithJoinData(parties, partyTags, partyMembers);
+        List<GetPartyResponse> getPartyResponses = PartyMergeUtils.mergePartyWithJoinData(parties, partyTags,
+                partyMembers);
 
         List<Long> orderedIds = partyIds.getContent();
         Map<Long, GetPartyResponse> responseMap = getPartyResponses.stream()
@@ -217,8 +220,9 @@ public class PartyService {
         Pageable pageable = PageRequest.of(0, limit);
 
         List<Party> parties = this.partyRepository.findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtAscCreatedAtDesc(
-                PartyStatus.PENDING,
-                pageable);
+                        PartyStatus.PENDING, pageable).stream()
+                .filter(party -> party.getTotal() < party.getMaximum())
+                .toList();
 
         if (parties.isEmpty()) {
             return new GetPartyMainResponse(Collections.emptyList());
@@ -227,7 +231,7 @@ public class PartyService {
         List<Long> partyIds = parties.stream().map(Party::getId).toList();
 
         return new GetPartyMainResponse(
-                this.mergePartyWithJoinData(
+                PartyMergeUtils.mergePartyWithJoinData(
                         parties,
                         this.partyRepository.findPartyTagsByPartyIds(partyIds),
                         this.partyRepository.findPartyMembersByPartyIds(partyIds)
@@ -235,28 +239,36 @@ public class PartyService {
         );
     }
 
-    // 메인용 종료된 파티 조회 (limit 만큼)
+    // 메인용 파티 로그가 작성되었고 종료된 파티 리스트 조회 (limit 만큼)
     @Transactional(readOnly = true)
-    public GetPartyMainResponse getCompletedPartyMain(int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
+    public GetPartyMainResponse getCompletedPartyWithLogMain(int limit) {
+        Pageable pageable = PageRequest.of(0, limit * 10);
 
-        List<Party> parties = this.partyRepository.findAllByPartyStatusAndPublicFlagTrueOrderByPartyAtDescCreatedAtDesc(
+        List<Party> completedParties = this.partyRepository.findRecentCompletedPartiesWithLogs(
                 PartyStatus.COMPLETED,
                 pageable);
 
-        if (parties.isEmpty()) {
+        if (completedParties.isEmpty()) {
             return new GetPartyMainResponse(Collections.emptyList());
         }
 
-        List<Long> partyIds = parties.stream().map(Party::getId).toList();
+        List<Party> partiesWithLog = completedParties.stream()
+                .filter(PartyLogUtils::hasPartyLog)
+                .limit(limit)
+                .toList();
+
+        if (partiesWithLog.isEmpty()) {
+            return new GetPartyMainResponse(Collections.emptyList());
+        }
+
+        List<Long> partyIds = partiesWithLog.stream().map(Party::getId).toList();
 
         return new GetPartyMainResponse(
-                this.mergePartyWithJoinData(
-                        parties,
+                PartyMergeUtils.mergePartyWithJoinData(
+                        completedParties,
                         this.partyRepository.findPartyTagsByPartyIds(partyIds),
                         this.partyRepository.findPartyMembersByPartyIds(partyIds)
-                )
-        );
+                ));
     }
 
     // TODO: 동시성 고려
@@ -275,7 +287,7 @@ public class PartyService {
 
         Map<Long, String> titleMap = this.memberTitleService.getRepresentativeTitleMap(memberIds);
 
-        List<PartyDetailMemberDto> partyDetailMemberDtos = party.getPartyMembers().stream()
+        List<PartyDetailMemberDto> partyDetailMemberDtos = partyMembers.stream()
                 .map(pm -> new PartyDetailMemberDto(pm, titleMap))
                 .toList();
 
@@ -284,7 +296,7 @@ public class PartyService {
                 .toList();
 
         // 조회수 증가
-        party.setHit(party.getHit() + 1);
+        party.increaseHit();
 
         return new GetPartyDetailResponse(party, partyDetailMemberDtos, partyDetailTagDtos);
     }
@@ -323,10 +335,9 @@ public class PartyService {
 
     // 파티 참가 신청 리스트 조회
     // AOP에 필요한 파라미터
-    @PartyOwnerOnly
     @Transactional(readOnly = true)
     public GetAllPendingMemberResponse getPartyPendingMembers(Member actor, long partyId) {
-        Party party = PartyContext.getParty();
+        Party party = this.getParty(partyId);
 
         List<PartyMember> partyMembers = party.getPartyMembers().stream()
                 .filter(pm -> pm.getPartyRole().equals(PartyRole.PENDING))
@@ -347,20 +358,24 @@ public class PartyService {
     @Transactional
     public void requestParticipation(Member actor, long partyId) {
         Party party = this.getParty(partyId);
+
+        PartyValidation.checkPartyCanJoin(party);
+        PartyValidation.checkPartyIsNotFull(party);
+
         Optional<PartyMember> opPartyMember = this.getPartyMember(actor, party);
 
         // 이미 해당 파티의 파티원일 경우
         if (opPartyMember.isPresent()) {
             PartyMember partyMember = opPartyMember.get();
 
-            // 본인일 경우
-            PartyMemberValidation.checkIsPartyMemberOwn(partyMember, actor);
-
             // 이미 해당 파티에 신청한 경우
-            PartyMemberValidation.checkPendingMember(partyMember);
+            PartyMemberValidation.checkAlreadyPendingMember(partyMember);
 
             // 파티원일 경우
             ErrorCode.IS_ALREADY_PARTY_MEMBER.throwServiceException();
+
+            // 본인일 경우
+            PartyMemberValidation.checkIsPartyMemberOwn(partyMember, actor);
         }
 
         party.addPartyMember(PartyMemberMapper.of(actor, PartyRole.PENDING));
@@ -373,6 +388,9 @@ public class PartyService {
     @Transactional
     public void approveParticipation(Member actor, long partyId, long memberId) {
         Party party = PartyContext.getParty();
+
+        PartyValidation.checkPartyCanJoin(party);
+        PartyValidation.checkPartyIsNotFull(party);
 
         PartyMember pendingMember = this.getPendingMember(memberId, party);
 
@@ -398,23 +416,27 @@ public class PartyService {
     @Transactional
     public void inviteParty(Member actor, long partyId, long memberId) {
         Party party = PartyContext.getParty();
+
+        PartyValidation.checkPartyCanJoin(party);
+        PartyValidation.checkPartyIsNotFull(party);
+
         Member invitedActor = this.memberService.findById(memberId)
                 .orElseThrow(ErrorCode.USER_NOT_REGISTERED::throwServiceException);
 
-        Optional<PartyMember> opPartyMember = this.getPartyMember(actor, party);
+        Optional<PartyMember> opPartyMember = this.getPartyMember(invitedActor, party);
 
         // 이미 해당 파티의 파티원일 경우
         if (opPartyMember.isPresent()) {
             PartyMember partyMember = opPartyMember.get();
 
-            // 본인일 경우
-            PartyMemberValidation.checkIsPartyMemberOwn(partyMember, actor);
-
             // 이미 해당 파티에 신청한 경우
-            PartyMemberValidation.checkPendingMember(partyMember);
+            PartyMemberValidation.checkAlreadyInvitedMember(partyMember);
 
             // 파티원일 경우
             ErrorCode.IS_ALREADY_PARTY_MEMBER.throwServiceException();
+
+            // 본인일 경우
+            PartyMemberValidation.checkIsPartyMemberOwn(partyMember, actor);
         }
 
         party.addPartyMember(PartyMemberMapper.of(invitedActor, PartyRole.INVITER));
@@ -457,22 +479,5 @@ public class PartyService {
         return request.tags().stream()
                 .map(tag -> PartyTagMapper.build(party, tag.type(), tag.value()))
                 .toList();
-    }
-
-    // Party 내부 Join 데이터들 병합
-    private List<GetPartyResponse> mergePartyWithJoinData(List<Party> parties, List<PartyTag> partyTags,
-                                                          List<PartyMember> partyMembers) {
-        Map<Long, List<PartyTag>> partyTagsMap = partyTags.stream()
-                .collect(Collectors.groupingBy(pt -> pt.getParty().getId()));
-
-        Map<Long, List<PartyMember>> partyMembersMap = partyMembers.stream()
-                .collect(Collectors.groupingBy(pm -> pm.getParty().getId()));
-
-        return parties.stream()
-                .map(party -> new GetPartyResponse(
-                        party,
-                        partyTagsMap.getOrDefault(party.getId(), Collections.emptyList()),
-                        partyMembersMap.getOrDefault(party.getId(), Collections.emptyList())
-                )).collect(Collectors.toList());
     }
 }

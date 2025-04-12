@@ -16,7 +16,7 @@ public class Notification extends BaseTime {
     @JoinColumn(name = "receiver_id", nullable = false)
     private Member receiver;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String content;
 
     @Enumerated(EnumType.STRING)

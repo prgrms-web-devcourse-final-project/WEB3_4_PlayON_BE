@@ -148,4 +148,12 @@ public class Party {
     public void updatePartyStatus(PartyStatus partyStatus) {
         this.partyStatus = partyStatus;
     }
+
+    public void increaseHit() {
+        this.hit += 1;
+    }
+
+    public void updateEndTime() {
+        this.endedAt = LocalDateTime.now();
+    }
 }

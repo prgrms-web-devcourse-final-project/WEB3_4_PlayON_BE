@@ -1,14 +1,12 @@
 package com.ll.playon.domain.game.game.service;
 
 import com.ll.playon.domain.game.game.dto.GameListResponse;
-import com.ll.playon.domain.game.game.dto.response.GetRecommendedGameResponse;
 import com.ll.playon.domain.game.game.dto.request.GameSearchCondition;
 import com.ll.playon.domain.game.game.dto.response.*;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.LongPlaytimeGameRepository;
-import com.ll.playon.domain.game.game.repository.GenreRepository;
 import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
@@ -30,7 +28,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,7 +43,6 @@ public class GameService {
     private final MemberRepository memberRepository;
     private final PartyRepository partyRepository;
     private final PartyLogRepository partyLogRepository;
-    private final GenreRepository genreRepository;
 
     private final static int TOP_FIVE = 5;
     private final WeeklyGameRepository weeklyGameRepository;
@@ -81,7 +80,7 @@ public class GameService {
     // 메인 페이지에 보여줄 스팀 랭킹
     @Transactional
     public List<GameListResponse>  getGameRanking() {
-        return makeGameListWithoutGenre(steamAPI.getSteamRanking().stream().limit(5).toList());
+        return makeGameListWithoutGenre(steamAPI.getSteamRanking().stream().limit(TOP_FIVE).toList());
     }
 
     // 메인 페이지에 보여줄 사용자 게임 추천
@@ -187,7 +186,7 @@ public class GameService {
             return List.of();
         }
 
-        // 공개 + 완료 파티를 최신순으로 limit개
+        // 공개 + 완료 파티를 최신순으로 limit 만큼
         List<Party> parties = partyRepository.findPublicCompletedPartiesIn(friendPartyIds, PageRequest.of(0, limit*4));
         if (parties.isEmpty()) {
             return List.of();

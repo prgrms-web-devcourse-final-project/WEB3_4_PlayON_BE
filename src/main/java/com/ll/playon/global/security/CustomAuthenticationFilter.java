@@ -1,13 +1,15 @@
 package com.ll.playon.global.security;
 
-import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.domain.member.entity.Member;
+import com.ll.playon.domain.member.service.MemberService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -21,45 +23,56 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     private final UserContext userContext;
     private final MemberService memberService;
 
+    private static final List<String> PUBLIC_URLS = List.of(
+            "/api/guilds/recommend",
+            "/api/guilds/popular",
+            "/api/guilds/list",
+
+            "/api/parties/main/pending",
+            "/api/parties/main/completed",
+            "/api/parties/*/result",
+            "/api/parties/list",
+
+            "/api/members/signup",
+            "/api/members/login",
+            "/api/members/member/*",
+            "/api/members/*/parties",
+            "/api/members/*/parties/logs",
+            "/api/auth/steam/signup",
+            "/api/auth/steam/callback/signup",
+            "/api/auth/steam/login",
+            "/api/auth/steam/callback/login",
+            "/api/auth/steam/logout",
+
+            "/api/games/popular",
+            "/api/games/ranking",
+            "/api/games/recommend/playtime/top",
+            "/api/games/list",
+            "/api/games/search",
+            "/api/games/*/party",
+            "/api/games/*/logs",
+            "/api/games/*/details",
+
+            "/api/batch/steam-game"
+    );
+    private static final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+
     record AuthTokens(
             String apiKey,
             String accessToken
     ) { }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (!request.getRequestURI().startsWith("/api")) {
+    protected void doFilterInternal(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException, IOException {
+        String uri = request.getRequestURI();
+
+        if (!uri.startsWith("/api")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        if (List.of(
-                "/api/guilds/*/board",
-                "/api/guilds/recommend",
-                "/api/guilds/popular",
-                "/api/guilds/list",
-                "/api/parties/main/pending",
-                "/api/parties/main/completed",
-                "/api/parties/*",
-                "/api/parties/*/result",
-                "/api/logs/party/*",
-                "/api/members/signup",
-                "/api/members/login",
-                "/api/auth/steam/signup",
-                "/api/auth/steam/callback/signup",
-                "/api/auth/steam/login",
-                "/api/auth/steam/callback/login",
-                "/api/auth/steam/logout",
-                "/api/games/popular",
-                "/api/games/ranking",
-                "/api/games/recommend/playtime/top",
-                "/api/games/list",
-                "/api/games/search",
-                "/api/games/*/party",
-                "/api/games/*/logs",
-                "/api/games/*/details",
-                "/api/batch/steam-game"
-        ).contains(request.getRequestURI())) {
+        if (PUBLIC_URLS.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri))) {
             filterChain.doFilter(request, response);
             return;
         }

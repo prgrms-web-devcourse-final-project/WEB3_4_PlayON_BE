@@ -6,7 +6,6 @@ import com.ll.playon.domain.guild.guild.dto.request.PostImageUrlRequest;
 import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.response.*;
 import com.ll.playon.domain.guild.guild.service.GuildService;
-import com.ll.playon.domain.image.service.ImageService;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
@@ -33,7 +32,6 @@ public class GuildController {
 
     private final GuildService guildService;
     private final UserContext userContext;
-    private final ImageService imageService;
 
     @PostMapping
     @Operation(summary = "길드 생성")
@@ -47,7 +45,7 @@ public class GuildController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "길드 대표 이미지 URL 저장")
     public void saveImageUrl(@PathVariable long guildId, @RequestBody PostImageUrlRequest newImgUrl) {
-        guildService.saveImageUrl(userContext.getActor(), guildId, newImgUrl);
+        guildService.saveImageUrl(guildId, newImgUrl);
     }
 
     @PutMapping("/{guildId}")

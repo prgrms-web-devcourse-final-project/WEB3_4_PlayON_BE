@@ -133,7 +133,7 @@ public class GuildService {
     }
 
     @Transactional
-    public void saveImageUrl(Member actor, long guildId, PostImageUrlRequest request) {
+    public void saveImageUrl(long guildId, PostImageUrlRequest request) {
         // URL 확인
         if (ObjectUtils.isEmpty(request.url())) {
             throw ErrorCode.URL_NOT_FOUND.throwServiceException();
@@ -184,7 +184,7 @@ public class GuildService {
         GuildMember member = guildMemberRepository.findByGuildAndMember(guild, actor)
                 .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
 
-        if (!member.isManagerOrLeader()) {
+        if (member.isNotManagerOrLeader()) {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
 
@@ -214,7 +214,7 @@ public class GuildService {
 
     @Transactional(readOnly = true)
     public PageDto<GetGuildListResponse> searchGuilds(int page, int pageSize, String sort, GetGuildListRequest request) {
-        Page<Guild> guilds = guildRepository.searchGuilds(request, PageRequest.of(page, pageSize), sort);
+        Page<Guild> guilds = guildRepository.searchGuilds(request, PageRequest.of(page - 1, pageSize), sort);
 
         return new PageDto<>(guilds.map(GetGuildListResponse::from));
     }

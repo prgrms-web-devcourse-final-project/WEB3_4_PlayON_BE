@@ -14,7 +14,6 @@ import java.util.Optional;
 @Repository
 public interface GuildMemberRepository extends JpaRepository<GuildMember, Long> {
     Optional<GuildMember> findByGuildAndMember(Guild guild, Member actor);
-    long countByGuildId(Long guildId);
     List<GuildMember> findAllByGuild(Guild guild);
     boolean existsByGuildAndMember(Guild guild, Member member);
     List<GuildMember> findAllByMember(Member member);
@@ -32,5 +31,9 @@ public interface GuildMemberRepository extends JpaRepository<GuildMember, Long> 
     WHERE gm.guild.id = :guildId AND gm.guildRole = 'MANAGER'
 """)
     List<String> findManagerNicknamesByGuildId(@Param("guildId") Long guildId);
+
+    List<GuildMember> findByMemberIdAndGuild_IsPublicTrue(Long memberId);
+
+    List<GuildMember> findByMember(Member actor);
 
 }

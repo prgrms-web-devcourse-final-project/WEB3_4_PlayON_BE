@@ -28,7 +28,6 @@ public class PartyLogController {
     @Operation(summary = "파티 로그 작성")
     public RsData<PartyLogResponse> createPartyLog(@PathVariable long partyId,
                                                    @RequestBody @Valid PostPartyLogRequest request) {
-        // TODO : 추후 롤백
         Member actor = this.userContext.getActualActor();
 
         return RsData.success(HttpStatus.CREATED, this.partyLogService.createPartyLog(actor, partyId, request));
@@ -38,7 +37,6 @@ public class PartyLogController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "스크린샷 URL 저장")
     public void saveImageUrl(@PathVariable long logId, @PathVariable long partyId, @RequestBody PostImageUrlRequest request) {
-        // TODO : 추후 롤백
         Member actor = this.userContext.getActualActor();
 
         this.partyLogService.saveImageUrl(actor, partyId, logId, request);
@@ -47,9 +45,6 @@ public class PartyLogController {
     @GetMapping("/party/{partyId}")
     @Operation(summary = "파티의 모든 파티 로그 조회")
     public RsData<GetAllPartyLogResponse> getAllPartyLogs(@PathVariable long partyId) {
-        // TODO : 추후 롤백
-//        Member actor = this.userContext.getActor();
-
         return RsData.success(HttpStatus.OK, this.partyLogService.getAllPartyLogs(partyId));
     }
 
@@ -58,7 +53,6 @@ public class PartyLogController {
     public RsData<PartyLogResponse> updatePartyLog(@PathVariable long logId,
                                                    @PathVariable long partyId,
                                                    @RequestBody @Valid PutPartyLogRequest request) {
-        // TODO : 추후 롤백
         Member actor = this.userContext.getActualActor();
 
         return RsData.success(HttpStatus.OK, this.partyLogService.updatePartyLog(actor, partyId, logId, request));
@@ -68,7 +62,6 @@ public class PartyLogController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "파티 로그 삭제")
     public void deletePartyLog(@PathVariable long logId, @PathVariable long partyId) {
-        // TODO : 추후 롤백
         Member actor = this.userContext.getActualActor();
 
         this.partyLogService.deletePartyLog(actor, partyId, logId);

@@ -6,12 +6,9 @@ import com.ll.playon.domain.guild.guildBoard.enums.BoardSortType;
 import com.ll.playon.domain.guild.guildBoard.enums.BoardTag;
 import com.ll.playon.domain.guild.guildBoard.service.GuildBoardService;
 import com.ll.playon.domain.member.entity.Member;
-import com.ll.playon.domain.image.type.ImageType;
-import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
-import com.ll.playon.global.validation.FileValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,8 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
-import java.net.URL;
 import java.util.List;
 
 @Tag(name = "Guild Board", description = "길드 게시판 관련 기능")
@@ -34,7 +29,6 @@ public class GuildBoardController {
 
     private final GuildBoardService guildBoardService;
     private final UserContext userContext;
-    private final S3Service s3Service;
 
     @GetMapping("/{guildId}/board")
     @Operation(summary = "길드 게시글 목록 조회")
@@ -51,8 +45,8 @@ public class GuildBoardController {
         }
 
         Pageable pageable = PageRequest.of(page, pageSize, sort.getSort());
-        Member actor=userContext.getActor();
-        Page<GuildBoardSummaryResponse> result = guildBoardService.getBoardList(guildId, tag, keyword, pageable,actor);
+        Member actor = userContext.getActor();
+        Page<GuildBoardSummaryResponse> result = guildBoardService.getBoardList(guildId, tag, keyword, pageable, actor);
 
         return RsData.success(HttpStatus.OK, result);
     }
@@ -68,7 +62,6 @@ public class GuildBoardController {
         Member actor = userContext.getActor();
         guildBoardService.saveBoardImageUrl(actor, guildId, boardId, request.url());
     }
-
 
     @PostMapping("/{guildId}/board")
     @Operation(summary = "길드 게시글 작성")
