@@ -27,7 +27,7 @@ public record PostPartyRequest(
         Integer maximum,
 
         @NotNull
-        Long gameId,
+        Long appId,
 
         @NotNull(message = "태그 정보들을 입력해주세요.")
         List<@Valid PartyTagRequest> tags

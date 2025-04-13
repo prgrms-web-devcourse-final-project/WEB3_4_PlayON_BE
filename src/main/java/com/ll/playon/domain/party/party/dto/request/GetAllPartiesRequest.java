@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.util.CollectionUtils;
 
 public record GetAllPartiesRequest(
-        Long gameId,
+        Long appId,
 
         List<String> genres,
 

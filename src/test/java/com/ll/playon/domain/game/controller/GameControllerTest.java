@@ -204,7 +204,7 @@ public class GameControllerTest {
 
         PartyLog log = partyLogRepository.save(PartyLog.builder()
                 .partyMember(member)
-                .comment("Good gameId")
+                .comment("Good appId")
                 .content("Enjoyed it")
                 .build());
 

@@ -34,8 +34,8 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
                 GROUP BY pt.party.id
                 HAVING COUNT(pt.value) = :tagSize
             ))
-            AND (:gameId IS NULL OR p.game.id = :gameId)
-            AND (:genres IS NULL OR p.game.id IN (
+            AND (:appId IS NULL OR p.game.appid = :appId)
+            AND (:genres IS NULL OR p.game.appid IN (
                 SELECT sg.id
                 FROM SteamGame sg
                 JOIN sg.genres g
@@ -50,7 +50,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             @Param("isMacSupported") boolean isMacSupported,
             @Param("tagValues") List<String> tagValues,
             @Param("tagSize") int tagSize,
-            @Param("gameId") Long gameId,
+            @Param("appId") Long appId,
             @Param("genres") List<String> genres,
             @Param("genreSize") int genreSize,
             Pageable pageable
