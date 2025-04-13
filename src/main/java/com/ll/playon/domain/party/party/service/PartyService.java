@@ -78,7 +78,7 @@ public class PartyService {
     // 파티 생성
     @Transactional
     public PostPartyResponse createParty(Member actor, PostPartyRequest request) {
-        SteamGame game = this.gameRepository.findById(request.gameId())
+        SteamGame game = this.gameRepository.findByAppid(request.appId())
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
         Party party = PartyMapper.of(request, game);
@@ -145,7 +145,7 @@ public class PartyService {
                 isMacSupported,
                 tagValues,
                 tagSize,
-                request.gameId(),
+                request.appId(),
                 genres,
                 genreSize,
                 pageable

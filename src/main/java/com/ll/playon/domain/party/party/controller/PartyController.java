@@ -1,7 +1,6 @@
 package com.ll.playon.domain.party.party.controller;
 
 import com.ll.playon.domain.member.entity.Member;
-import com.ll.playon.domain.member.service.MemberService;
 import com.ll.playon.domain.party.party.dto.request.GetAllPartiesRequest;
 import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
 import com.ll.playon.domain.party.party.dto.request.PutPartyRequest;
@@ -46,7 +45,6 @@ public class PartyController {
     private final PartyService partyService;
     private final UserContext userContext;
     private final TitleEvaluator titleEvaluator;
-    private final MemberService memberService;
 
     @PostMapping
     @Operation(summary = "파티 생성")
