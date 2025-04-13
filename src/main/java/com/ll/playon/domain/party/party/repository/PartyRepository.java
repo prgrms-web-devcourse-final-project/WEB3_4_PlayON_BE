@@ -32,6 +32,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
                 FROM PartyTag pt
                 WHERE pt.value IN :tagValues
                 GROUP BY pt.party.id
+                HAVING COUNT(pt.value) = :tagSize
             ))
             AND (:gameId IS NULL OR p.game.id = :gameId)
             AND (:genres IS NULL OR p.game.id IN (
@@ -40,6 +41,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
                 JOIN sg.genres g
                 WHERE g.name IN :genres
                 GROUP BY sg.id
+                HAVING COUNT(g.name) = :genreSize
             ))
             """)
     Page<Long> findPartyIdsWithAllFilter(
@@ -47,8 +49,10 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             @Param("partyAt") LocalDateTime partyAt,
             @Param("isMacSupported") boolean isMacSupported,
             @Param("tagValues") List<String> tagValues,
+            @Param("tagSize") int tagSize,
             @Param("gameId") Long gameId,
             @Param("genres") List<String> genres,
+            @Param("genreSize") int genreSize,
             Pageable pageable
     );
 
@@ -167,7 +171,8 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             ORDER BY p.endedAt DESC
             """)
     Page<Party> findMembersRecentCompletedPartiesWithLogs(@Param("memberId") Long memberId,
-                                                          @Param("partyStatus") PartyStatus partyStatus, Pageable pageable);
+                                                          @Param("partyStatus") PartyStatus partyStatus,
+                                                          Pageable pageable);
 
     @Query("""
             SELECT pm.party
