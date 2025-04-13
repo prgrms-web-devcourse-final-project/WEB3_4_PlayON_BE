@@ -17,12 +17,14 @@ import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardLikeRepository
 import com.ll.playon.domain.guild.guildBoard.repository.GuildBoardRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
+import com.ll.playon.domain.image.event.ImageDeleteEvent;
 import com.ll.playon.domain.image.service.ImageService;
 import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.aws.s3.S3Service;
 import com.ll.playon.global.exceptions.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -43,6 +45,7 @@ public class GuildBoardService {
     private final GuildBoardLikeRepository guildBoardLikeRepository;
     private final S3Service s3Service;
     private final ImageService imageService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional(readOnly = true)
     public Page<GuildBoardSummaryResponse> getBoardList(Long guildId, BoardTag tag, String keyword, Pageable pageable, Member actor) {
@@ -123,6 +126,7 @@ public class GuildBoardService {
 
         validateAuthor(board, guildMember);
         guildBoardRepository.delete(board);
+        applicationEventPublisher.publishEvent(new ImageDeleteEvent(boardId, ImageType.GUILDBOARD));
     }
 
     @Transactional

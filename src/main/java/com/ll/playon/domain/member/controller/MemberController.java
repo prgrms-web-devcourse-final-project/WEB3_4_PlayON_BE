@@ -1,6 +1,7 @@
 package com.ll.playon.domain.member.controller;
 
 import com.ll.playon.domain.game.game.dto.GameListResponse;
+import com.ll.playon.domain.guild.guild.dto.request.PostImageUrlRequest;
 import com.ll.playon.domain.guild.guild.dto.response.GetGuildListResponse;
 import com.ll.playon.domain.guild.guildMember.service.GuildMemberService;
 import com.ll.playon.domain.member.dto.*;
@@ -61,7 +62,7 @@ public class MemberController {
     @Transactional
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "내 프로필 이미지 URL 저장")
-    public void saveProfileImage(@RequestBody String url) {
+    public void saveProfileImage(@RequestBody PostImageUrlRequest url) {
         memberService.saveProfileImage(userContext.getActor(), url);
     }
 
