@@ -139,7 +139,7 @@ public class PartyService {
 
         // 내 파티 ID 제외 + 공개 파티 ID 조회
         Page<Long> partyIds = this.partyRepository.findPartyIdsWithAllFilter(
-                myPartyIds.isEmpty() ? Collections.singletonList(-1L) : myPartyIds,
+                myPartyIds.isEmpty() ? null : myPartyIds,
                 partyAt,
                 isMacSupported,
                 tagValues,
