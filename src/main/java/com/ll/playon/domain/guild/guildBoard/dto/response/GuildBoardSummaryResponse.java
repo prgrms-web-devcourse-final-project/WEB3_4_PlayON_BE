@@ -14,6 +14,7 @@ public record GuildBoardSummaryResponse(
         String title,
         String content,
         String authorNickname,
+        String authorProfileImg,
         BoardTag tag,
         int likeCount,
         int commentCount,
@@ -29,6 +30,7 @@ public record GuildBoardSummaryResponse(
                 .title(board.getTitle())
                 .content(board.getContent())
                 .authorNickname(board.getAuthor().getMember().getNickname())
+                .authorProfileImg(board.getAuthor().getMember().getProfileImg())
                 .tag(board.getTag())
                 .likeCount(board.getLikeCount())
                 .commentCount(commentCount)

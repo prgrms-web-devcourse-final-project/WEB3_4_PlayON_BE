@@ -39,6 +39,11 @@ public class GuildJoinRequestService {
             throw ErrorCode.ALREADY_GUILD_MEMBER.throwServiceException();
         }
 
+        int currentMembers = guild.getMembers().size();
+        if (currentMembers >= guild.getMaxMembers()) {
+            throw ErrorCode.GUILD_MEMBER_LIMIT_EXCEEDED.throwServiceException();
+        }
+
         boolean alreadyRequested = guildJoinRequestRepository
                 .existsByGuildAndMemberAndApprovalState(guild, member, ApprovalState.PENDING);
 
@@ -89,6 +94,11 @@ public class GuildJoinRequestService {
         joinRequest.setApprovedBy(approver);
 
         if (targetState == ApprovalState.APPROVED) {
+            int currentMembers = joinRequest.getGuild().getMembers().size();
+            if (currentMembers >= joinRequest.getGuild().getMaxMembers()) {
+                throw ErrorCode.GUILD_MEMBER_LIMIT_EXCEEDED.throwServiceException();
+            }
+
             GuildMember newMember = GuildMember.builder()
                     .guild(joinRequest.getGuild())
                     .member(joinRequest.getMember())
