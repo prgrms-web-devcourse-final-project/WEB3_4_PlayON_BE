@@ -27,21 +27,19 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             AND (:excludedIds IS NULL OR p.id NOT IN :excludedIds)
             AND p.total < p.maximum
             AND (:isMacSupported = false OR p.game.isMacSupported = :isMacSupported)
-            AND (1=:noTagCondition OR p.id IN (
+            AND (:tagValues IS NULL OR p.id IN (
                 SELECT pt.party.id
                 FROM PartyTag pt
                 WHERE pt.value IN :tagValues
                 GROUP BY pt.party.id
-                HAVING COUNT(pt.value) = :tagSize
             ))
             AND (:gameId IS NULL OR p.game.id = :gameId)
-            AND (1=:noGenreCondition OR p.game.id IN (
+            AND (:genres IS NULL OR p.game.id IN (
                 SELECT sg.id
                 FROM SteamGame sg
                 JOIN sg.genres g
                 WHERE g.name IN :genres
                 GROUP BY sg.id
-                HAVING COUNT(g.name) = :genreSize
             ))
             """)
     Page<Long> findPartyIdsWithAllFilter(
@@ -49,12 +47,8 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             @Param("partyAt") LocalDateTime partyAt,
             @Param("isMacSupported") boolean isMacSupported,
             @Param("tagValues") List<String> tagValues,
-            @Param("tagSize") long tagSize,
-            @Param("noTagCondition") int noTagCondition,
             @Param("gameId") Long gameId,
             @Param("genres") List<String> genres,
-            @Param("genreSize") int genreSize,
-            @Param("noGenreCondition") int noGenreCondition,
             Pageable pageable
     );
 
