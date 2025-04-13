@@ -41,7 +41,6 @@ import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.domain.title.service.TitleEvaluator;
 import com.ll.playon.global.annotation.PartyOwnerOnly;
 import com.ll.playon.global.exceptions.ErrorCode;
-import com.ll.playon.global.type.TagValue;
 import com.ll.playon.standard.time.dto.TotalPlayTimeDto;
 import com.ll.playon.standard.util.Ut;
 import java.time.LocalDateTime;
@@ -131,24 +130,19 @@ public class PartyService {
     private Page<GetPartyResponse> getPartiesByConditions(List<Long> myPartyIds, Pageable pageable,
                                                           boolean isMacSupported, LocalDateTime partyAt,
                                                           GetAllPartiesRequest request) {
-        List<String> tagValues = request.tags().stream()
-                .map(tag -> TagValue.fromValue(tag.value()).name())
-                .toList();
+        myPartyIds = myPartyIds.isEmpty() ? null : myPartyIds;
 
-        List<String> genres = request.genres() != null ? request.genres() : Collections.emptyList();
+        List<String> tagValues = request.getTagValues();
+        List<String> genres = request.genres();
 
         // 내 파티 ID 제외 + 공개 파티 ID 조회
         Page<Long> partyIds = this.partyRepository.findPartyIdsWithAllFilter(
-                myPartyIds.isEmpty() ? null : myPartyIds,
+                myPartyIds,
                 partyAt,
                 isMacSupported,
                 tagValues,
-                tagValues.size(),
-                tagValues.isEmpty() ? 1 : 0,
                 request.gameId(),
                 genres,
-                genres.size(),
-                genres.isEmpty() ? 1 : 0,
                 pageable
         );
 
