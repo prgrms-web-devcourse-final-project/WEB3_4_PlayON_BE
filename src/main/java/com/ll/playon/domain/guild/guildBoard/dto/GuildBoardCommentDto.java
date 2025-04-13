@@ -7,21 +7,23 @@ import java.time.LocalDateTime;
 
 public record GuildBoardCommentDto(
         Long id,
+        Long authorId,
         String authorNickname,
         String authorProfileImg,
         String content,
-        LocalDateTime createdAt,
-        boolean isAuthor
+        boolean isAuthor,
+        LocalDateTime createdAt
 ) {
     public static GuildBoardCommentDto from(GuildBoardComment comment, Member actor) {
+        Member author = comment.getAuthor().getMember();
         return new GuildBoardCommentDto(
                 comment.getId(),
-                comment.getAuthor().getMember().getNickname(),
-                comment.getAuthor().getMember().getProfileImg(),
+                author.getId(),
+                author.getNickname(),
+                author.getProfileImg(),
                 comment.getComment(),
-                comment.getCreatedAt(),
-                comment.getAuthor().getMember().getId().equals(actor.getId())
+                author.getId().equals(actor.getId()),
+                comment.getCreatedAt()
         );
     }
 }
-

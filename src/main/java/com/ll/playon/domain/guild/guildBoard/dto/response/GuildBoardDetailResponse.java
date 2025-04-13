@@ -17,6 +17,7 @@ public record GuildBoardDetailResponse(
         int likeCount,
         String imageUrl,
         String authorNickname,
+        Long authorId,
         String authorProfileImg,
         List<GuildBoardCommentDto> comments,
         GuildSimpleDto guild,
@@ -24,6 +25,7 @@ public record GuildBoardDetailResponse(
         LocalDateTime createdAt
 ) {
     public static GuildBoardDetailResponse from(GuildBoard board, List<GuildBoardCommentDto> comments, Member actor) {
+        Member author = board.getAuthor().getMember();
         return new GuildBoardDetailResponse(
                 board.getId(),
                 board.getTitle(),
@@ -32,11 +34,12 @@ public record GuildBoardDetailResponse(
                 board.getHit(),
                 board.getLikeCount(),
                 board.getImageUrl(),
-                board.getAuthor().getMember().getNickname(),
-                board.getAuthor().getMember().getProfileImg(),
+                author.getNickname(),
+                author.getId(),
+                author.getProfileImg(),
                 comments,
                 GuildSimpleDto.from(board.getGuild()),
-                board.getAuthor().getMember().getId().equals(actor.getId()),
+                author.getId().equals(actor.getId()),
                 board.getCreatedAt()
         );
     }
