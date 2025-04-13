@@ -13,14 +13,22 @@ import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.repository.MemberRepository;
 import com.ll.playon.domain.member.repository.MemberSteamDataRepository;
+import com.ll.playon.domain.party.party.dto.PartyDetailMemberDto;
+import com.ll.playon.domain.party.party.dto.PartyDetailTagDto;
 import com.ll.playon.domain.party.party.entity.Party;
+import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.repository.PartyMemberRepository;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
+import com.ll.playon.domain.party.party.type.PartyRole;
+import com.ll.playon.domain.party.party.type.PartyStatus;
 import com.ll.playon.domain.party.partyLog.entity.PartyLog;
 import com.ll.playon.domain.party.partyLog.repository.PartyLogRepository;
+import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.steamAPI.SteamAPI;
 import com.ll.playon.standard.page.dto.PageDto;
+import com.ll.playon.standard.time.dto.TotalPlayTimeDto;
+import com.ll.playon.standard.util.Ut;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,9 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,7 +50,7 @@ public class GameService {
     private final MemberRepository memberRepository;
     private final PartyRepository partyRepository;
     private final PartyLogRepository partyLogRepository;
-    private final ImageRepository imageRepository;
+    private final MemberTitleService memberTitleService;
 
     private final static int TOP_FIVE = 5;
     private final WeeklyGameRepository weeklyGameRepository;
@@ -102,22 +108,67 @@ public class GameService {
         return makeGameListWithGenre(notOwnedGames, member.getPreferredGenre());
     }
 
-    public GameDetailWithPartyResponse getGameDetailWithParties(
-            Long appid
-    ) {
+    public GameDetailWithPartyResponse getGameDetailWithParties(Long appid) {
         Pageable partyPageable = PageRequest.of(0, 3);
 
         SteamGame game = gameRepository.findSteamGameByAppid(appid)
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
         Page<Party> partyPage = partyRepository.findByGame(game, partyPageable);
-        List<PartyLog> logs = partyLogRepository.findByPartyGame(game, Pageable.unpaged()).getContent();
+
+        // 완료된 파티 조회
+        List<Party> completedParties = partyRepository.findRecentCompletedPartiesWithLogs(
+                        PartyStatus.COMPLETED, Pageable.unpaged()
+                ).stream()
+                .filter(p -> p.getGame().getAppid().equals(appid))
+                .toList();
+
+        Map<Long, PartyMember> mvpMap = new HashMap<>();
+        Map<Long, TotalPlayTimeDto> playTimeMap = new HashMap<>();
+        Map<Long, List<PartyDetailMemberDto>> memberMap = new HashMap<>();
+        Map<Long, List<PartyDetailTagDto>> tagMap = new HashMap<>();
+
+        for (Party party : completedParties) {
+            List<PartyMember> members = party.getPartyMembers().stream()
+                    .filter(pm -> pm.getPartyRole().equals(PartyRole.MEMBER) || pm.getPartyRole().equals(PartyRole.OWNER))
+                    .toList();
+
+            PartyMember mvp = members.stream()
+                    .filter(pm -> pm.getMvpPoint() > 0)
+                    .max(Comparator.comparingInt(PartyMember::getMvpPoint))
+                    .orElse(members.stream()
+                            .filter(pm -> pm.getPartyRole().equals(PartyRole.OWNER))
+                            .findFirst()
+                            .orElse(null));
+
+            TotalPlayTimeDto playTime = Ut.Time.getTotalPlayTime(party.getPartyAt(), party.getEndedAt());
+
+            Map<Long, String> titleMap = memberTitleService.getRepresentativeTitleMap(
+                    members.stream().map(pm -> pm.getMember().getId()).toList()
+            );
+
+            List<PartyDetailMemberDto> memberDtos = members.stream()
+                    .map(pm -> new PartyDetailMemberDto(pm, titleMap))
+                    .toList();
+
+            List<PartyDetailTagDto> tagDtos = party.getPartyTags().stream()
+                    .map(PartyDetailTagDto::new)
+                    .toList();
+
+            mvpMap.put(party.getId(), mvp);
+            playTimeMap.put(party.getId(), playTime);
+            memberMap.put(party.getId(), memberDtos);
+            tagMap.put(party.getId(), tagDtos);
+        }
 
         return GameDetailWithPartyResponse.from(
                 game,
                 partyPage.getContent(),
-                logs,
-                imageRepository
+                completedParties,
+                mvpMap,
+                playTimeMap,
+                memberMap,
+                tagMap
         );
     }
 
