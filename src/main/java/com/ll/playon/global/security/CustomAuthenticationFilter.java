@@ -72,7 +72,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (PUBLIC_URLS.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri))) {
+        if (PUBLIC_URLS.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri)) && !pathMatcher.match("/api/parties/list", uri)) {
             filterChain.doFilter(request, response);
             return;
         }
