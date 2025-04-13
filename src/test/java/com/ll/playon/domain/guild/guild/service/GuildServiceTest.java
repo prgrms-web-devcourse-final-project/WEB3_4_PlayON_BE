@@ -7,8 +7,10 @@ import com.ll.playon.domain.guild.guild.dto.request.PutGuildRequest;
 import com.ll.playon.domain.guild.guild.dto.response.GetGuildDetailResponse;
 import com.ll.playon.domain.guild.guild.entity.Guild;
 import com.ll.playon.domain.guild.guild.entity.GuildTag;
+import com.ll.playon.domain.guild.guild.enums.GuildMemberRole;
 import com.ll.playon.domain.guild.guild.repository.GuildMemberRepositoryCustom;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
+import com.ll.playon.domain.guild.guildJoinRequest.repository.GuildJoinRequestRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
@@ -58,6 +60,9 @@ class GuildServiceTest {
 
     @Mock
     private TitleEvaluator titleEvaluator;
+
+    @Mock
+    private GuildJoinRequestRepository guildJoinRequestRepository;
 
     private Member mockMember;
 
@@ -180,7 +185,7 @@ class GuildServiceTest {
 
         // then
         assertThat(result.name()).isEqualTo("테스트 길드");
-        assertThat(result.myRole()).isEqualTo("MEMBER");
+        assertThat(result.myRole()).isEqualTo(GuildMemberRole.MEMBER);
     }
 
     @Test
@@ -197,7 +202,7 @@ class GuildServiceTest {
 
         // then
         assertThat(result.name()).isEqualTo("공개 길드");
-        assertThat(result.myRole()).isEqualTo("GUEST");
+        assertThat(result.myRole()).isEqualTo(GuildMemberRole.GUEST);
     }
 
     @Test
@@ -215,7 +220,7 @@ class GuildServiceTest {
 
         // then
         assertThat(result.name()).isEqualTo("비공개 길드");
-        assertThat(result.myRole()).isEqualTo("MEMBER");
+        assertThat(result.myRole()).isEqualTo(GuildMemberRole.MEMBER);
     }
 
     @Test
