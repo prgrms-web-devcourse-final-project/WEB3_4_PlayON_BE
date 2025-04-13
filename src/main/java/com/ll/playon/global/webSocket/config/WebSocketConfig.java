@@ -20,19 +20,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws") // 프론트의 WebSocket 연결 주소
-//                .setAllowedOrigins("*")
                 .setAllowedOriginPatterns("*")
                 .addInterceptors(jwtHandshakeInterceptor)
                 .setHandshakeHandler(customHandshakeHandler)
                 .addInterceptors(jwtHandshakeInterceptor)
                 .withSockJS()   // SockJs Fallback
         ;
-
-        registry.addEndpoint("/ws") // 프론트의 WebSocket 연결 주소
-//                .setAllowedOrigins("*")
-                .setAllowedOriginPatterns("*")
-                .setHandshakeHandler(customHandshakeHandler)
-                .addInterceptors(jwtHandshakeInterceptor);
     }
 
     @Override
