@@ -5,6 +5,9 @@ import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.service.GameService;
+import com.ll.playon.domain.guild.guild.dto.request.PostImageUrlRequest;
+import com.ll.playon.domain.image.event.ImageDeleteEvent;
+import com.ll.playon.domain.image.service.ImageService;
 import com.ll.playon.domain.image.type.ImageType;
 import com.ll.playon.domain.member.dto.*;
 import com.ll.playon.domain.member.entity.Member;
@@ -63,6 +66,8 @@ public class MemberService {
     private final S3Service s3Service;
     private final SteamAsyncService steamAsyncService;
     private final ApplicationEventPublisher publisher;
+    private final ImageService imageService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
@@ -198,6 +203,7 @@ public class MemberService {
                 .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
     }
 
+    @Transactional
     public PresignedUrlResponse modifyMember(PutMemberDetailDto req, Member actor) {
         Member member = memberRepository.findById(actor.getId())
                 .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
@@ -211,8 +217,8 @@ public class MemberService {
                 .build());
 
         if (req.updateProfileImg()) {
-            // S3 기존 이미지 삭제
-            s3Service.deleteObjectByUrl(member.getProfileImg());
+            // 기존 이미지 삭제
+            imageService.deleteImagesByIdAndUrl(ImageType.MEMBER, actor.getId(), actor.getProfileImg());
 
             // 수정하는 경우 presigned url 응답
             if (!ObjectUtils.isEmpty(req.newFileType())) {
@@ -232,15 +238,18 @@ public class MemberService {
         return new PresignedUrlResponse(null);
     }
 
-    public void saveProfileImage(Member actor, String url) {
+    @Transactional
+    public void saveProfileImage(Member actor, PostImageUrlRequest url) {
         if (ObjectUtils.isEmpty(url)) {
             throw ErrorCode.URL_NOT_FOUND.throwServiceException();
         }
 
         memberRepository.findById(actor.getId()).ifPresent(member ->
-                member.changeProfileImg(url));
+                member.changeProfileImg(url.url()));
+        imageService.saveImage(ImageType.MEMBER, actor.getId(), url.url());
     }
 
+    @Transactional
     public void deactivateMember(Member actor) {
         Member member = memberRepository.findById(actor.getId())
                 .orElseThrow(ErrorCode.AUTHORIZATION_FAILED::throwServiceException);
@@ -248,11 +257,15 @@ public class MemberService {
         // 사용자가 소유한 게임 목록 삭제
         memberSteamDataRepository.deleteById(member.getId());
 
+        // 이미지 삭제
+        applicationEventPublisher.publishEvent(new ImageDeleteEvent(member.getId(), ImageType.MEMBER));
+
         // 연결된 길드, 파티, 파티로그 등 남기기 위해서 엔티티를 삭제하지는 않음
         memberRepository.save(member.toBuilder()
                 .steamId(null)  // 스팀 연결 해제
                 .username("DELETED_" + UUID.randomUUID())
                 .nickname("탈퇴한 사용자")
+                .profileImg(null)
                 .isDeleted(true)
                 .build());
     }
