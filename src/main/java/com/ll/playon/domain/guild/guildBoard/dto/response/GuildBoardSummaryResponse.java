@@ -13,6 +13,7 @@ public record GuildBoardSummaryResponse(
         Long id,
         String title,
         String content,
+        Long authorId,
         String authorNickname,
         String authorProfileImg,
         BoardTag tag,
@@ -25,12 +26,14 @@ public record GuildBoardSummaryResponse(
         boolean isAuthor
 ) {
     public static GuildBoardSummaryResponse from(GuildBoard board, int commentCount, Member actor) {
+        Member author = board.getAuthor().getMember();
         return GuildBoardSummaryResponse.builder()
                 .id(board.getId())
                 .title(board.getTitle())
                 .content(board.getContent())
-                .authorNickname(board.getAuthor().getMember().getNickname())
-                .authorProfileImg(board.getAuthor().getMember().getProfileImg())
+                .authorId(author.getId())
+                .authorNickname(author.getNickname())
+                .authorProfileImg(author.getProfileImg())
                 .tag(board.getTag())
                 .likeCount(board.getLikeCount())
                 .commentCount(commentCount)
@@ -38,7 +41,7 @@ public record GuildBoardSummaryResponse(
                 .imageUrl(board.getImageUrl())
                 .createdAt(board.getCreatedAt())
                 .guild(GuildSimpleDto.from(board.getGuild()))
-                .isAuthor(board.getAuthor().getMember().getId().equals(actor.getId()))
+                .isAuthor(author.getId().equals(actor.getId()))
                 .build();
     }
 }

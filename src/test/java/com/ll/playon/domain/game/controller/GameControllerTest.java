@@ -128,7 +128,7 @@ public class GameControllerTest {
                 .andExpect(jsonPath("$.data.game.appid").value(game.getAppid()))
                 .andExpect(jsonPath("$.data.game.name").value(game.getName()))
                 .andExpect(jsonPath("$.data.partyList").isArray())
-                .andExpect(jsonPath("$.data.partyLogList").isArray());
+                .andExpect(jsonPath("$.data.completedPartyList").isArray());
     }
 
     @Test
