@@ -60,6 +60,8 @@ public enum ErrorCode {
     GUILD_ID_MISMATCH(HttpStatus.BAD_REQUEST, "요청한 길드와 일치하지 않습니다."),
     GUILD_REQUEST_ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "이미 처리된 길드 요청입니다."),
     GUILD_APPROVAL_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "승인 권한이 없습니다."),
+    GUILD_MEMBER_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST,"길드 최대 인원을 초과했습니다."),
+
 
     // GuildMember
     GUILD_MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "길드 멤버를 찾을 수 없습니다."),
