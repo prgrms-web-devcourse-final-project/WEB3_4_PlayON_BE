@@ -103,20 +103,20 @@ public class GameService {
     }
 
     public GameDetailWithPartyResponse getGameDetailWithParties(
-            Long appid,
-            Pageable partyPageable,
-            Pageable logPageable
+            Long appid
     ) {
+        Pageable partyPageable = PageRequest.of(0, 3);
+
         SteamGame game = gameRepository.findSteamGameByAppid(appid)
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
 
         Page<Party> partyPage = partyRepository.findByGame(game, partyPageable);
-        Page<PartyLog> logPage = partyLogRepository.findByPartyGame(game, logPageable);
+        List<PartyLog> logs = partyLogRepository.findByPartyGame(game, Pageable.unpaged()).getContent();
 
         return GameDetailWithPartyResponse.from(
                 game,
                 partyPage.getContent(),
-                logPage.getContent(),
+                logs,
                 imageRepository
         );
     }

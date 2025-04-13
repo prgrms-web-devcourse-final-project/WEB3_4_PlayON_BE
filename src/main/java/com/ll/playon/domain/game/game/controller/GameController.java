@@ -48,12 +48,8 @@ public class GameController {
 
     @GetMapping("/{appid}/details")
     @Operation(summary = "게임 상세 정보 및 파티/로그 목록 조회")
-    public RsData<GameDetailWithPartyResponse> getGameDetail(
-            @PathVariable Long appid,
-            @Qualifier("partyPage") @PageableDefault(size = 3) Pageable partyPageable,
-            @Qualifier("logPage") @PageableDefault(size = 3) Pageable logPageable
-    ) {
-        return RsData.success(HttpStatus.OK, gameService.getGameDetailWithParties(appid, partyPageable, logPageable));
+    public RsData<GameDetailWithPartyResponse> getGameDetail(@PathVariable Long appid) {
+        return RsData.success(HttpStatus.OK, gameService.getGameDetailWithParties(appid));
     }
 
     @GetMapping("/list")
