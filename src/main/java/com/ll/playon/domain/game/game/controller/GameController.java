@@ -12,7 +12,7 @@ import com.ll.playon.standard.page.dto.PageDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -56,9 +56,10 @@ public class GameController {
     @Operation(summary = "필터 조건에 맞는 게임 목록 조회")
     public RsData<PageDto<GameSummaryResponse>> getFilteredGames(
             @ModelAttribute GameSearchCondition condition,
-            @PageableDefault(size = 12) Pageable pageable
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int pageSize
     ) {
-        return RsData.success(HttpStatus.OK, gameService.searchGames(condition, pageable));
+        return RsData.success(HttpStatus.OK, gameService.searchGames(condition, PageRequest.of(page - 1, pageSize)));
     }
 
     @GetMapping("/search")
