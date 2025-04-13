@@ -4,6 +4,7 @@ import com.ll.playon.domain.chat.dto.ChatMemberDto;
 import com.ll.playon.domain.chat.dto.ChatMessageDto;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.title.service.MemberTitleService;
+import com.ll.playon.global.annotation.ChatMemberOnly;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -15,7 +16,8 @@ public class ChatMessageService {
     private final SimpMessageSendingOperations messagingTemplate;
     private final MemberTitleService memberTitleService;
 
-    public void broadcastMessage(long partyId, Member sender, String message) {
+    @ChatMemberOnly
+    public void broadcastMessage(Member sender, long partyId, String message) {
         String title = this.memberTitleService.getRepresentativeTitle(sender);
         ChatMessageDto messageDto = ChatMessageDto.of(sender, title, message);
 

@@ -1,8 +1,13 @@
 package com.ll.playon.global.aspect;
 
+import com.ll.playon.domain.chat.context.ChatMemberContext;
+import com.ll.playon.domain.chat.context.PartyRoomContext;
+import com.ll.playon.domain.chat.entity.ChatMember;
+import com.ll.playon.domain.chat.entity.PartyRoom;
+import com.ll.playon.domain.chat.repository.ChatMemberRepository;
+import com.ll.playon.domain.chat.repository.PartyRoomRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.party.party.context.PartyContext;
-import com.ll.playon.domain.party.party.context.PartyMemberContext;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.repository.PartyMemberRepository;
@@ -17,11 +22,13 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 @RequiredArgsConstructor
-public class ActivePartyMemberCheckAspect {
+public class ChatMemberCheckAspect {
     private final PartyRepository partyRepository;
     private final PartyMemberRepository partyMemberRepository;
+    private final PartyRoomRepository partyRoomRepository;
+    private final ChatMemberRepository chatMemberRepository;
 
-    @Around("@annotation(com.ll.playon.global.annotation.ActivePartyMemberOnly)")
+    @Around("@annotation(com.ll.playon.global.annotation.ChatMemberOnly)")
     public Object checkPartyMember(ProceedingJoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();
 
@@ -30,6 +37,9 @@ public class ActivePartyMemberCheckAspect {
         Party party = this.partyRepository.findById(partyId)
                 .orElseThrow(ErrorCode.PARTY_NOT_FOUND::throwServiceException);
 
+        PartyRoom partyRoom = this.partyRoomRepository.findByParty(party)
+                .orElseThrow(ErrorCode.PARTY_ROOM_NOT_FOUND::throwServiceException);
+
         if (isNotActivePartyMember(actor, party)) {
             ErrorCode.IS_NOT_PARTY_MEMBER_MEMBER.throwServiceException();
         }
@@ -37,14 +47,19 @@ public class ActivePartyMemberCheckAspect {
         PartyMember partyMember = this.partyMemberRepository.findByMemberAndParty(actor, party)
                 .orElseThrow(ErrorCode.PARTY_MEMBER_NOT_FOUND::throwServiceException);
 
+        ChatMember chatMember = this.chatMemberRepository.findByPartyRoomAndPartyMember(partyRoom, partyMember)
+                .orElseThrow(ErrorCode.IS_NOT_CHAT_MEMBER::throwServiceException);
+
         PartyContext.setParty(party);
-        PartyMemberContext.setPartyMember(partyMember);
+        PartyRoomContext.setPartyRoom(partyRoom);
+        ChatMemberContext.setChatMember(chatMember);
 
         try {
             return joinPoint.proceed(args);
         } finally {
             PartyContext.clear();
-            PartyMemberContext.clear();
+            PartyRoomContext.clear();
+            ChatMemberContext.clear();
         }
     }
 
