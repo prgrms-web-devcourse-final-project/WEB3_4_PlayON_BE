@@ -102,34 +102,35 @@ public class PartyService {
     // 파티 검색 및 조회 (조건 반영)
     @Transactional(readOnly = true)
     public Page<GetPartyResponse> getAllFilteredParties(Member actor, int page, int pageSize, String orderBy,
-                                                        LocalDateTime partyAt,
+                                                        boolean isMacSupported, LocalDateTime partyAt,
                                                         GetAllPartiesRequest request) {
         Sort sort = PartySortUtils.getSort(orderBy);
         Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
 
         return actor == null
-                ? this.getPublicParties(pageable, partyAt, request)
-                : this.getPartiesByLoginUser(actor, pageable, partyAt, request);
+                ? this.getPublicParties(pageable, isMacSupported, partyAt, request)
+                : this.getPartiesByLoginUser(actor, pageable, isMacSupported, partyAt, request);
     }
 
     // 공개 파티들 조회
-    private Page<GetPartyResponse> getPublicParties(Pageable pageable, LocalDateTime partyAt,
-                                                    GetAllPartiesRequest request) {
-        return getPartiesByConditions(Collections.emptyList(), pageable, partyAt, request);
+    private Page<GetPartyResponse> getPublicParties(Pageable pageable, boolean isMacSupported,
+                                                    LocalDateTime partyAt, GetAllPartiesRequest request) {
+        return getPartiesByConditions(Collections.emptyList(), pageable, isMacSupported, partyAt, request);
     }
 
     // 내 파티 우선 조회 + 공개 파티들 조회
-    private Page<GetPartyResponse> getPartiesByLoginUser(Member actor, Pageable pageable, LocalDateTime partyAt,
-                                                         GetAllPartiesRequest request) {
+    private Page<GetPartyResponse> getPartiesByLoginUser(Member actor, Pageable pageable, boolean isMacSupported,
+                                                         LocalDateTime partyAt, GetAllPartiesRequest request) {
         List<Long> myPartyIds = this.partyRepository.findPartyIdsByMember(actor.getId(), partyAt);
 
-        return getPartiesByConditions(myPartyIds, pageable, partyAt, request);
+        return getPartiesByConditions(myPartyIds, pageable, isMacSupported, partyAt, request);
     }
 
     // TODO: 추후 리팩토링 진행, 성능 개선 필요할 것 같음
     // 최종 파티 페이징 리스트 조회
     private Page<GetPartyResponse> getPartiesByConditions(List<Long> myPartyIds, Pageable pageable,
-                                                          LocalDateTime partyAt, GetAllPartiesRequest request) {
+                                                          boolean isMacSupported, LocalDateTime partyAt,
+                                                          GetAllPartiesRequest request) {
         List<String> tagValues = request.tags().stream()
                 .map(tag -> TagValue.fromValue(tag.value()).name())
                 .toList();
@@ -137,9 +138,10 @@ public class PartyService {
         List<String> genres = request.genres() != null ? request.genres() : Collections.emptyList();
 
         // 내 파티 ID 제외 + 공개 파티 ID 조회
-        Page<Long> partyIds = this.partyRepository.findPartyIdsByAllConditions(
+        Page<Long> partyIds = this.partyRepository.findPartyIdsWithAllFilter(
                 myPartyIds.isEmpty() ? Collections.singletonList(-1L) : myPartyIds,
                 partyAt,
+                isMacSupported,
                 tagValues,
                 tagValues.size(),
                 tagValues.isEmpty() ? 1 : 0,
