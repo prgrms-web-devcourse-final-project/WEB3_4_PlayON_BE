@@ -24,8 +24,9 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             WHERE p.partyStatus = 'PENDING'
             AND p.publicFlag = true
             AND (:partyAt IS NULL OR p.partyAt >= :partyAt)
-            AND p.id NOT IN :excludedIds
+            AND (:excludedIds IS NULL OR p.id NOT IN :excludedIds)
             AND p.total < p.maximum
+            AND (:isMacSupported = false OR p.game.isMacSupported = :isMacSupported)
             AND (1=:noTagCondition OR p.id IN (
                 SELECT pt.party.id
                 FROM PartyTag pt
@@ -43,9 +44,10 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
                 HAVING COUNT(g.name) = :genreSize
             ))
             """)
-    Page<Long> findPartyIdsByAllConditions(
+    Page<Long> findPartyIdsWithAllFilter(
             @Param("excludedIds") List<Long> excludedIds,
             @Param("partyAt") LocalDateTime partyAt,
+            @Param("isMacSupported") boolean isMacSupported,
             @Param("tagValues") List<String> tagValues,
             @Param("tagSize") long tagSize,
             @Param("noTagCondition") int noTagCondition,
