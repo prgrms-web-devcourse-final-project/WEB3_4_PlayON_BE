@@ -10,7 +10,6 @@ import com.ll.playon.domain.guild.guild.enums.GuildMemberRole;
 import com.ll.playon.domain.guild.guild.repository.GuildMemberRepositoryCustom;
 import com.ll.playon.domain.guild.guild.repository.GuildRepository;
 import com.ll.playon.domain.guild.guild.repository.WeeklyPopularGuildRepository;
-import com.ll.playon.domain.guild.guildJoinRequest.entity.GuildJoinRequest;
 import com.ll.playon.domain.guild.guildJoinRequest.enums.ApprovalState;
 import com.ll.playon.domain.guild.guildJoinRequest.repository.GuildJoinRequestRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
@@ -180,15 +179,10 @@ public class GuildService {
 
         if (guildMember != null) {
             myRole = GuildMemberRole.valueOf(guildMember.getGuildRole().name());
+        } else if (guildJoinRequestRepository.existsByGuildAndMemberAndApprovalState(guild, actor, ApprovalState.PENDING)) {
+            myRole = GuildMemberRole.APPLICANT; // 가입 요청 상태
         } else {
-            // 가입 요청 여부 조회
-            GuildJoinRequest joinRequest = guildJoinRequestRepository.findByGuildAndMember(guild, actor).orElse(null);
-
-            if (joinRequest != null && joinRequest.getApprovalState() == ApprovalState.PENDING) {
-                myRole = GuildMemberRole.APPLICANT; // 가입 요청중
-            } else {
-                myRole = GuildMemberRole.GUEST; // 거절 or 가입 요청 없음
-            }
+            myRole = GuildMemberRole.GUEST; // 게스트
         }
 
         return GetGuildDetailResponse.from(guild, myRole);
