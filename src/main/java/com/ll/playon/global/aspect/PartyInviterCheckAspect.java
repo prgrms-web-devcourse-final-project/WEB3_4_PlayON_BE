@@ -32,7 +32,7 @@ public class PartyInviterCheckAspect {
                 .orElseThrow(ErrorCode.PARTY_NOT_FOUND::throwServiceException);
 
         if (isNotPartyInviter(actor, party)) {
-            throw ErrorCode.IS_NOT_PARTY_MEMBER_INVITER.throwServiceException();
+            ErrorCode.IS_NOT_PARTY_MEMBER_INVITER.throwServiceException();
         }
 
         PartyMember partyMember = this.partyMemberRepository.findByMemberAndParty(actor, party)

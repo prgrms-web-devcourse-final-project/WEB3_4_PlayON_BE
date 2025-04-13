@@ -2,6 +2,7 @@ package com.ll.playon.domain.chat.dto;
 
 import com.ll.playon.domain.chat.entity.ChatMember;
 import jakarta.validation.constraints.NotBlank;
+import java.util.Objects;
 import lombok.NonNull;
 
 public record ChatMemberDto(
@@ -17,7 +18,7 @@ public record ChatMemberDto(
         this(
                 chatMember.getPartyMember().getMember().getId(),
                 chatMember.getPartyMember().getMember().getNickname(),
-                chatMember.getPartyMember().getMember().getProfileImg()
+                Objects.requireNonNullElse(chatMember.getPartyMember().getMember().getProfileImg(), "")
         );
     }
 }

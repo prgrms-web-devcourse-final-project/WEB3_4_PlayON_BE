@@ -104,6 +104,7 @@ public enum ErrorCode {
 
     // ChatMember
     IS_ALREADY_CHAT_MEMBER(HttpStatus.FORBIDDEN, "이미 해당 채팅방에 참여중입니다"),
+    IS_NOT_CHAT_MEMBER(HttpStatus.FORBIDDEN, "채팅방에 입장한 멤버가 아닙니다."),
     CHAT_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 멤버가 존재하지 않습니다."),
 
     // PartyLog

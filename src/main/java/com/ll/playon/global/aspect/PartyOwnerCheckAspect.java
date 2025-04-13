@@ -28,7 +28,7 @@ public class PartyOwnerCheckAspect {
                 .orElseThrow(ErrorCode.PARTY_NOT_FOUND::throwServiceException);
 
         if (isNotPartyOwner(actor, party)) {
-            throw ErrorCode.IS_NOT_PARTY_MEMBER_OWNER.throwServiceException();
+            ErrorCode.IS_NOT_PARTY_MEMBER_OWNER.throwServiceException();
         }
 
         PartyContext.setParty(party);

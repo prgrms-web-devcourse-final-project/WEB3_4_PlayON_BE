@@ -21,13 +21,6 @@ public class ChatMessageController {
     public void handleMessage(@DestinationVariable long partyId, @Payload String message, Principal principal) {
         Member sender = this.webSocketUserContext.getActor(principal);
 
-        this.chatMessageService.broadcastMessage(partyId, sender, message);
-    }
-
-    @MessageMapping("/chat.send/{partyId}/member/{memberId}")
-    public void handleMessage(@DestinationVariable long partyId, @DestinationVariable long memberId, @Payload String message) {
-        Member sender = this.webSocketUserContext.findById(memberId);
-
-        this.chatMessageService.broadcastMessage(partyId, sender, message);
+        this.chatMessageService.broadcastMessage(sender, partyId, message);
     }
 }

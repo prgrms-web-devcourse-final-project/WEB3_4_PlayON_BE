@@ -1,5 +1,7 @@
 package com.ll.playon.domain.chat.service;
 
+import com.ll.playon.domain.chat.context.ChatMemberContext;
+import com.ll.playon.domain.chat.context.PartyRoomContext;
 import com.ll.playon.domain.chat.dto.ChatMemberDto;
 import com.ll.playon.domain.chat.dto.GetChatRoomResponse;
 import com.ll.playon.domain.chat.entity.ChatMember;
@@ -17,6 +19,7 @@ import com.ll.playon.domain.party.party.entity.PartyMember;
 import com.ll.playon.domain.party.party.type.PartyStatus;
 import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.global.annotation.ActivePartyMemberOnly;
+import com.ll.playon.global.annotation.ChatMemberOnly;
 import com.ll.playon.global.exceptions.ErrorCode;
 import java.util.Collections;
 import java.util.List;
@@ -44,16 +47,20 @@ public class ChatService {
             party.updatePartyStatus(PartyStatus.ONGOING);
         }
 
-        PartyMember partymember = PartyMemberContext.getPartyMember();
+        PartyMember partyMember = PartyMemberContext.getPartyMember();
         PartyRoom partyRoom = this.getPartyRoom(party);
 
-        // 중복 참여 제한
-        boolean isAlreadyEntered = this.chatMemberRepository.existsByPartyRoomAndPartyMember(partyRoom, partymember);
-        if (isAlreadyEntered) {
-            ErrorCode.IS_ALREADY_CHAT_MEMBER.throwServiceException();
+        // 중복 참여 시 바로 입장
+        if (this.isAlreadyEntered(partyRoom, partyMember)) {
+            return new GetChatRoomResponse(
+                    partyRoom.getId(),
+                    partyId,
+                    this.getChatMemberDtos(partyRoom),
+                    Collections.emptyList()
+            );
         }
 
-        this.chatMemberRepository.save(ChatMemberMapper.of(partyRoom, partymember));
+        this.chatMemberRepository.save(ChatMemberMapper.of(partyRoom, partyMember));
 
         List<ChatMemberDto> chatMemberDtos = this.getChatMemberDtos(partyRoom);
 
@@ -72,15 +79,12 @@ public class ChatService {
     }
 
     // 채팅방 퇴장
-    @ActivePartyMemberOnly
+    @ChatMemberOnly
     @Transactional
     public void leavePartyRoom(Member actor, long partyId) {
         Party party = PartyContext.getParty();
-        PartyMember partyMember = PartyMemberContext.getPartyMember();
-        PartyRoom partyRoom = this.getPartyRoom(party);
-
-        ChatMember chatMember = this.chatMemberRepository.findByPartyRoomAndPartyMember(partyRoom, partyMember)
-                .orElseThrow(ErrorCode.CHAT_MEMBER_NOT_FOUND::throwServiceException);
+        PartyRoom partyRoom = PartyRoomContext.getPartyRoom();
+        ChatMember chatMember = ChatMemberContext.getChatMember();
 
         this.chatMemberRepository.delete(chatMember);
 
@@ -112,5 +116,10 @@ public class ChatService {
         return this.chatMemberRepository.findAllByPartyRoom(partyRoom).stream()
                 .map(ChatMemberDto::new)
                 .toList();
+    }
+
+    // 이미 채팅방에 입장되어 있는지 확인
+    private boolean isAlreadyEntered(PartyRoom partyRoom, PartyMember partyMember) {
+        return this.chatMemberRepository.existsByPartyRoomAndPartyMember(partyRoom, partyMember);
     }
 }

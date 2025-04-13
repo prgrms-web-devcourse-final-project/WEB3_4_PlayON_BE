@@ -3,6 +3,7 @@ package com.ll.playon.domain.chat.dto;
 import com.ll.playon.domain.member.entity.Member;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import lombok.NonNull;
 
 public record ChatMessageDto(
@@ -27,7 +28,7 @@ public record ChatMessageDto(
                 member.getId(),
                 title,
                 member.getNickname(),
-                member.getProfileImg(),
+                Objects.requireNonNullElse(member.getProfileImg(), ""),
                 message,
                 LocalDateTime.now()
         );
@@ -38,7 +39,7 @@ public record ChatMessageDto(
                 member.getId(),
                 title,
                 member.getNickname(),
-                member.getProfileImg(),
+                Objects.requireNonNullElse(member.getProfileImg(), ""),
                 "[ " + member.getNickname() + " ] 님이 입장하셨습니다.",
                 LocalDateTime.now()
         );
@@ -49,7 +50,7 @@ public record ChatMessageDto(
                 member.getId(),
                 title,
                 member.getNickname(),
-                member.getProfileImg(),
+                Objects.requireNonNullElse(member.getProfileImg(), ""),
                 "[ " + member.getNickname() + " ]님이 퇴장하셨습니다.",
                 LocalDateTime.now()
         );

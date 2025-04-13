@@ -32,7 +32,7 @@ public class PartyPendingCheckAspect {
                 .orElseThrow(ErrorCode.PARTY_NOT_FOUND::throwServiceException);
 
         if (isNotPartyPending(actor, party)) {
-            throw ErrorCode.IS_NOT_PARTY_MEMBER_PENDING.throwServiceException();
+            ErrorCode.IS_NOT_PARTY_MEMBER_PENDING.throwServiceException();
         }
 
         PartyMember partyMember = this.partyMemberRepository.findByMemberAndParty(actor, party)

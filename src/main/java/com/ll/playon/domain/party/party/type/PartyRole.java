@@ -12,4 +12,12 @@ public enum PartyRole {
     INVITER("초대자");
 
     private final String value;
+
+    public boolean isActive() {
+        return this == OWNER || this == MEMBER;
+    }
+
+    public boolean isWaiting() {
+        return this == PENDING || this == INVITER;
+    }
 }
