@@ -308,5 +308,4 @@ public class GuildService {
             throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
         }
     }
-
 }
