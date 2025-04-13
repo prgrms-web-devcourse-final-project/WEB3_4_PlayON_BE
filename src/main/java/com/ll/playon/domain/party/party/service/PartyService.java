@@ -61,6 +61,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -134,6 +135,8 @@ public class PartyService {
 
         List<String> tagValues = request.getTagValues();
         List<String> genres = request.genres();
+        int tagSize = CollectionUtils.isEmpty(tagValues) ? 0 : tagValues.size();
+        int genreSize = CollectionUtils.isEmpty(genres) ? 0 : genres.size();
 
         // 내 파티 ID 제외 + 공개 파티 ID 조회
         Page<Long> partyIds = this.partyRepository.findPartyIdsWithAllFilter(
@@ -141,8 +144,10 @@ public class PartyService {
                 partyAt,
                 isMacSupported,
                 tagValues,
+                tagSize,
                 request.gameId(),
                 genres,
+                genreSize,
                 pageable
         );
 
