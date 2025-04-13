@@ -24,7 +24,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             WHERE p.partyStatus = 'PENDING'
             AND p.publicFlag = true
             AND (:partyAt IS NULL OR p.partyAt >= :partyAt)
-            AND p.id NOT IN :excludedIds
+            AND (:excludedIds IS NULL OR p.id NOT IN :excludedIds)
             AND p.total < p.maximum
             AND (:isMacSupported = false OR p.game.isMacSupported = :isMacSupported)
             AND (1=:noTagCondition OR p.id IN (
