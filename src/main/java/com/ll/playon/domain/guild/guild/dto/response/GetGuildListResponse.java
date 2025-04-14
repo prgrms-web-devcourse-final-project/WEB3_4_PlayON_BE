@@ -17,7 +17,7 @@ public record GetGuildListResponse(
         return new GetGuildListResponse(
                 guild.getId(),
                 guild.getGuildImg(),
-                guild.getName(),
+                guild.getGame() != null ? guild.getGame().getName() : null,
                 guild.getGame().getName(),
                 guild.getDescription(),
                 guild.getMembers().size(),
