@@ -30,7 +30,7 @@ public interface PartyMemberRepository extends JpaRepository<PartyMember, Long> 
                   AND pm.member.id <> :myId
                   AND pm.partyRole IN ('OWNER','MEMBER')
             """)
-    List<Long> findMemberIdsInPartiesExceptMe(@Param("candidateIds") List<Long> partyIds, @Param("myId") Long myId);
+    List<Long> findMemberIdsInPartiesExceptMe(@Param("candidateParties") List<Long> partyIds, @Param("myId") Long myId);
 
     // 그 멤버들이 참여한 파티 중에서 내가 참여한 파티 제외
     @Query("""
