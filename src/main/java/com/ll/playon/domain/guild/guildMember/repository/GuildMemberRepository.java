@@ -17,6 +17,7 @@ public interface GuildMemberRepository extends JpaRepository<GuildMember, Long> 
     List<GuildMember> findAllByGuild(Guild guild);
     boolean existsByGuildAndMember(Guild guild, Member member);
     List<GuildMember> findAllByMember(Member member);
+    long countByGuildId(Long guildId);
 
     @Query("""
      SELECT gm FROM GuildMember gm
