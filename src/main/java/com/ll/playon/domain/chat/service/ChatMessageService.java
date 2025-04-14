@@ -9,6 +9,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,7 @@ public class ChatMessageService {
     private final MemberTitleService memberTitleService;
 
     @ChatMemberOnly
+    @Transactional
     public void broadcastMessage(Member sender, long partyId, String message) {
         String title = this.memberTitleService.getRepresentativeTitle(sender);
         ChatMessageDto messageDto = ChatMessageDto.of(sender, title, message);
