@@ -70,8 +70,11 @@ public class GuildService {
         }
 
         // 게임 확인
-        SteamGame game = gameRepository.findByAppid(request.appid())
-                .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
+        SteamGame game = null;
+        if (request.appid() != null) {
+            game = gameRepository.findByAppid(request.appid())
+                    .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
+        }
 
         // 길드 저장
         Guild guild = guildRepository.save(Guild.createFrom(request, owner, game));
