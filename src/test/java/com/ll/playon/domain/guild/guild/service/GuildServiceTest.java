@@ -236,7 +236,7 @@ class GuildServiceTest {
         // when & then
         assertThatThrownBy(() -> guildService.getGuildDetail(1L, mockMember))
                 .isInstanceOf(ServiceException.class)
-                .hasMessageContaining(ErrorCode.GUILD_NOT_FOUND.getMessage());
+                .hasMessageContaining(ErrorCode.GUILD_NO_PERMISSION.getMessage());
 
         verify(guildRepository).findWithTagsById(1L);
         verify(guildMemberRepository).findByGuildAndMember(any(Guild.class), eq(mockMember));

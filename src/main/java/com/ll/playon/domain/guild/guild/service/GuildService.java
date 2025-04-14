@@ -13,8 +13,8 @@ import com.ll.playon.domain.guild.guild.repository.WeeklyPopularGuildRepository;
 import com.ll.playon.domain.guild.guildJoinRequest.enums.ApprovalState;
 import com.ll.playon.domain.guild.guildJoinRequest.repository.GuildJoinRequestRepository;
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
-import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
+import com.ll.playon.domain.guild.util.GuildPermissionValidator;
 import com.ll.playon.domain.image.event.ImageDeleteEvent;
 import com.ll.playon.domain.image.service.ImageService;
 import com.ll.playon.domain.image.type.ImageType;
@@ -59,36 +59,22 @@ public class GuildService {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final GuildJoinRequestRepository guildJoinRequestRepository;
 
+    /**
+     * 길드 생성
+     */
     @Transactional
     public PostGuildResponse createGuild(PostGuildRequest request, Member owner) {
-        // 파일 형식 확인
         FileValidator.validateFileType(request.fileType());
-
-        // 이름 중복 확인
-        if (guildRepository.existsByName(request.name())) {
-            ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
-        }
-
-        // 게임 확인
-        SteamGame game = null;
-        if (request.appid() != null) {
-            game = gameRepository.findByAppid(request.appid())
-                    .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
-        }
+        checkDuplicateName(request.name());
 
         // 길드 저장
-        Guild guild = guildRepository.save(Guild.createFrom(request, owner, game));
+        Guild guild = guildRepository.save(Guild.createFrom(request, owner, getGame(request.appid())));
 
         // 태그 설정
         guild.setGuildTags(convertTags(request.tags(), guild));
 
         // 길드장
-        GuildMember guildMember = GuildMember.builder()
-                .guild(guild)
-                .member(owner)
-                .guildRole(GuildRole.LEADER)
-                .build();
-        guildMemberRepository.save(guildMember);
+        guildMemberRepository.save(GuildMember.createLeader(owner, guild));
 
         // 길드 생성 칭호
         titleEvaluator.check(ConditionType.GUILD_CREATE, owner);
@@ -99,28 +85,25 @@ public class GuildService {
         );
     }
 
+    /**
+     * 길드 수정
+     */
     @Transactional
     public PutGuildResponse modifyGuild(Long guildId, PutGuildRequest request, Member actor) {
-        // 파일 형식 확인
         FileValidator.validateFileType(request.newFileType());
 
         // 길드 권한 관련 확인
         Guild guild = getGuildOrThrow(guildId);
-        GuildMember member = getGuildMemberOrThrow(guild, actor);
-        validateIsManager(member);
+        GuildMember guildMember = getGuildMemberOrThrow(guild, actor);
+        GuildPermissionValidator.checkManagerOrLeader(guildMember);
 
         // 이름 중복 확인
-        if (!guild.getName().equals(request.name()) &&
-                guildRepository.existsByName(request.name())) {
-            throw ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
+        if (!guild.getName().equals(request.name())) {
+            checkDuplicateName(request.name());
         }
 
         // 게임 확인
-        SteamGame game = null;
-        if (request.appid() != null) {
-            game = gameRepository.findByAppid(request.appid())
-                    .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
-        }
+        SteamGame game = getGame(request.appid());
 
         // 이미지 수정인경우 -> 기존 이미지삭제, S3 삭제
         if (!request.newFileType().isBlank()) {
@@ -132,8 +115,7 @@ public class GuildService {
 
         // 태그 수정
         guild.getGuildTags().clear();
-        List<GuildTag> guildTags = convertTags(request.tags(), guild);
-        guild.getGuildTags().addAll(guildTags);
+        guild.getGuildTags().addAll(convertTags(request.tags(), guild));
         guildRepository.save(guild);
 
         return PutGuildResponse.from(
@@ -142,6 +124,9 @@ public class GuildService {
         );
     }
 
+    /**
+     * 이미지 URL 저장
+     */
     @Transactional
     public void saveImageUrl(long guildId, PostImageUrlRequest request) {
         // URL 확인
@@ -150,76 +135,64 @@ public class GuildService {
         }
 
         // 길드 저장
-        guildRepository.findById(guildId).ifPresent(guild -> guild.changeGuildImg(request.url()));
+        guildRepository.findById(guildId)
+                .ifPresent(guild -> guild.changeGuildImg(request.url()));
 
         // 이미지 테이블 저장
         imageService.saveImage(ImageType.GUILD, guildId, request.url());
     }
 
-    // PresignedUrl 발급
-    private URL genGuildPresignedUrl(Long guildId, String fileType) {
-        if(ObjectUtils.isNotEmpty(fileType)) {
-            return s3Service.generatePresignedUrl(ImageType.GUILD, guildId, fileType);
-        }
-
-        return null;
-    }
-
     /**
-     * 길드 상세정보 조건
-     * 비공개 + 멤버 → 확인가능
-     * 비공개 + 멤버X → 확인불가
-     * 공개 + 멤버 → 확인가능
-     * 공개 + 멤버X → 확인가능
+     * 길드 상세정보 조회
+     * 비공개 길드는 멤버만 가능
+     * 공개 길드는 누구나 가능
      */
     @Transactional(readOnly = true)
     public GetGuildDetailResponse getGuildDetail(Long guildId, Member actor) {
         Guild guild = getGuildOrThrowWithTags(guildId);
-        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor).orElse(null);
+        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
+                .orElse(null);
 
-        if (!guild.isPublic() && guildMember == null) {
-            throw ErrorCode.GUILD_NOT_FOUND.throwServiceException();
-        }
+        // 공개여부 확인
+        GuildPermissionValidator.checkPublicOrMember(guild, guildMember);
 
-        GuildMemberRole myRole;
-
-        if (guildMember != null) {
-            myRole = GuildMemberRole.valueOf(guildMember.getGuildRole().name());
-        } else if (guildJoinRequestRepository.existsByGuildAndMemberAndApprovalState(guild, actor, ApprovalState.PENDING)) {
-            myRole = GuildMemberRole.APPLICANT; // 가입 요청 상태
-        } else {
-            myRole = GuildMemberRole.GUEST; // 게스트
-        }
+        // 역할 확인
+        GuildMemberRole myRole = getMyRole(guild, guildMember, actor);
 
         return GetGuildDetailResponse.from(guild, myRole);
     }
 
+    /**
+     * 길드 상세조회 관리자페이지용
+     */
     @Transactional(readOnly = true)
     public GetGuildManageDetailResponse getGuildAdminDetail(Long guildId, Member actor) {
         Guild guild = getGuildOrThrowWithTags(guildId);
+        GuildMember guildMember = getGuildMemberOrThrow(guild, actor);
 
-        GuildMember member = guildMemberRepository.findByGuildAndMember(guild, actor)
-                .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
-
-        if (member.isNotManagerOrLeader()) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
+        // 운영진 권한 확인
+        GuildPermissionValidator.checkManagerOrLeader(guildMember);
 
         List<String> managerNames = guildMemberRepository.findManagerNicknamesByGuildId(guildId);
 
-        return GetGuildManageDetailResponse.from(guild, member.getGuildRole().name(), managerNames);
+        return GetGuildManageDetailResponse.from(
+                guild,
+                guildMember.getGuildRole().name(),
+                managerNames
+        );
     }
 
+    /**
+     * 길드 멤버 조회
+     */
     @Transactional(readOnly = true)
     public List<getGuildMemberResponse> getGuildMembers(Long guildId, Member actor) {
         Guild guild = getGuildOrThrow(guildId);
-
-        boolean isMember = guildMemberRepository.findByGuildAndMember(guild, actor).isPresent();
+        GuildMember guildMember = guildMemberRepository.findByGuildAndMember(guild, actor)
+                .orElse(null);
 
         // 비공개 + 멤버X 불가
-        if (!guild.isPublic() && !isMember) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
+        GuildPermissionValidator.checkPublicOrMember(guild, guildMember);
 
         List<GuildMember> members = guildMemberRepositoryCustom
                 .findTopNByGuildOrderByRoleAndCreatedAt(guild, 9);
@@ -229,13 +202,23 @@ public class GuildService {
                 .toList();
     }
 
+    /**
+     * 길드 검색
+     */
     @Transactional(readOnly = true)
     public PageDto<GetGuildListResponse> searchGuilds(int page, int pageSize, String sort, GetGuildListRequest request) {
-        Page<Guild> guilds = guildRepository.searchGuilds(request, PageRequest.of(page - 1, pageSize), sort);
-
+        Page<Guild> guilds = guildRepository.searchGuilds(
+                request,
+                PageRequest.of(page - 1, pageSize),
+                sort
+        );
         return new PageDto<>(guilds.map(GetGuildListResponse::from));
     }
 
+    /**
+     * 인기 길드
+     * 일주일간 길드 게시판 글 작성 많은 순
+     */
     @Transactional(readOnly = true)
     public List<GetPopularGuildResponse> getPopularGuilds(LocalDate week) {
         List<Long> guildIds = weeklyPopularGuildRepository.findGuildIdsByWeek(week); // 이번주 인기 길드번호
@@ -250,37 +233,70 @@ public class GuildService {
                 .toList();
     }
 
+    /**
+     * 길드 삭제
+     */
     @Transactional
     public void deleteGuild(Long guildId, Member actor) {
         Guild guild = getGuildOrThrowWithTags(guildId);
         GuildMember member = getGuildMemberOrThrow(guild, actor);
 
         // 길드장만 삭제가능
-        if (member.getGuildRole() != GuildRole.LEADER) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
-        }
+        GuildPermissionValidator.checkLeader(member);
 
-        // 태그 삭제
+        // 태그,멤버 삭제
         guild.getGuildTags().clear();
-
-        // 멤버 삭제
         guild.getMembers().clear();
 
         // 정보 마스킹
         guild.softDelete();
-
         guildRepository.save(guild); // 명시적으로 저장
 
         // 이미지 삭제
         applicationEventPublisher.publishEvent(new ImageDeleteEvent(guildId, ImageType.GUILD));
     }
 
+    /**
+     * 특정 게임을 선택한 길드
+     */
     @Transactional(readOnly = true)
     public List<GetRecommendGuildResponse> getRecommendedGuildsByGame(int count, long appid) {
         return guildRepository.findTopNByGameAppid(appid, PageRequest.of(0, count))
                 .stream()
                 .map(GetRecommendGuildResponse::from)
                 .toList();
+    }
+
+
+
+
+    // 게임 확인
+    private SteamGame getGame(Long appid) {
+        return appid != null
+                ? gameRepository.findByAppid(appid)
+                        .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException)
+                : null;
+    }
+
+    // Presigned URL 발급
+    private URL genGuildPresignedUrl(Long guildId, String fileType) {
+        return ObjectUtils.isNotEmpty(fileType)
+                ? s3Service.generatePresignedUrl(ImageType.GUILD, guildId, fileType)
+                : null;
+    }
+
+    // 길드 조회에서 권한
+    private GuildMemberRole getMyRole(Guild guild, GuildMember guildMember, Member actor) {
+        if (guildMember != null) {
+            return GuildMemberRole.valueOf(guildMember.getGuildRole().name());
+        }
+
+        // 가입 신청중 -> APPLICANT
+        boolean isApplicant = guildJoinRequestRepository.existsByGuildAndMemberAndApprovalState(
+                guild, actor, ApprovalState.PENDING
+        );
+
+        return isApplicant ? GuildMemberRole.APPLICANT : GuildMemberRole.GUEST;
     }
 
     // 요청으로부터 태그 리스트 생성
@@ -294,24 +310,28 @@ public class GuildService {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
+    // 삭제되지 않은 길드
     private Guild getGuildOrThrow(Long guildId) {
         return guildRepository.findByIdAndIsDeletedFalse(guildId)
                 .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
     }
 
+    // 길드 + 태그
     private Guild getGuildOrThrowWithTags(Long id) {
         return guildRepository.findWithTagsById(id)
                 .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
     }
 
+    // 길드 멤버인지
     private GuildMember getGuildMemberOrThrow(Guild guild, Member member) {
         return guildMemberRepository.findByGuildAndMember(guild, member)
                 .orElseThrow(ErrorCode.GUILD_NO_PERMISSION::throwServiceException);
     }
 
-    private void validateIsManager(GuildMember guildMember) {
-        if (!guildMember.getGuildRole().isManagerOrLeader()) {
-            throw ErrorCode.GUILD_NO_PERMISSION.throwServiceException();
+    // 길드 이름 중복 확인
+    private void checkDuplicateName(String name) {
+        if (guildRepository.existsByName(name)) {
+            throw ErrorCode.DUPLICATE_GUILD_NAME.throwServiceException();
         }
     }
 }

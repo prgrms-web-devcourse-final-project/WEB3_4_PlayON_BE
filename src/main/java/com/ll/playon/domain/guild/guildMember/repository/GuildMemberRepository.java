@@ -20,17 +20,17 @@ public interface GuildMemberRepository extends JpaRepository<GuildMember, Long> 
     long countByGuildId(Long guildId);
 
     @Query("""
-     SELECT gm FROM GuildMember gm
-     WHERE gm.guild.id = :guildId AND gm.member.id = :memberId
- """)
+             SELECT gm FROM GuildMember gm
+             WHERE gm.guild.id = :guildId AND gm.member.id = :memberId
+         """)
     Optional<GuildMember> findByGuildIdAndMemberId(@Param("guildId") Long guildId, @Param("memberId") Long memberId);
 
     @Query("""
-    SELECT m.nickname
-    FROM GuildMember gm
-    JOIN gm.member m
-    WHERE gm.guild.id = :guildId AND gm.guildRole = 'MANAGER'
-""")
+            SELECT m.nickname
+            FROM GuildMember gm
+            JOIN gm.member m
+            WHERE gm.guild.id = :guildId AND gm.guildRole = 'MANAGER'
+        """)
     List<String> findManagerNicknamesByGuildId(@Param("guildId") Long guildId);
 
     List<GuildMember> findByMemberIdAndGuild_IsPublicTrue(Long memberId);

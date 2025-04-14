@@ -29,4 +29,12 @@ public class GuildMember extends BaseTime {
     public boolean isNotManagerOrLeader() {
         return guildRole != GuildRole.LEADER && guildRole != GuildRole.MANAGER;
     }
+
+    public static GuildMember createLeader(Member owner, Guild guild) {
+        return GuildMember.builder()
+                .guild(guild)
+                .member(owner)
+                .guildRole(GuildRole.LEADER)
+                .build();
+        }
 }
