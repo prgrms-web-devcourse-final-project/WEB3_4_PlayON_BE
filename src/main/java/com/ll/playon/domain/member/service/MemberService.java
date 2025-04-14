@@ -296,7 +296,7 @@ public class MemberService {
     public List<GetMembersResponse> findByNickname(String nickname) {
         return memberRepository.findByNickname(nickname).stream()
                 .map(member ->
-                        new GetMembersResponse(member.getSteamId(), member.getUsername(), member.getProfileImg()))
+                        new GetMembersResponse(member.getId(), member.getUsername(), member.getProfileImg()))
                 .toList();
     }
 

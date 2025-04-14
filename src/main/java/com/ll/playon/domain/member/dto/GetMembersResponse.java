@@ -1,7 +1,7 @@
 package com.ll.playon.domain.member.dto;
 
 public record GetMembersResponse(
-        Long steamId,
+        Long memberId,
         String username,
         String profileImg
 ) {}
