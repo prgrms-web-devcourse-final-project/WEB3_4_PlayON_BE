@@ -4,7 +4,6 @@ import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.jpa.entity.BaseTime;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.validator.constraints.URL;
 
 @Entity
 @Getter
@@ -27,8 +26,7 @@ public class Notification extends BaseTime {
     @Builder.Default
     private boolean isRead = false;
 
-
-    @URL
+    @Column(length = 255)
     private String redirectUrl;
 
     // 읽음 상태 변경 메서드
