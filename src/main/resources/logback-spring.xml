@@ -2,11 +2,11 @@
 <configuration>
     <!-- 로그 파일 기본 경로 및 이름 -->
     <property name="LOG_DIR" value="./logs/"/>
-    <property name="PARTY_DELETE_LOG_DIR" value="./logs/event/party/delete"/>
+    <property name="PARTY_DELETE_LOG_DIR" value="./logs/event/party/delete/"/>
     <property name="LOG_FILE_NAME" value="info/info"/>
     <property name="ERROR_LOG_FILE_NAME" value="error/error"/>
-    <property name="PARTY_DELETE_INFO_LOG_FILE" value="${PARTY_DELETE_LOG_DIR}/info"/>
-    <property name="PARTY_DELETE_ERROR_LOG_FILE" value="${PARTY_DELETE_LOG_DIR}/error"/>
+    <property name="PARTY_DELETE_INFO_LOG_FILE" value="${PARTY_DELETE_LOG_DIR}/info/info"/>
+    <property name="PARTY_DELETE_ERROR_LOG_FILE" value="${PARTY_DELETE_LOG_DIR}/error/error"/>
 
     <!-- 콘솔 출력 Appender -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
