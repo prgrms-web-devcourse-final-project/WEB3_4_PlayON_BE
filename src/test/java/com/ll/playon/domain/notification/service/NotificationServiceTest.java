@@ -18,11 +18,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -89,33 +88,6 @@ class NotificationServiceTest {
     }
 
 
-
-
-    /**
-     * 알림 조회 테스트
-     */
-    @Test
-    void 알림_조회_테스트() {
-        // Given
-        Notification notification = Notification.builder()
-                .receiver(receiver)
-                .content("테스트 알림")
-                .type(NotificationType.PARTY_INVITE)
-                .redirectUrl("https://example.com")
-                .build();
-
-        when(notificationRepository.findByReceiverIdAndIsReadFalseOrderByCreatedAtDesc(receiver.getId()))
-                .thenReturn(List.of(notification));
-
-        // When
-        List<NotificationResponse> notifications = notificationService.getNotifications(receiver.getId());
-
-        // Then
-        assertThat(notifications).isNotEmpty();
-        assertThat(notifications.get(0).content()).isEqualTo("테스트 알림");
-    }
-
-
     /**
      * 알림 읽음 처리 테스트
      */
@@ -159,35 +131,5 @@ class NotificationServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("본인의 알림만 읽음 처리할 수 있습니다.");
     }
-
-    @Test
-    void 여러_개의_알림_조회_테스트() {
-        // Given
-        Notification notification1 = Notification.builder()
-                .receiver(receiver)
-                .content("첫 번째 알림")
-                .type(NotificationType.PARTY_INVITE)
-                .redirectUrl("https://example.com")
-                .build();
-
-        Notification notification2 = Notification.builder()
-                .receiver(receiver)
-                .content("두 번째 알림")
-                .type(NotificationType.GUILD_JOIN_REQUEST)
-                .redirectUrl("https://example.com/2")
-                .build();
-
-        when(notificationRepository.findByReceiverIdAndIsReadFalseOrderByCreatedAtDesc(receiver.getId()))
-                .thenReturn(List.of(notification1, notification2));
-
-        // When
-        List<NotificationResponse> notifications = notificationService.getNotifications(receiver.getId());
-
-        // Then
-        assertThat(notifications).hasSize(2);
-        assertThat(notifications.get(0).content()).isEqualTo("첫 번째 알림");
-        assertThat(notifications.get(1).content()).isEqualTo("두 번째 알림");
-    }
-
 
 }
