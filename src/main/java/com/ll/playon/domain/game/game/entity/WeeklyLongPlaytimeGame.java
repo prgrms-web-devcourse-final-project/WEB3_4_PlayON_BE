@@ -10,7 +10,7 @@ import lombok.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "long_playtime_game", indexes = {
+@Table(name = "weekly_long_playtime_game", indexes = {
         @Index(name = "idx_week_start_date", columnList = "week_start_date"),
         @Index(name = "idx_week_start_date_playtime", columnList = "week_start_date, total_playtime DESC")
 })
@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class LongPlaytimeGame extends BaseEntity {
+public class WeeklyLongPlaytimeGame extends BaseEntity {
     @Column(name = "appid", nullable = false)
     private Long appid;
 
