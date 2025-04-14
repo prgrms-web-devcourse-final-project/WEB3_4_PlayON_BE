@@ -42,16 +42,4 @@ public record NotificationResponse(
         );
     }
 
-    public static NotificationResponse fromEntity(Notification notification) {
-        return new NotificationResponse(
-                notification.getId(),
-                null, // senderNickname 없는 경우는 null 처리
-                notification.getContent(),
-                notification.getType(),
-                notification.isRead(),
-                notification.getRedirectUrl(),
-                notification.getCreatedAt()
-        );
-    }
-
 }

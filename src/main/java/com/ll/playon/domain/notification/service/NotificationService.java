@@ -43,8 +43,11 @@ public class NotificationService {
         Notification notification = Notification.create(receiver, content, type, redirectUrl);
         notificationRepository.save(notification);
 
-        NotificationResponse response = NotificationResponse.fromEntity(notification, sender.getNickname());
+        String senderNickname = sender != null ? sender.getNickname() : null;
+
+        NotificationResponse response = NotificationResponse.fromEntity(notification, senderNickname);
         eventPublisher.publishEvent(new NotificationEvent(this, receiver.getId(), response));
+
 
         return response;
     }
@@ -71,21 +74,37 @@ public class NotificationService {
      */
     @Transactional(readOnly = true)
     public List<NotificationResponse> getNotifications(Long memberId) {
+        Member sender = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다: " + memberId));
+
+        String senderNickname = sender.getNickname();  // 발신자 닉네임 가져오기
+
         return notificationRepository.findByReceiverIdAndIsReadFalseOrderByCreatedAtDesc(memberId)
                 .stream()
-                .map(NotificationResponse::fromEntity)
+                .map(notification -> NotificationResponse.fromEntity(notification, senderNickname))  // senderNickname 전달
                 .toList();
     }
+
 
     /**
      * 사용자의 알림 요약 정보 조회 (최신 10개 알림 및 읽지 않은 알림 개수)
      */
     @Transactional(readOnly = true)
     public NotificationSummaryResponse getNotificationSummary(Long memberId) {
+        // 최신 10개 알림 조회
         List<Notification> latest = notificationRepository.findTop10ByReceiverIdOrderByCreatedAtDesc(memberId);
+
+        // 읽지 않은 알림 개수 조회
         long unreadCount = notificationRepository.countByReceiverIdAndIsReadFalse(memberId);
 
-        return NotificationSummaryResponse.of(latest, unreadCount);
+        // 회원의 닉네임 가져오기 (예시로 memberRepository를 통해 회원 정보 조회)
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다: " + memberId));
+        String senderNickname = member.getNickname();  // 발신자 닉네임
+
+        // NotificationSummaryResponse 생성 시 senderNickname을 전달
+        return NotificationSummaryResponse.of(latest, unreadCount, senderNickname);
     }
+
 
 }

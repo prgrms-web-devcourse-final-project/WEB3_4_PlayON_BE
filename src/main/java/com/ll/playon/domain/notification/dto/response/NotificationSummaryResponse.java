@@ -14,9 +14,9 @@ public record NotificationSummaryResponse(
         @Schema(description = "읽지 않은 알림 수", example = "3")
         long unreadCount
 ) {
-    public static NotificationSummaryResponse of(List<Notification> notifications, long unreadCount) {
+    public static NotificationSummaryResponse of(List<Notification> notifications, long unreadCount, String senderNickname) {
         List<NotificationResponse> responses = notifications.stream()
-                .map(NotificationResponse::fromEntity)
+                .map(notification -> NotificationResponse.fromEntity(notification, senderNickname))  // 발신자 닉네임을 전달
                 .toList();
         return new NotificationSummaryResponse(responses, unreadCount);
     }
