@@ -189,7 +189,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
     @Query("""
             SELECT p
             FROM Party p
-            WHERE p.partyAt < :deadLine
+            WHERE p.partyAt < :deadline
             """)
-    List<Party> findExpiredPartiesToDelete(@Param("deadLine") LocalDateTime deadLine);
+    List<Party> findExpiredPartiesToDelete(@Param("deadline") LocalDateTime deadline);
 }

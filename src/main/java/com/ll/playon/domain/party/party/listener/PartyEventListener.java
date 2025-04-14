@@ -1,11 +1,8 @@
 package com.ll.playon.domain.party.party.listener;
 
-import com.ll.playon.domain.chat.entity.PartyRoom;
-import com.ll.playon.domain.chat.repository.ChatMemberRepository;
-import com.ll.playon.domain.chat.repository.PartyRoomRepository;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.event.ExpiredPartyDetectedEvent;
-import com.ll.playon.domain.party.party.repository.PartyRepository;
+import com.ll.playon.domain.party.party.service.PartyService;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.exceptions.EventListenerException;
 import java.util.ArrayList;
@@ -19,9 +16,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 public class PartyEventListener {
-    private final PartyRepository partyRepository;
-    private final PartyRoomRepository partyRoomRepository;
-    private final ChatMemberRepository chatMemberRepository;
+    private final PartyService partyService;
 
     @EventListener
     public void handle(ExpiredPartyDetectedEvent event) {
@@ -32,14 +27,7 @@ public class PartyEventListener {
 
         for (Party party : expiredParties) {
             try {
-                PartyRoom partyRoom = this.partyRoomRepository.findByParty(party).orElse(null);
-
-                if (partyRoom != null) {
-                    this.chatMemberRepository.deleteAllByPartyRoom(partyRoom);
-                    this.partyRoomRepository.delete(partyRoom);
-                }
-
-                this.partyRepository.delete(party.deleteCascadeAll());
+                this.partyService.deletePartyByHard(party);
                 successCount++;
             } catch (Exception ex) {
                 failedIds.add(party.getId());

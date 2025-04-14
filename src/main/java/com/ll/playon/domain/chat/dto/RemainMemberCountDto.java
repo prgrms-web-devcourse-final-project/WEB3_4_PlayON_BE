@@ -1,7 +1,8 @@
 package com.ll.playon.domain.chat.dto;
 
-public record ChatMemberCountDto(
+public record RemainMemberCountDto(
         long partyRoomId,
+
         long remainCount
 ) {
 }

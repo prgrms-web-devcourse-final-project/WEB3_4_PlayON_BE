@@ -16,7 +16,16 @@ public interface PartyRoomRepository extends JpaRepository<PartyRoom, Long> {
             SELECT pr.id
             from PartyRoom pr
             JOIN pr.party p
-            WHERE p.partyAt <= :deadlineTime
+            WHERE p.partyAt <= :deadline
             """)
-    List<Long> findDeletablePartyRooms(@Param("deadlineTime") LocalDateTime deadlineTime);
+    List<Long> findDeletablePartyRoomIds(@Param("deadline") LocalDateTime deadline);
+
+    @Query("""
+            SELECT pr
+            from PartyRoom pr
+            JOIN pr.party p
+            WHERE p.partyAt <= :deadline
+            AND (p.partyStatus != 'COMPLETED' OR p.endedAt IS NULL)
+            """)
+    List<PartyRoom> findDeletablePartyRooms(@Param("deadline") LocalDateTime deadline);
 }

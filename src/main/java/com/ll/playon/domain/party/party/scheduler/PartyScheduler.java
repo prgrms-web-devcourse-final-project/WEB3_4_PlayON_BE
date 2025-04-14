@@ -19,9 +19,9 @@ public class PartyScheduler {
 
     @Scheduled(cron = "0 0 4 * * ?")
     @Transactional
-    public void deleteExpiredParties() {
-        LocalDateTime deadLine = LocalDateTime.now().minusMonths(6);
-        List<Party> expiredParties = this.partyRepository.findExpiredPartiesToDelete(deadLine);
+    public void detectAndPublishExpiredParties() {
+        LocalDateTime deadline = LocalDateTime.now().minusMonths(6);
+        List<Party> expiredParties = this.partyRepository.findExpiredPartiesToDelete(deadline);
 
         if (!expiredParties.isEmpty()) {
             this.eventPublisher.publishEvent(new ExpiredPartyDetectedEvent(expiredParties));

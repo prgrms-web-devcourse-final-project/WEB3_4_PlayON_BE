@@ -93,8 +93,7 @@ public class ChatService {
         // 파티 진행 시간 5분 이상 지나고, 채팅인원이 0명이면 채팅방 삭제, 브로드캐스트 생략
         if (PartyRoomPolicy.shouldDeletePartyRoom(remainCount, party)) {
             this.partyRoomRepository.delete(partyRoom);
-            party.updatePartyStatus(PartyStatus.COMPLETED);
-            party.updateEndTime();
+            party.closeParty();
             return;
         }
 
@@ -103,6 +102,15 @@ public class ChatService {
         this.chatMessageService.broadcastLeaveMessage(partyId, actor, title);
 
         this.chatMessageService.broadcastMemberList(partyId, this.getChatMemberDtos(partyRoom));
+    }
+
+    // 스케쥴러에서 파티룸 삭제
+    @Transactional
+    public void deletePartyRoomByHard(PartyRoom partyRoom) {
+        partyRoom.getParty().closeParty();
+
+        this.chatMemberRepository.deleteAllByPartyRoom(partyRoom);
+        this.partyRoomRepository.delete(partyRoom);
     }
 
     // Party로 PartyRoom 조회
