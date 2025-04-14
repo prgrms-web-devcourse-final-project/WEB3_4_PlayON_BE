@@ -16,8 +16,8 @@ public class GameScheduler {
     private final JobLauncher jobLauncher;
     private final Job popularGameBatchJob;
 
-//    @Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 00:00
-    @Scheduled(cron = "0/30 * * * * *")
+    @Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 00:00
+//    @Scheduled(cron = "0/30 * * * * *")
     public void updateWeeklyGameStats() {
         try {
             jobLauncher.run(popularGameBatchJob,
