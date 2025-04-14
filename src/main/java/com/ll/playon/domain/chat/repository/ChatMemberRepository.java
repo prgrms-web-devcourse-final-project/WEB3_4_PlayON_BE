@@ -1,6 +1,6 @@
 package com.ll.playon.domain.chat.repository;
 
-import com.ll.playon.domain.chat.dto.ChatMemberCountDto;
+import com.ll.playon.domain.chat.dto.RemainMemberCountDto;
 import com.ll.playon.domain.chat.entity.ChatMember;
 import com.ll.playon.domain.chat.entity.PartyRoom;
 import com.ll.playon.domain.party.party.entity.PartyMember;
@@ -20,12 +20,12 @@ public interface ChatMemberRepository extends JpaRepository<ChatMember, Long> {
     Long countByPartyRoom(PartyRoom partyRoom);
 
     @Query("""
-            SELECT new com.ll.playon.domain.chat.dto.ChatMemberCountDto(cm.partyRoom.id, COUNT(cm))
+            SELECT new com.ll.playon.domain.chat.dto.RemainMemberCountDto(cm.partyRoom.id, COUNT(cm))
             FROM ChatMember cm
             WHERE cm.partyRoom.id IN :candidateIds
             GROUP BY cm.partyRoom.id
             """)
-    List<ChatMemberCountDto> countByPartyRoomIds(@Param("candidateIds") List<Long> candidateIds);
+    List<RemainMemberCountDto> countByPartyRoomIds(@Param("candidateIds") List<Long> candidateIds);
 
     void deleteAllByPartyRoom(PartyRoom partyRoom);
 }

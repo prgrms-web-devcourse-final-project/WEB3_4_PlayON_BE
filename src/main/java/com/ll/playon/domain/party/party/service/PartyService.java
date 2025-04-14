@@ -2,6 +2,7 @@ package com.ll.playon.domain.party.party.service;
 
 import com.ll.playon.domain.chat.entity.PartyRoom;
 import com.ll.playon.domain.chat.mapper.PartyRoomMapper;
+import com.ll.playon.domain.chat.repository.ChatMemberRepository;
 import com.ll.playon.domain.chat.repository.PartyRoomRepository;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.repository.GameRepository;
@@ -72,6 +73,7 @@ public class PartyService {
     private final MemberTitleService memberTitleService;
     private final PartyRepository partyRepository;
     private final PartyRoomRepository partyRoomRepository;
+    private final ChatMemberRepository chatMemberRepository;
     private final GameRepository gameRepository;
     private final TitleEvaluator titleEvaluator;
 
@@ -431,6 +433,18 @@ public class PartyService {
         party.addPartyMember(PartyMemberMapper.of(invitedActor, PartyRole.INVITER));
 
         // TODO: 알람?
+    }
+
+    // 스케쥴러에서 파티 삭제
+    @Transactional
+    public void deletePartyByHard(Party party) {
+        PartyRoom partyRoom = this.partyRoomRepository.findByParty(party)
+                .orElseThrow(ErrorCode.PARTY_ROOM_NOT_FOUND::throwServiceException);
+
+        this.chatMemberRepository.deleteAllByPartyRoom(partyRoom);
+        this.partyRoomRepository.delete(partyRoom);
+
+        this.partyRepository.delete(party.deleteCascadeAll());
     }
 
     // 파티 ID로 파티 조회
