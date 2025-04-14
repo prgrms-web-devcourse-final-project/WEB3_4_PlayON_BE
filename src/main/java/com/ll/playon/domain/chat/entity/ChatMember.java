@@ -18,9 +18,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(
-        name = "chat_member",
         indexes = {
-                @Index(name = "idx_chat_member_party_room_id_party_member_id", columnList = "party_room_id, party_member_id")
+                @Index(name = "idx_chat_member_party_room_id", columnList = "party_room_id")
         }
 )
 @Getter

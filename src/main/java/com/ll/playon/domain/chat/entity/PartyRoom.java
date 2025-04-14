@@ -21,9 +21,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(
-        name = "party_room",
         indexes = {
-                @Index(name = "idx_party_room_party_id_created_at", columnList = "party_id, created_at")
+                @Index(name = "idx_party_room_party_id", columnList = "party_id")
         }
 )
 @Getter

@@ -1,17 +1,29 @@
 package com.ll.playon.domain.game.game.entity;
 
 import com.ll.playon.global.jpa.entity.BaseTime;
-import jakarta.persistence.*;
-import lombok.*;
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "steam_game", indexes = {
         @Index(name = "idx_game_appid", columnList = "appid"),
-        @Index(name = "idx_game_name", columnList = "name")
+        @Index(name = "idx_game_is_mac_supported", columnList = "is_mac_supported")
 })
 @Getter
 @Setter
@@ -72,7 +84,10 @@ public class SteamGame extends BaseTime {
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "steam_game_genre",
             joinColumns = @JoinColumn(name = "steam_game_id"),
-            inverseJoinColumns = @JoinColumn(name = "genre_id"))
+            inverseJoinColumns = @JoinColumn(name = "genre_id"),
+            indexes = {
+                    @Index(name = "idx_genre_id_game_id", columnList = "genre_id, steam_game_id")
+            })
     @Builder.Default
     private List<SteamGenre> genres = new ArrayList<>();
 

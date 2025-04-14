@@ -1,28 +1,52 @@
 package com.ll.playon.domain.member.entity;
 
+import static jakarta.persistence.GenerationType.IDENTITY;
+
 import com.ll.playon.domain.member.entity.enums.Gender;
 import com.ll.playon.domain.member.entity.enums.PlayStyle;
 import com.ll.playon.domain.member.entity.enums.Role;
 import com.ll.playon.domain.member.entity.enums.SkillLevel;
 import com.ll.playon.domain.title.entity.MemberStat;
 import com.ll.playon.domain.title.entity.MemberTitle;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-
-import static jakarta.persistence.GenerationType.IDENTITY;
-
 @Entity
+@Table(
+        indexes = {
+                @Index(name = "idx_member_steam_id", columnList = "steam_id"),
+                @Index(name = "idx_member_username", columnList = "username"),
+                @Index(name = "idx_member_role", columnList = "role")
+        }
+)
 @Getter
 @Builder(toBuilder = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -124,7 +148,9 @@ public class Member {
     private List<String> getAuthoritiesAsString() {
         List<String> authorities = new ArrayList<>();
 
-        if (isAdmin()) authorities.add("ROLE_ADMIN");
+        if (isAdmin()) {
+            authorities.add("ROLE_ADMIN");
+        }
 
         return authorities;
     }
@@ -133,7 +159,7 @@ public class Member {
         return this.role == Role.ADMIN;
     }
 
-    public void changeMemberId(Long newId){
+    public void changeMemberId(Long newId) {
         setId(newId);
     }
 
