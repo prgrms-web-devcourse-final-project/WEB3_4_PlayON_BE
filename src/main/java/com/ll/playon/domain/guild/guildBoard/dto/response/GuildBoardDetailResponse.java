@@ -22,9 +22,10 @@ public record GuildBoardDetailResponse(
         List<GuildBoardCommentDto> comments,
         GuildSimpleDto guild,
         boolean isAuthor,
+        boolean isLiked,
         LocalDateTime createdAt
 ) {
-    public static GuildBoardDetailResponse from(GuildBoard board, List<GuildBoardCommentDto> comments, Member actor) {
+    public static GuildBoardDetailResponse from(GuildBoard board, List<GuildBoardCommentDto> comments, Member actor, boolean isLiked) {
         Member author = board.getAuthor().getMember();
         return new GuildBoardDetailResponse(
                 board.getId(),
@@ -40,6 +41,7 @@ public record GuildBoardDetailResponse(
                 comments,
                 GuildSimpleDto.from(board.getGuild()),
                 author.getId().equals(actor.getId()),
+                isLiked,
                 board.getCreatedAt()
         );
     }
