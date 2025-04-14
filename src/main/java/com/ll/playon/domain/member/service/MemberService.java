@@ -217,8 +217,8 @@ public class MemberService {
                 .build());
 
         if (req.updateProfileImg()) {
-            // 기존 이미지 삭제
-            imageService.deleteImagesByIdAndUrl(ImageType.MEMBER, actor.getId(), actor.getProfileImg());
+            // S3 기존 이미지 삭제
+            s3Service.deleteObjectByUrl(member.getProfileImg());
 
             // 수정하는 경우 presigned url 응답
             if (!ObjectUtils.isEmpty(req.newFileType())) {
@@ -246,7 +246,6 @@ public class MemberService {
 
         memberRepository.findById(actor.getId()).ifPresent(member ->
                 member.changeProfileImg(url.url()));
-        imageService.saveImage(ImageType.MEMBER, actor.getId(), url.url());
     }
 
     @Transactional
