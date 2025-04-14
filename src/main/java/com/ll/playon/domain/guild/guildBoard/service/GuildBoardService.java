@@ -132,8 +132,11 @@ public class GuildBoardService {
     @Transactional
     public GuildBoardDetailResponse getBoardDetail(Long guildId, Long boardId, Member actor) {
         GuildBoard board = getBoardInGuild(guildId, boardId);
-
         board.increaseHit();
+
+        GuildMember guildMember = getGuildMember(board.getGuild(), actor);
+
+        boolean isLiked = guildBoardLikeRepository.findByGuildMemberAndBoard(guildMember, board).isPresent();
 
         List<GuildBoardCommentDto> comments = guildBoardCommentRepository
                 .findByBoardOrderByCreatedAtAsc(board)
@@ -141,7 +144,7 @@ public class GuildBoardService {
                 .map(comment -> GuildBoardCommentDto.from(comment, actor))
                 .toList();
 
-        return GuildBoardDetailResponse.from(board, comments, actor);
+        return GuildBoardDetailResponse.from(board, comments, actor, isLiked);
     }
 
     @Transactional
