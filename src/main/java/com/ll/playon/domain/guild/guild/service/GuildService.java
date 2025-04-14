@@ -116,8 +116,11 @@ public class GuildService {
         }
 
         // 게임 확인
-        SteamGame game = gameRepository.findByAppid(request.appid())
-                .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
+        SteamGame game = null;
+        if (request.appid() != null) {
+            game = gameRepository.findByAppid(request.appid())
+                    .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
+        }
 
         // 이미지 수정인경우 -> 기존 이미지삭제, S3 삭제
         if (!request.newFileType().isBlank()) {
