@@ -60,7 +60,7 @@ public enum ErrorCode {
     GUILD_ID_MISMATCH(HttpStatus.BAD_REQUEST, "요청한 길드와 일치하지 않습니다."),
     GUILD_REQUEST_ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "이미 처리된 길드 요청입니다."),
     GUILD_APPROVAL_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "승인 권한이 없습니다."),
-    GUILD_MEMBER_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST,"길드 최대 인원을 초과했습니다."),
+    GUILD_MEMBER_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "길드 최대 인원을 초과했습니다."),
 
 
     // GuildMember
@@ -84,6 +84,7 @@ public enum ErrorCode {
     IS_ALREADY_INVITING_PARTY(HttpStatus.FORBIDDEN, "파티 초대가 진행 중입니다."),
     PARTY_IS_FULL(HttpStatus.FORBIDDEN, "파티 정원이 가득 찼습니다."),
     PARTY_NOT_FOUND(HttpStatus.NOT_FOUND, "파티가 존재하지 않습니다."),
+    PARTY_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파티 삭제에 문제가 생겨 모든 파티 삭제가 불가능합니다."),
 
     // PartyMember
     IS_NOT_PARTY_MEMBER_OWNER(HttpStatus.FORBIDDEN, "해당 파티의 파티장이 아닙니다."),

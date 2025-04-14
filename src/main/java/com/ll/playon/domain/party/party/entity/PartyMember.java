@@ -65,9 +65,16 @@ public class PartyMember extends BaseTime {
         return this.party != null && this.member.equals(member);
     }
 
+    public void deleteWithUpdateTotal() {
+        if (this.party != null) {
+            this.party.deletePartyMemberWithUpdateTotal(this);
+        }
+    }
+
     public void delete() {
         if (this.party != null) {
-            this.party.deletePartyMember(this);
+            this.party.getPartyMembers().remove(this);
+            this.party = null;
         }
     }
 

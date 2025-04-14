@@ -1,4 +1,4 @@
-package com.ll.playon.domain.chat.scheduled;
+package com.ll.playon.domain.chat.scheduler;
 
 import com.ll.playon.domain.chat.event.ChatRoomDetectedAfterGameStartedEvent;
 import com.ll.playon.domain.chat.repository.PartyRoomRepository;
@@ -12,7 +12,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class DeletePartyRoomsScheduler {
+public class PartyRoomsScheduler {
     private final PartyRoomRepository partyRoomRepository;
     private final ApplicationEventPublisher eventPublisher;
 
