@@ -6,15 +6,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -55,16 +54,23 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
             "/api/batch/steam-game"
     );
+    private static final List<String> EXCLUDE_URLS = List.of(
+            "/api/parties/list",
+            "/api/members/*/parties",
+            "/api/members/*/parties/logs"
+    );
     private static final AntPathMatcher pathMatcher = new AntPathMatcher();
 
 
     record AuthTokens(
             String apiKey,
             String accessToken
-    ) { }
+    ) {
+    }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, @NotNull HttpServletResponse response,
+                                    @NotNull FilterChain filterChain) throws ServletException, IOException {
         String uri = request.getRequestURI();
 
         if (!uri.startsWith("/api")) {
@@ -72,7 +78,8 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (PUBLIC_URLS.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri)) && !pathMatcher.match("/api/parties/list", uri)) {
+        if (PUBLIC_URLS.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri))
+            && EXCLUDE_URLS.stream().noneMatch(pattern -> pathMatcher.match(pattern, uri))) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -89,18 +96,22 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
         Member user = memberService.getUserFromAccessToken(accessToken);
 
-        if (user == null)
+        if (user == null) {
             user = refreshAccessTokenByApiKey(apiKey);
+        }
 
-        if (user != null)
+        if (user != null) {
             userContext.setLogin(user);
+        }
 
         filterChain.doFilter(request, response);
     }
 
     private Member refreshAccessTokenByApiKey(String apiKey) {
         Optional<Member> opUser = memberService.findByApiKey(apiKey);
-        if (opUser.isEmpty()) return null;
+        if (opUser.isEmpty()) {
+            return null;
+        }
         Member user = opUser.get();
 
         refreshAccessToken(user);
@@ -123,16 +134,18 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
             String token = authorization.substring("Bearer ".length());
             String[] tokenBits = token.split(" ", 2);
 
-            if (tokenBits.length == 2)
+            if (tokenBits.length == 2) {
                 return new AuthTokens(tokenBits[0], tokenBits[1]);
+            }
         }
 
         // 헤더에 토큰이 없다면 쿠키에서 토큰값 얻기
         String apikey = userContext.getCookieValue("apiKey");
         String accessToken = userContext.getCookieValue("accessToken");
 
-        if (apikey != null && accessToken != null)
+        if (apikey != null && accessToken != null) {
             return new AuthTokens(apikey, accessToken);
+        }
 
         return null;
     }
