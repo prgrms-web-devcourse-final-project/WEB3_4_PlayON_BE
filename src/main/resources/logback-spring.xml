@@ -99,8 +99,15 @@
         <appender-ref ref="CONSOLE"/>
     </logger>
 
-    <!-- 파티 삭제 이벤트 관련 로거 -->
+    <!-- 파티룸 삭제 이벤트 관련 로거 -->
     <logger name="com.ll.playon.domain.chat.listener.PartyRoomEventListener" level="INFO" additivity="false">
+        <appender-ref ref="PARTY_DELETE_INFO_FILE"/>
+        <appender-ref ref="PARTY_DELETE_ERROR_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- 파티 삭제 이벤트 관련 로거 -->
+    <logger name="com.ll.playon.domain.party.party.listener.PartyEventListener" level="INFO" additivity="false">
         <appender-ref ref="PARTY_DELETE_INFO_FILE"/>
         <appender-ref ref="PARTY_DELETE_ERROR_FILE"/>
         <appender-ref ref="CONSOLE"/>
