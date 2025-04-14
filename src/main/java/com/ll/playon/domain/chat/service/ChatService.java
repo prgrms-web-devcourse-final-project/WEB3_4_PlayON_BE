@@ -16,6 +16,7 @@ import com.ll.playon.domain.party.party.context.PartyContext;
 import com.ll.playon.domain.party.party.context.PartyMemberContext;
 import com.ll.playon.domain.party.party.entity.Party;
 import com.ll.playon.domain.party.party.entity.PartyMember;
+import com.ll.playon.domain.party.party.repository.PartyRepository;
 import com.ll.playon.domain.party.party.type.PartyStatus;
 import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.global.annotation.ActivePartyMemberOnly;
@@ -33,6 +34,7 @@ public class ChatService {
     private final ChatMessageService chatMessageService;
     private final MemberTitleService memberTitleService;
     private final ChatMemberRepository chatMemberRepository;
+    private final PartyRepository partyRepository;
     private final PartyRoomRepository partyRoomRepository;
 
     // 채팅방 입장
@@ -107,7 +109,10 @@ public class ChatService {
     // 스케쥴러에서 파티룸 삭제
     @Transactional
     public void deletePartyRoomByHard(PartyRoom partyRoom) {
-        partyRoom.getParty().closeParty();
+        Party party = this.partyRepository.findByPartyRoom(partyRoom)
+                .orElseThrow(ErrorCode.PARTY_NOT_FOUND::throwServiceException);
+
+        party.closeParty();
 
         this.chatMemberRepository.deleteAllByPartyRoom(partyRoom);
         this.partyRoomRepository.delete(partyRoom);
