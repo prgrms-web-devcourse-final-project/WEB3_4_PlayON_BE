@@ -20,6 +20,8 @@ public record GetCompletedPartyDto(
         @NotBlank
         String gameName,
 
+        String gameHeaderImg,
+
         @NonNull
         String mvpName,
 
@@ -46,6 +48,7 @@ public record GetCompletedPartyDto(
                 party.getId(),
                 party.getName(),
                 party.getGame().getName(),
+                party.getGame().getHeaderImage(),
                 mvp.getMember().getNickname(),
                 mvp.getMvpPoint(),
                 Objects.requireNonNullElse(mvp.getMember().getProfileImg(), ""),
