@@ -31,7 +31,7 @@ public class PartyEventListener {
                 successCount++;
             } catch (Exception ex) {
                 failedIds.add(party.getId());
-                log.error("id={}번 파티 삭제 실패", party.getId(), ex);
+                log.error("id={}번 파티 삭제 실패", party.getId());
             }
         }
 

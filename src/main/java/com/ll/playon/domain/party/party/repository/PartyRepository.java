@@ -1,5 +1,6 @@
 package com.ll.playon.domain.party.party.repository;
 
+import com.ll.playon.domain.chat.entity.PartyRoom;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.projection.TopPartyGameProjection;
 import com.ll.playon.domain.game.game.projection.TopPlaytimeGameProjection;
@@ -10,6 +11,7 @@ import com.ll.playon.domain.party.party.type.PartyRole;
 import com.ll.playon.domain.party.party.type.PartyStatus;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -192,4 +194,13 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             WHERE p.partyAt < :deadline
             """)
     List<Party> findExpiredPartiesToDelete(@Param("deadline") LocalDateTime deadline);
+
+    @Query("""
+            SELECT p
+            FROM Party p
+            JOIN PartyRoom pr
+            ON pr.party = p
+            WHERE pr = :partyRoom
+            """)
+    Optional<Party> findByPartyRoom(@Param("partyRoom") PartyRoom partyRoom);
 }
