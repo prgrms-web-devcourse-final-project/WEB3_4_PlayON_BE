@@ -28,7 +28,7 @@ public class PartyEventListener {
         int successCount = 0;
         List<Long> failedIds = new ArrayList<>();
 
-        List<Party> expiredParties = event.candidateIds();
+        List<Party> expiredParties = event.candidateParties();
 
         for (Party party : expiredParties) {
             try {

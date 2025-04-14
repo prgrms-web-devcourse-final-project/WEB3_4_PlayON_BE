@@ -75,7 +75,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             FROM Party p
             WHERE p.id IN :partyIds
             """)
-    List<Party> findPartiesByIds(@Param("candidateIds") List<Long> partyIds);
+    List<Party> findPartiesByIds(@Param("partyIds") List<Long> partyIds);
 
     @Query("""
             SELECT pt
@@ -83,7 +83,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             JOIN FETCH pt.party p
             WHERE p.id IN :partyIds
             """)
-    List<PartyTag> findPartyTagsByPartyIds(@Param("candidateIds") List<Long> partyIds);
+    List<PartyTag> findPartyTagsByPartyIds(@Param("partyIds") List<Long> partyIds);
 
     @Query("""
             SELECT pm
@@ -92,7 +92,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             WHERE p.id IN :partyIds
             AND (pm.partyRole = 'MEMBER' OR pm.partyRole = 'OWNER')
             """)
-    List<PartyMember> findPartyMembersByPartyIds(@Param("candidateIds") List<Long> partyIds);
+    List<PartyMember> findPartyMembersByPartyIds(@Param("partyIds") List<Long> partyIds);
 
     Page<Party> findByGame(SteamGame game, Pageable pageable);
 
@@ -114,7 +114,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             AND p.id IN :partyIds
             ORDER BY p.createdAt DESC
             """)
-    List<Party> findPublicCompletedPartiesIn(@Param("candidateIds") List<Long> partyIds, Pageable pageable);
+    List<Party> findPublicCompletedPartiesIn(@Param("partyIds") List<Long> partyIds, Pageable pageable);
 
     @Query("""
                 SELECT p.game.appid AS appid, COUNT(p) AS playCount
