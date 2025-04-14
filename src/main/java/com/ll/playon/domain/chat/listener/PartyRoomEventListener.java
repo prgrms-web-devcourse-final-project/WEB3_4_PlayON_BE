@@ -51,6 +51,6 @@ public class PartyRoomEventListener {
             throw new EventListenerException(ErrorCode.PARTY_ROOM_DELETE_FAILED);
         }
 
-        log.info("삭제된 파티룸: {}개, 삭제 실패: {}개, 실패 파티룸ID: {}", successCount, failedIds.size(), failedIds);
+        log.info("삭제된 파티룸: {}개, 삭제 실패: {}개, 실패 파티룸 ID: {}", successCount, failedIds.size(), failedIds);
     }
 }

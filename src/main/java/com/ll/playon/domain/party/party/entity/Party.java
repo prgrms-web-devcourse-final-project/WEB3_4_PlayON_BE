@@ -123,7 +123,7 @@ public class Party {
         }
     }
 
-    public void deletePartyMember(PartyMember partyMember) {
+    public void deletePartyMemberWithUpdateTotal(PartyMember partyMember) {
         if (partyMember.getPartyRole().equals(PartyRole.OWNER) || partyMember.getPartyRole().equals(PartyRole.MEMBER)) {
             this.updateTotal(false);
         }
@@ -156,5 +156,21 @@ public class Party {
 
     public void updateEndTime() {
         this.endedAt = LocalDateTime.now();
+    }
+
+    public Party deleteCascadeAll() {
+        List<PartyMember> partyMembersToDelete = new ArrayList<>(this.partyMembers);
+        for (PartyMember member : partyMembersToDelete) {
+            member.delete();
+        }
+        this.partyMembers.clear();
+
+        List<PartyTag> partyTagsToDelete = new ArrayList<>(this.partyTags);
+        for (PartyTag tag : partyTagsToDelete) {
+            tag.delete();
+        }
+        this.partyTags.clear();
+
+        return this;
     }
 }

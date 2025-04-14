@@ -320,7 +320,7 @@ public class MemberService {
     public void cancelPendingParty(Member actor, long partyId) {
         PartyMember me = PartyMemberContext.getPartyMember();
 
-        me.delete();
+        me.deleteWithUpdateTotal();
     }
 
     // 파티 초대 승인
@@ -345,7 +345,7 @@ public class MemberService {
     public void rejectPartyInvitation(Member actor, long partyId) {
         PartyMember me = PartyMemberContext.getPartyMember();
 
-        me.delete();
+        me.deleteWithUpdateTotal();
     }
 
     // 내 참여중인 파티 조회

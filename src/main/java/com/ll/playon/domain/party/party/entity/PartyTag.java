@@ -61,4 +61,10 @@ public class PartyTag extends BaseTime {
         return Objects.hash(party, type, value);
     }
 
+    public void delete() {
+        if (this.party != null) {
+            this.party.getPartyTags().remove(this);
+            this.party = null;
+        }
+    }
 }
