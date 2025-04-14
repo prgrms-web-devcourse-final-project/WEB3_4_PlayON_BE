@@ -1,7 +1,6 @@
 package com.ll.playon.domain.game.game.dto.response;
 
 import com.ll.playon.domain.game.game.entity.SteamGame;
-import com.ll.playon.domain.image.repository.ImageRepository;
 import com.ll.playon.domain.party.party.dto.PartyDetailMemberDto;
 import com.ll.playon.domain.party.party.dto.PartyDetailTagDto;
 import com.ll.playon.domain.party.party.dto.response.GetCompletedPartyDto;
