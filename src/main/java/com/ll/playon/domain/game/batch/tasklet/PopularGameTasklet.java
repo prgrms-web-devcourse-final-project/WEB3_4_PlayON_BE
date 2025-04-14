@@ -4,6 +4,7 @@ import com.ll.playon.domain.game.game.entity.WeeklyPopularGame;
 import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
 import com.ll.playon.domain.party.party.repository.PartyRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PopularGameTasklet implements Tasklet {
@@ -35,6 +37,8 @@ public class PopularGameTasklet implements Tasklet {
         LocalDateTime fromDate = weekStart.minusWeeks(1).atStartOfDay(); // 지난주
         LocalDateTime toDate = weekStart.atStartOfDay(); // 이번주
 
+        log.info("[PopularGameBatch] 인기 게임 통계 배치 시작 => 기간: {} ~ {}", fromDate, toDate);
+
         List<WeeklyPopularGame> list = partyRepository.findTopGamesByPartyLastWeek(fromDate, toDate, PageRequest.of(0, limit))
                 .stream()
                 .map(row -> WeeklyPopularGame.builder()
@@ -44,6 +48,8 @@ public class PopularGameTasklet implements Tasklet {
                         .build())
                 .toList();
         weeklyGameRepository.saveAll(list);
+
+        log.info("[PopularGameBatch] 인기 게임 통계 저장 완료");
 
         return RepeatStatus.FINISHED;
     }

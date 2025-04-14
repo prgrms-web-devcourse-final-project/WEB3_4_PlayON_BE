@@ -14,18 +14,18 @@ import org.springframework.stereotype.Component;
 public class GameScheduler {
 
     private final JobLauncher jobLauncher;
-    private final Job gameBatchJob;
+    private final Job popularGameBatchJob;
 
-    @Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 00:00
-//    @Scheduled(cron = "0 * * * * *")
+//    @Scheduled(cron = "0 0 0 * * MON") // 매주 월요일 00:00
+    @Scheduled(cron = "0/30 * * * * *")
     public void updateWeeklyGameStats() {
         try {
-            jobLauncher.run(gameBatchJob,
+            jobLauncher.run(popularGameBatchJob,
                     new JobParametersBuilder()
                             .addLong("time", System.currentTimeMillis())
                             .toJobParameters());
         } catch (Exception e) {
-            log.error("주간 게임 배치 작업 중 예외 발생", e);
+            log.error("주간 인기 게임 배치 작업 중 예외 발생", e);
         }
     }
 }
