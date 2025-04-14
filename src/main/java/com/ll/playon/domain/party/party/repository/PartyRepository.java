@@ -23,9 +23,9 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             FROM Party p
             WHERE p.partyStatus = 'PENDING'
             AND p.publicFlag = true
+            AND p.total < p.maximum
             AND (:partyAt IS NULL OR p.partyAt >= :partyAt)
             AND (:excludedIds IS NULL OR p.id NOT IN :excludedIds)
-            AND p.total < p.maximum
             AND (:isMacSupported = false OR p.game.isMacSupported = :isMacSupported)
             AND (:tagValues IS NULL OR p.id IN (
                 SELECT pt.party.id
@@ -107,12 +107,12 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
     List<Party> findAllPublicPartyUpToLimit(@Param("partyStatus") PartyStatus partyStatus, Pageable pageable);
 
     @Query("""
-                SELECT p
-                FROM Party p
-                WHERE p.id IN :partyIds
-                  AND p.publicFlag = TRUE
-                  AND p.partyStatus = 'COMPLETED'
-                ORDER BY p.createdAt DESC
+            SELECT p
+            FROM Party p
+            WHERE p.publicFlag = TRUE
+            AND p.partyStatus = 'COMPLETED'
+            AND p.id IN :partyIds
+            ORDER BY p.createdAt DESC
             """)
     List<Party> findPublicCompletedPartiesIn(@Param("partyIds") List<Long> partyIds, Pageable pageable);
 
@@ -134,10 +134,11 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
                 SELECT p.game_id AS appid,
                        SUM(TIMESTAMPDIFF(SECOND, p.party_at, p.ended_at)) / 3600 AS playtime
                 FROM party p
-                WHERE p.party_at >= :fromDate AND p.party_at < :toDate
-                  AND p.is_public = true
+                WHERE p.is_public = true
                   AND p.party_status = 'COMPLETED'
                   AND p.ended_at IS NOT NULL
+                  AND p.party_at >= :fromDate
+                  AND p.party_at < :toDate
                 GROUP BY p.game_id
                 ORDER BY playtime DESC
             """,
@@ -152,8 +153,8 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             SELECT pm.party
             FROM PartyMember pm
             WHERE pm.member.id = :memberId
-            AND pm.party.publicFlag = true
             AND pm.partyRole IN :partyRoles
+            AND pm.party.publicFlag = true
             AND pm.party.partyStatus != :partyStatus
             """)
     List<Party> findMembersActiveParties(@Param("memberId") long memberId,
