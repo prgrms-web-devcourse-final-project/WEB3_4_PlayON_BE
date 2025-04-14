@@ -21,9 +21,8 @@ import lombok.Setter;
 
 @Entity
 @Table(
-        name = "party_tag",
         indexes = {
-                @Index(name = "idx_party_tag_party_id_value", columnList = "party_id, tag_value"),
+                @Index(name = "idx_party_tag_value_party_id", columnList = "tag_value, party_id"),
         }
 )
 @Getter
@@ -62,4 +61,10 @@ public class PartyTag extends BaseTime {
         return Objects.hash(party, type, value);
     }
 
+    public void delete() {
+        if (this.party != null) {
+            this.party.getPartyTags().remove(this);
+            this.party = null;
+        }
+    }
 }

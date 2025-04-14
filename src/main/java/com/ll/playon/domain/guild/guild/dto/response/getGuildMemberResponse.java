@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public record getGuildMemberResponse(
         Long memberId,
         String username,
+        String nickname,
         String profileImg,
         String title,
         String  role,
@@ -19,6 +20,7 @@ public record getGuildMemberResponse(
         return getGuildMemberResponse.builder()
                 .memberId(member.getMember().getId())
                 .username(member.getMember().getUsername())
+                .nickname(member.getMember().getNickname())
                 .profileImg(member.getMember().getProfileImg())
                 .title(member.getMember().getMemberTitles().stream()
                         .filter(MemberTitle::isRepresentative)

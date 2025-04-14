@@ -395,7 +395,7 @@ public class PartyService {
 
         PartyMember pendingMember = this.getPendingMember(memberId, party);
 
-        pendingMember.delete();
+        pendingMember.deleteWithUpdateTotal();
     }
 
     // TODO: 알림 기능 구현 후 수정 예정

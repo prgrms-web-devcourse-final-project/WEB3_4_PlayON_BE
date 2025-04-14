@@ -8,6 +8,7 @@ import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.global.exceptions.ErrorCode;
 import com.ll.playon.global.response.RsData;
 import com.ll.playon.global.security.UserContext;
+import com.ll.playon.global.validation.GlobalValidation;
 import com.ll.playon.standard.page.dto.PageDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -59,6 +60,8 @@ public class GameController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "12") int pageSize
     ) {
+        GlobalValidation.checkPageSize(pageSize);
+
         return RsData.success(HttpStatus.OK, gameService.searchGames(condition, PageRequest.of(page - 1, pageSize)));
     }
 

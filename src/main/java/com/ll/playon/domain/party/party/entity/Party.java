@@ -33,10 +33,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(
-        name = "party",
         indexes = {
-                @Index(name = "idx_party_status_public_party_at_id", columnList = "party_status, is_public, party_at, id"),
-                @Index(name = "idx_party_id_party_at", columnList = "id, party_at")
+                @Index(name = "idx_party_status_public_total_max_party_at", columnList = "party_status, is_public, total, maximum, party_at"),
+                @Index(name = "idx_party_public_status_ended_created", columnList = "is_public, party_status, ended_at, created_at"),
+                @Index(name = "idx_party_created_game", columnList = "created_at, game_id"),
+                @Index(name = "idx_party_party_at", columnList = "party_at")
         }
 )
 @Getter
@@ -122,7 +123,7 @@ public class Party {
         }
     }
 
-    public void deletePartyMember(PartyMember partyMember) {
+    public void deletePartyMemberWithUpdateTotal(PartyMember partyMember) {
         if (partyMember.getPartyRole().equals(PartyRole.OWNER) || partyMember.getPartyRole().equals(PartyRole.MEMBER)) {
             this.updateTotal(false);
         }
@@ -155,5 +156,21 @@ public class Party {
 
     public void updateEndTime() {
         this.endedAt = LocalDateTime.now();
+    }
+
+    public Party deleteCascadeAll() {
+        List<PartyMember> partyMembersToDelete = new ArrayList<>(this.partyMembers);
+        for (PartyMember member : partyMembersToDelete) {
+            member.delete();
+        }
+        this.partyMembers.clear();
+
+        List<PartyTag> partyTagsToDelete = new ArrayList<>(this.partyTags);
+        for (PartyTag tag : partyTagsToDelete) {
+            tag.delete();
+        }
+        this.partyTags.clear();
+
+        return this;
     }
 }

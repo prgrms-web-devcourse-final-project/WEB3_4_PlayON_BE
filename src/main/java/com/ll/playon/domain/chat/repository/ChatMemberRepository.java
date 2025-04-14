@@ -26,4 +26,6 @@ public interface ChatMemberRepository extends JpaRepository<ChatMember, Long> {
             GROUP BY cm.partyRoom.id
             """)
     List<ChatMemberCountDto> countByPartyRoomIds(@Param("candidateIds") List<Long> candidateIds);
+
+    void deleteAllByPartyRoom(PartyRoom partyRoom);
 }
