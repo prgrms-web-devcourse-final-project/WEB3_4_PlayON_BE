@@ -66,7 +66,7 @@ public class BoardController {
     public RsData<PageDto<GetBoardListResponse>> getBoards(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(defaultValue = "latest") BoardSortType sort,
+            @RequestParam(defaultValue = "LATEST") BoardSortType sort,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) BoardCategory category
     ) {
