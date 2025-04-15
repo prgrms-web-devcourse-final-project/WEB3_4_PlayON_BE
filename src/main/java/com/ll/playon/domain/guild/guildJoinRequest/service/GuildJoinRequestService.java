@@ -9,6 +9,7 @@ import com.ll.playon.domain.guild.guildJoinRequest.repository.GuildJoinRequestRe
 import com.ll.playon.domain.guild.guildMember.entity.GuildMember;
 import com.ll.playon.domain.guild.guildMember.enums.GuildRole;
 import com.ll.playon.domain.guild.guildMember.repository.GuildMemberRepository;
+import com.ll.playon.domain.guild.util.GuildJoinRequestValidator;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.title.service.MemberTitleService;
 import com.ll.playon.global.exceptions.ErrorCode;
@@ -26,30 +27,14 @@ public class GuildJoinRequestService {
     private final GuildJoinRequestRepository guildJoinRequestRepository;
     private final GuildMemberRepository guildMemberRepository;
     private final MemberTitleService memberTitleService;
+    private final GuildJoinRequestValidator guildJoinRequestValidator;
 
     @Transactional
     public void requestToJoinGuild(Long guildId, Member member) {
         Guild guild = guildRepository.findById(guildId)
                 .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
 
-        boolean isAlreadyMember = guild.getMembers().stream()
-                .anyMatch(gm -> gm.getMember().getId().equals(member.getId()));
-
-        if (isAlreadyMember) {
-            throw ErrorCode.ALREADY_GUILD_MEMBER.throwServiceException();
-        }
-
-        int currentMembers = (int) guildMemberRepository.countByGuildId(guild.getId());
-        if (currentMembers >= guild.getMaxMembers()) {
-            throw ErrorCode.GUILD_MEMBER_LIMIT_EXCEEDED.throwServiceException();
-        }
-
-        boolean alreadyRequested = guildJoinRequestRepository
-                .existsByGuildAndMemberAndApprovalState(guild, member, ApprovalState.PENDING);
-
-        if (alreadyRequested) {
-            throw ErrorCode.GUILD_ALREADY_REQUESTED.throwServiceException();
-        }
+        guildJoinRequestValidator.validateJoinable(guild, member);
 
         GuildJoinRequest request = GuildJoinRequest.builder()
                 .guild(guild)
