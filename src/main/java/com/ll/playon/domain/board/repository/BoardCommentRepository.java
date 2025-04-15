@@ -15,16 +15,18 @@ public interface BoardCommentRepository extends JpaRepository<BoardComment, Long
             SELECT new com.ll.playon.domain.board.dto.response.GetBoardCommentResponse(
                 c.id,
                 COALESCE(m.nickname, m.username),
-                img.imageUrl,
+                m.profileImg,
                 CASE WHEN :currentMemberId IS NOT NULL AND m.id = :currentMemberId THEN true ELSE false END,
                 c.comment,
                 c.createdAt
             )
             FROM BoardComment c
             JOIN c.author m
-            LEFT JOIN Image img ON img.referenceId = m.id AND img.imageType = 'MEMBER'
             WHERE c.board.id = :boardId
         """)
-    Page<GetBoardCommentResponse> findByBoardId(@Param("boardId") Long boardId, Pageable pageable, @Param("currentMemberId") Long currentMemberId);
-
+    Page<GetBoardCommentResponse> findByBoardId(
+            @Param("boardId") Long boardId,
+            Pageable pageable,
+            @Param("currentMemberId") Long currentMemberId
+    );
 }
