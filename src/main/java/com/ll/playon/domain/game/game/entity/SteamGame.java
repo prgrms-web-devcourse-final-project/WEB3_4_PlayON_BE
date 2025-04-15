@@ -23,8 +23,8 @@ import lombok.Setter;
 @Entity
 @Table(indexes = {
         @Index(name = "idx_game_appid", columnList = "appid"),
-        @Index(name = "idx_game_is_mac_supported", columnList = "is_mac_supported"),
-        @Index(name = "idx_game_name_mac_release_date", columnList = "name, is_mac_supported, release_date"),
+        @Index(name = "idx_game_is_mac_supported_release_date", columnList = "is_mac_supported, release_date"),
+        @Index(name = "idx_game_name_mac_release_date_single_multi", columnList = "name, is_mac_supported, release_date, is_single_player, is_multi_player"),
         @Index(name = "idx_game_player", columnList = "is_single_player, is_multi_player")
 })
 @Getter
