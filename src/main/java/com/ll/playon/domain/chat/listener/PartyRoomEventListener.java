@@ -34,7 +34,7 @@ public class PartyRoomEventListener {
                 successCount++;
             } catch (Exception ex) {
                 failedIds.add(partyRoomId);
-                log.error("id={}번 파티룸 삭제 실패", partyRoomId, ex);
+                log.error("id={}번 파티룸 삭제 실패", partyRoomId);
             }
         }
 
@@ -58,7 +58,7 @@ public class PartyRoomEventListener {
                 successCount++;
             } catch (Exception ex) {
                 failedIds.add(partyRoom.getId());
-                log.error("id={}번 파티룸 삭제 실패", partyRoom.getId(), ex);
+                log.error("id={}번 파티룸 삭제 실패", partyRoom.getId());
             }
         }
 
