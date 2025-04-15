@@ -62,7 +62,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/games/popular").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/games/ranking").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/games/recommend/playtime/top").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/games/list").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/games/list").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/games/search").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/games/*/party").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/games/*/logs").permitAll()

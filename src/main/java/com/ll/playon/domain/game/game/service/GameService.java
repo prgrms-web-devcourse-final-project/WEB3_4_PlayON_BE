@@ -2,13 +2,20 @@ package com.ll.playon.domain.game.game.service;
 
 import com.ll.playon.domain.game.game.dto.GameListResponse;
 import com.ll.playon.domain.game.game.dto.request.GameSearchCondition;
-import com.ll.playon.domain.game.game.dto.response.*;
+import com.ll.playon.domain.game.game.dto.response.GameAutoCompleteResponse;
+import com.ll.playon.domain.game.game.dto.response.GameDetailWithPartyResponse;
+import com.ll.playon.domain.game.game.dto.response.GameSummaryResponse;
+import com.ll.playon.domain.game.game.dto.response.GetRecommendedGameResponse;
+import com.ll.playon.domain.game.game.dto.response.GetWeeklyPopularGameResponse;
+import com.ll.playon.domain.game.game.dto.response.PartyLogSummaryResponse;
+import com.ll.playon.domain.game.game.dto.response.PartySummaryResponse;
 import com.ll.playon.domain.game.game.entity.SteamGame;
 import com.ll.playon.domain.game.game.entity.SteamGenre;
+import com.ll.playon.domain.game.game.enums.PlayerType;
+import com.ll.playon.domain.game.game.enums.ReleaseStatus;
 import com.ll.playon.domain.game.game.repository.GameRepository;
 import com.ll.playon.domain.game.game.repository.LongPlaytimeGameRepository;
 import com.ll.playon.domain.game.game.repository.WeeklyGameRepository;
-import com.ll.playon.domain.image.repository.ImageRepository;
 import com.ll.playon.domain.member.entity.Member;
 import com.ll.playon.domain.member.entity.MemberSteamData;
 import com.ll.playon.domain.member.repository.MemberRepository;
@@ -29,16 +36,21 @@ import com.ll.playon.global.steamAPI.SteamAPI;
 import com.ll.playon.standard.page.dto.PageDto;
 import com.ll.playon.standard.time.dto.TotalPlayTimeDto;
 import com.ll.playon.standard.util.Ut;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
+import org.springframework.util.CollectionUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -73,7 +85,9 @@ public class GameService {
                     .map(SteamGenre::getName)
                     .toList();
 
-            if(preferredGenre != null && !genres.contains(preferredGenre)) continue;
+            if (preferredGenre != null && !genres.contains(preferredGenre)) {
+                continue;
+            }
 
             responses.add(GameListResponse.builder()
                     .appid(game.getAppid())
@@ -87,7 +101,7 @@ public class GameService {
 
     // 메인 페이지에 보여줄 스팀 랭킹
     @Transactional
-    public List<GameListResponse>  getGameRanking() {
+    public List<GameListResponse> getGameRanking() {
         return makeGameListWithoutGenre(steamAPI.getSteamRanking().stream().limit(TOP_FIVE).toList());
     }
 
@@ -130,7 +144,8 @@ public class GameService {
 
         for (Party party : completedParties) {
             List<PartyMember> members = party.getPartyMembers().stream()
-                    .filter(pm -> pm.getPartyRole().equals(PartyRole.MEMBER) || pm.getPartyRole().equals(PartyRole.OWNER))
+                    .filter(pm -> pm.getPartyRole().equals(PartyRole.MEMBER) || pm.getPartyRole()
+                            .equals(PartyRole.OWNER))
                     .toList();
 
             PartyMember mvp = members.stream()
@@ -173,9 +188,38 @@ public class GameService {
     }
 
     @Transactional(readOnly = true)
-    public PageDto<GameSummaryResponse> searchGames(GameSearchCondition condition, Pageable pageable) {
-        Page<SteamGame> result = gameRepository.searchGames(condition, pageable);
-        return new PageDto<>(result.map(GameSummaryResponse::from));
+    public PageDto<GameSummaryResponse> searchGames(int page, int pageSize, GameSearchCondition condition) {
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+
+        String releaseStatus = condition.releaseStatus() == null
+                ? null : ReleaseStatus.fromValue(condition.releaseStatus().getKorean()).name();
+        String playerType = condition.playerType() == null
+                ? null : PlayerType.fromValue(condition.playerType().getKorean()).name();
+        List<String> genres = condition.genres();
+        int genreSize = CollectionUtils.isEmpty(genres) ? 0 : genres.size();
+
+        Page<Long> gameIds = this.gameRepository.findGameIdsWithAllFilter(
+                condition.keyword(),
+                condition.isMacSupported(),
+                condition.releasedAfter(),
+                releaseStatus,
+                playerType,
+                genres,
+                genreSize,
+                pageable
+        );
+
+        if (gameIds.isEmpty()) {
+            return new PageDto<>(Page.empty(pageable));
+        }
+
+        List<SteamGame> games = this.gameRepository.findSteamGameByIds(gameIds.getContent());
+
+        List<GameSummaryResponse> responses = games.stream()
+                .map(GameSummaryResponse::from)
+                .toList();
+
+        return new PageDto<>(new PageImpl<>(responses, pageable, gameIds.getTotalElements()));
     }
 
     @Transactional(readOnly = true)
@@ -234,13 +278,15 @@ public class GameService {
         }
 
         // 그 멤버들이 참여한 파티 중 내가 참여한 파티 제외
-        List<Long> friendPartyIds = partyMemberRepository.findPartyIdsByMembersExceptPartyIds(friendMemberIds, myPartyIds);
+        List<Long> friendPartyIds = partyMemberRepository.findPartyIdsByMembersExceptPartyIds(friendMemberIds,
+                myPartyIds);
         if (friendPartyIds.isEmpty()) {
             return List.of();
         }
 
         // 공개 + 완료 파티를 최신순으로 limit 만큼
-        List<Party> parties = partyRepository.findPublicCompletedPartiesIn(friendPartyIds, PageRequest.of(0, limit*4));
+        List<Party> parties = partyRepository.findPublicCompletedPartiesIn(friendPartyIds,
+                PageRequest.of(0, limit * 4));
         if (parties.isEmpty()) {
             return List.of();
         }
