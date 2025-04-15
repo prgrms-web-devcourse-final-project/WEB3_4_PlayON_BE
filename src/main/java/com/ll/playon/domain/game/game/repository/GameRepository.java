@@ -50,7 +50,7 @@ public interface GameRepository extends JpaRepository<SteamGame, Long>, GameRepo
                 JOIN sg.games game
                 WHERE game.id = g.id
                 AND sg.name IN :genres
-                GROUP BY sg.id
+                GROUP BY game.id
                 HAVING COUNT(sg.name) = :genreSize
             ))
             """)

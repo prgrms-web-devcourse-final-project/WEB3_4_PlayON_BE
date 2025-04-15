@@ -9,8 +9,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum PlayerType {
-    SINGLE("싱글 플레이"),
-    MULTI("멀티 플레이");
+    SINGLE("싱글플레이"),
+    MULTI("멀티플레이");
 
     private final String korean;
 
@@ -19,7 +19,7 @@ public enum PlayerType {
         return Arrays.stream(values())
                 .filter(playerType -> playerType.getKorean().equals(value))
                 .findFirst()
-                .orElseThrow(ErrorCode.TAG_VALUE_CONVERT_FAILED::throwServiceException);
+                .orElseThrow(ErrorCode.PLAYER_TYPE_CONVERT_FAILED::throwServiceException);
     }
 }
 

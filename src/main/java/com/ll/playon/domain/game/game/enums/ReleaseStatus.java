@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ReleaseStatus {
     RELEASED("발매"),
-    UNRELEASED("출시 예정");
+    UNRELEASED("출시예정");
 
     private final String korean;
 
@@ -19,7 +19,7 @@ public enum ReleaseStatus {
         return Arrays.stream(values())
                 .filter(releaseStatus -> releaseStatus.getKorean().equals(value))
                 .findFirst()
-                .orElseThrow(ErrorCode.TAG_VALUE_CONVERT_FAILED::throwServiceException);
+                .orElseThrow(ErrorCode.RELEASE_STATUS_CONVERT_FAILED::throwServiceException);
     }
 }
 
