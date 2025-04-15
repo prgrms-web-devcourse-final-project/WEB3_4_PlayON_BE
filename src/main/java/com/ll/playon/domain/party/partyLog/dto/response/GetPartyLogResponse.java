@@ -5,6 +5,8 @@ import java.util.Objects;
 import lombok.NonNull;
 
 public record GetPartyLogResponse(
+        long memberId,
+
         @NonNull
         String nickname,
 
@@ -21,6 +23,7 @@ public record GetPartyLogResponse(
 ) {
     public GetPartyLogResponse(PartyLog partyLog, String screenShotUrl) {
         this(
+                partyLog.getPartyMember().getMember().getId(),
                 partyLog.getPartyMember().getMember().getNickname(),
                 Objects.requireNonNullElse(partyLog.getPartyMember().getMember().getProfileImg(), ""),
                 partyLog.getComment(),
