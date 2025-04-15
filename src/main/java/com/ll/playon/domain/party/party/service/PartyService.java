@@ -305,7 +305,6 @@ public class PartyService {
                     .orElseThrow(ErrorCode.GAME_NOT_FOUND::throwServiceException);
         }
 
-        // TODO: 유니크 제약 조건 있으면 체크
         party.updateParty(putPartyRequest, game);
 
         this.partyTagService.updatePartyTags(party, putPartyRequest.tags());
@@ -315,7 +314,6 @@ public class PartyService {
 
     // 파티 삭제
     // AOP에 필요한 파라미터
-    // TODO: 추후 스케쥴링 처리
     @PartyOwnerOnly
     @Transactional
     public void deleteParty(Member actor, long partyId) {
@@ -400,7 +398,6 @@ public class PartyService {
         pendingMember.deleteWithUpdateTotal();
     }
 
-    // TODO: 알림 기능 구현 후 수정 예정
     // 파티 초대
     // AOP에 필요한 파라미터
     @PartyOwnerOnly
@@ -431,8 +428,6 @@ public class PartyService {
         }
 
         party.addPartyMember(PartyMemberMapper.of(invitedActor, PartyRole.INVITER));
-
-        // TODO: 알람?
     }
 
     // 스케쥴러에서 파티 삭제

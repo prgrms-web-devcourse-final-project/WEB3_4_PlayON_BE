@@ -5,7 +5,6 @@ import com.ll.playon.domain.party.party.dto.request.PostPartyRequest;
 import com.ll.playon.domain.party.party.entity.Party;
 
 public class PartyMapper {
-    // TODO : Game 엔티티 개설 시 변경
     public static Party of(PostPartyRequest postPartyRequest, SteamGame game) {
         return Party.builder()
                 .game(game)
