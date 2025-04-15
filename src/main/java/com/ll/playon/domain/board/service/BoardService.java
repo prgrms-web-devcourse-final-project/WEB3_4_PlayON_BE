@@ -128,12 +128,14 @@ public class BoardService {
         // 조회수 증가
         board.increaseHit();
 
-        MemberProfileDto authorProfile = memberRepository.getProfile(board.getAuthor().getId())
+        Member author = board.getAuthor(); // fetch join으로 가져옴
+
+        MemberProfileDto authorProfile = memberRepository.getProfile(board.getAuthor().getId()) // title까지 가져오는
                 .orElseGet(() -> MemberProfileDto.builder()
-                        .memberId(board.getAuthor().getId())
-                        .nickname(board.getAuthor().getNickname())
-                        .profileImg(board.getAuthor().getProfileImg())
-                        .title(board.getTitle())
+                        .memberId(author.getId())
+                        .nickname(author.getNickname() != null ? author.getNickname() : author.getUsername())
+                        .profileImg(author.getProfileImg())
+                        .title(null)
                         .build());
 
         return GetBoardDetailResponse.builder()
