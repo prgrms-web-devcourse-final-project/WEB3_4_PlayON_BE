@@ -86,7 +86,7 @@ public class SteamGame extends BaseTime {
             joinColumns = @JoinColumn(name = "steam_game_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"),
             indexes = {
-                    @Index(name = "idx_genre_id_game_id", columnList = "genre_id, steam_game_id")
+                    @Index(name = "idx_game_id_genre_id", columnList = "steam_game_id, genre_id")
             })
     @Builder.Default
     private List<SteamGenre> genres = new ArrayList<>();
