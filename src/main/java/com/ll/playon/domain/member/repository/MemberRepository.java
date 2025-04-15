@@ -21,11 +21,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             SELECT new com.ll.playon.domain.board.dto.MemberProfileDto(
                 m.id,
                 COALESCE(m.nickname, m.username),
-                img.imageUrl,
+                m.profileImg,
                 t.name
             )
             FROM Member m
-            LEFT JOIN Image img ON img.referenceId = m.id AND img.imageType = 'MEMBER'
             LEFT JOIN MemberTitle mt ON mt.member = m AND mt.isRepresentative = true
             LEFT JOIN Title t ON mt.title = t
             WHERE m.id = :memberId

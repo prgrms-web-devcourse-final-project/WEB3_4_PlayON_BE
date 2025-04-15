@@ -122,19 +122,19 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public GetBoardDetailResponse getBoardDetail(long boardId, Member actor) {
-        Board board = findBoardOrElseThrow(boardId);
+        Board board = boardRepository.findByIdWithAuthor(boardId)
+                .orElseThrow(ErrorCode.BOARD_NOT_FOUND::throwServiceException);
 
         // 조회수 증가
         board.increaseHit();
 
         MemberProfileDto authorProfile = memberRepository.getProfile(board.getAuthor().getId())
-                .orElse(MemberProfileDto.builder() // 방어차원..
+                .orElseGet(() -> MemberProfileDto.builder()
                         .memberId(board.getAuthor().getId())
                         .nickname(board.getAuthor().getNickname())
-                        .profileImg("")
-                        .title("")
-                        .build()
-                );
+                        .profileImg(board.getAuthor().getProfileImg())
+                        .title(board.getTitle())
+                        .build());
 
         return GetBoardDetailResponse.builder()
                 .boardId(board.getId())
