@@ -15,6 +15,10 @@ public class Notification extends BaseTime {
     @JoinColumn(name = "receiver_id", nullable = false)
     private Member receiver;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id")
+    private Member sender;
+
     @Column(nullable = false)
     private String content;
 
@@ -37,9 +41,10 @@ public class Notification extends BaseTime {
     }
 
     // 팩토리 메서드
-    public static Notification create(Member receiver, String content, NotificationType type, String redirectUrl) {
+    public static Notification create(Member receiver,Member sender , String content, NotificationType type, String redirectUrl) {
         return Notification.builder()
                 .receiver(receiver)
+                .sender(sender)
                 .content(content)
                 .type(type)
                 .redirectUrl(redirectUrl)
