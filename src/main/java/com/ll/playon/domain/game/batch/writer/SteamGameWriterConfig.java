@@ -1,8 +1,7 @@
 package com.ll.playon.domain.game.batch.writer;
 
 import com.ll.playon.domain.game.game.entity.SteamGame;
-import jakarta.persistence.EntityManagerFactory;
-import org.springframework.batch.item.database.JpaItemWriter;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,9 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class SteamGameWriterConfig {
 
     @Bean
-    public JpaItemWriter<SteamGame> steamGameWriter(EntityManagerFactory emf) {
-        JpaItemWriter<SteamGame> writer = new JpaItemWriter<>();
-        writer.setEntityManagerFactory(emf);
+    public ItemWriter<SteamGame> steamGameWriter(SteamGameJpaItemWriter writer) {
         return writer;
     }
 }

@@ -29,10 +29,10 @@ public class BatchJobController {
 
             JobExecution execution = jobLauncher.run(steamGameJob, jobParameters);
 
-            return ResponseEntity.ok("배치 실행됨. 상태: " + execution.getStatus());
+            return ResponseEntity.ok("✅ 배치 실행됨. 상태: " + execution.getStatus());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("배치 실행 실패: " + e.getMessage());
+                    .body("✅ 배치 실행 실패: " + e.getMessage());
         }
     }
 }
