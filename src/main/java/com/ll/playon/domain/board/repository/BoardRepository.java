@@ -24,7 +24,7 @@ public interface BoardRepository extends JpaRepository<Board, Long>{
             SELECT new com.ll.playon.domain.board.dto.response.GetBoardListResponse(
                 b.id,
                 COALESCE(m.nickname, m.username),
-                img.imageUrl,
+                m.profileImg,
                 t.name,
                 b.title,
                 SUBSTRING(b.content, 1, 100),
@@ -36,7 +36,6 @@ public interface BoardRepository extends JpaRepository<Board, Long>{
             )
             FROM Board b
             JOIN b.author m
-            LEFT JOIN Image img ON img.referenceId = m.id AND img.imageType = 'MEMBER'
             LEFT JOIN MemberTitle mt ON mt.member = m AND mt.isRepresentative = true
             LEFT JOIN Title t ON mt.title = t
             WHERE (:category IS NULL OR b.category = :category)
