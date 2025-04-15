@@ -98,13 +98,17 @@ public class NotificationService {
         // 읽지 않은 알림 개수 조회
         long unreadCount = notificationRepository.countByReceiverIdAndIsReadFalse(memberId);
 
-        // 회원의 닉네임 가져오기 (예시로 memberRepository를 통해 회원 정보 조회)
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다: " + memberId));
-        String senderNickname = member.getNickname();  // 발신자 닉네임
+        // 각 알림에 대해 senderNickname 포함한 NotificationResponse로 변환
+        List<NotificationResponse> latestResponses = latest.stream()
+                .map(notification -> {
+                    String senderNickname = notification.getSender() != null
+                            ? notification.getSender().getNickname()
+                            : null;
+                    return NotificationResponse.fromEntity(notification, senderNickname);
+                })
+                .toList();
 
-        // NotificationSummaryResponse 생성 시 senderNickname을 전달
-        return NotificationSummaryResponse.of(latest, unreadCount, senderNickname);
+        return NotificationSummaryResponse.of(latestResponses, unreadCount);
     }
 
 
