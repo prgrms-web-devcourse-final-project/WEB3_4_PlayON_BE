@@ -22,7 +22,7 @@ import lombok.Setter;
 @Entity
 @Table(
         indexes = {
-                @Index(name = "idx_party_tag_value_party_id", columnList = "tag_value, party_id"),
+                @Index(name = "idx_party_party_id_tag_value", columnList = "party_id, tag_value"),
         }
 )
 @Getter
