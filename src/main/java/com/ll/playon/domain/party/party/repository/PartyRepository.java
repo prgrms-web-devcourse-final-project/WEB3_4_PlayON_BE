@@ -29,19 +29,21 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             AND (:partyAt IS NULL OR p.partyAt >= :partyAt)
             AND (:excludedIds IS NULL OR p.id NOT IN :excludedIds)
             AND (:isMacSupported = false OR p.game.isMacSupported = :isMacSupported)
-            AND (:tagValues IS NULL OR p.id IN (
-                SELECT pt.party.id
+            AND (:tagValues IS NULL OR EXISTS (
+                SELECT 1
                 FROM PartyTag pt
-                WHERE pt.value IN :tagValues
+                WHERE pt.party.id = p.id
+                AND pt.value IN :tagValues
                 GROUP BY pt.party.id
                 HAVING COUNT(pt.value) = :tagSize
             ))
             AND (:appId IS NULL OR p.game.appid = :appId)
-            AND (:genres IS NULL OR p.game.appid IN (
-                SELECT sg.id
+            AND (:genres IS NULL OR EXISTS (
+                SELECT 1
                 FROM SteamGame sg
                 JOIN sg.genres g
-                WHERE g.name IN :genres
+                WHERE sg.id = p.game.appid
+                AND g.name IN :genres
                 GROUP BY sg.id
                 HAVING COUNT(g.name) = :genreSize
             ))
