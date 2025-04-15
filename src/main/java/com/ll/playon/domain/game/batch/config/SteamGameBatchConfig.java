@@ -1,5 +1,6 @@
 package com.ll.playon.domain.game.batch.config;
 
+import com.ll.playon.domain.game.batch.listener.SteamGameJobListener;
 import com.ll.playon.domain.game.batch.processor.SteamGameProcessor;
 import com.ll.playon.domain.game.game.dto.SteamCsvDto;
 import com.ll.playon.domain.game.game.entity.SteamGame;
@@ -24,10 +25,12 @@ public class SteamGameBatchConfig {
     private final FlatFileItemReader<SteamCsvDto> steamCsvReader;
     private final SteamGameProcessor steamGameProcessor;
     private final JpaItemWriter<SteamGame> steamGameWriter;
+    private final SteamGameJobListener steamGameJobListener;
 
     @Bean
     public Job steamGameJob() {
         return new JobBuilder("steamGameJob", jobRepository)
+                .listener(steamGameJobListener)
                 .start(steamGameStep())
                 .build();
     }

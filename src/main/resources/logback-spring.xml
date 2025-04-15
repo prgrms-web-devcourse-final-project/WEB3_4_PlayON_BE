@@ -36,6 +36,19 @@
             </encoder>
         </appender>
 
+        <!-- 배치 메모리 로그 파일 Appender -->
+        <appender name="MEMORY_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>./logs/batch/batchMemory.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>./logs/memory/memory-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>10MB</maxFileSize>
+                <maxHistory>30</maxHistory>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+
         <!-- ERROR 로그 파일 Appender -->
         <appender name="ERROR_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>${LOG_DIR}/${ERROR_LOG_FILE_NAME}.log</file>
@@ -97,6 +110,11 @@
         <appender-ref ref="LOG_FILE"/>
         <appender-ref ref="ERROR_LOG_FILE"/>
         <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- 배치 메모리 로거 -->
+    <logger name="memoryLogger" level="INFO" additivity="false">
+        <appender-ref ref="MEMORY_LOG_FILE"/>
     </logger>
 
     <!-- 파티룸 삭제 이벤트 관련 로거 -->
