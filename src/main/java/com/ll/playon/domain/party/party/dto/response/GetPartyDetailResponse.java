@@ -29,8 +29,6 @@ public record GetPartyDetailResponse(
 
         @NonNull
         List<PartyDetailTagDto> partyTags
-
-        // TODO: 채팅 룸 여기에?
 ) {
     public GetPartyDetailResponse(Party party, List<PartyDetailMemberDto> partyMembers,
                                   List<PartyDetailTagDto> partyTags) {

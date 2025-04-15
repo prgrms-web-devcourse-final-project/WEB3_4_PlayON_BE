@@ -26,7 +26,6 @@ public record PutPartyRequest(
         @NotNull(message = "최대 인원을 입력해주세요.") @Max(value = 50, message = "최대 인원은 50명까지 가능합니다.")
         Integer maximum,
 
-        // TODO : Game 엔티티 개설되면 변경
         @NotNull
         Long gameId,
 
