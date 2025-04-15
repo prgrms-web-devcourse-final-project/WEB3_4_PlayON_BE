@@ -11,6 +11,8 @@ import lombok.NonNull;
 public record GetPartyDetailResponse(
         long partyId,
 
+        long appId,
+
         @NotBlank
         String name,
 
@@ -34,6 +36,7 @@ public record GetPartyDetailResponse(
                                   List<PartyDetailTagDto> partyTags) {
         this(
                 party.getId(),
+                party.getGame().getAppid(),
                 party.getName(),
                 party.getDescription(),
                 party.getPartyAt(),
