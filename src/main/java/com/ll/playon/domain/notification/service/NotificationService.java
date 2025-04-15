@@ -40,7 +40,8 @@ public class NotificationService {
         String content = request.content() != null ? request.content() : type.getDefaultMessage();
         String redirectUrl = request.redirectUrl() != null ? request.redirectUrl() : type.getDefaultRedirectUrl();
 
-        Notification notification = Notification.create(receiver, content, type, redirectUrl);
+        Notification notification = Notification.create(receiver, sender, content, type, redirectUrl);
+
         notificationRepository.save(notification);
 
         String senderNickname = sender != null ? sender.getNickname() : null;
@@ -74,14 +75,14 @@ public class NotificationService {
      */
     @Transactional(readOnly = true)
     public List<NotificationResponse> getNotifications(Long memberId) {
-        Member sender = memberRepository.findById(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다: " + memberId));
-
-        String senderNickname = sender.getNickname();  // 발신자 닉네임 가져오기
-
         return notificationRepository.findByReceiverIdAndIsReadFalseOrderByCreatedAtDesc(memberId)
                 .stream()
-                .map(notification -> NotificationResponse.fromEntity(notification, senderNickname))  // senderNickname 전달
+                .map(notification -> {
+                    String senderNickname = notification.getSender() != null
+                            ? notification.getSender().getNickname()
+                            : null;
+                    return NotificationResponse.fromEntity(notification, senderNickname);
+                })
                 .toList();
     }
 
