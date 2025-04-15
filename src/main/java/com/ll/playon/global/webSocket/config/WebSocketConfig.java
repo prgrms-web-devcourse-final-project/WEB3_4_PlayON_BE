@@ -23,7 +23,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setAllowedOriginPatterns("*")
                 .addInterceptors(jwtHandshakeInterceptor)
                 .setHandshakeHandler(customHandshakeHandler)
-                .addInterceptors(jwtHandshakeInterceptor)
                 .withSockJS()   // SockJs Fallback
         ;
     }
