@@ -120,7 +120,7 @@ public class BoardService {
         applicationEventPublisher.publishEvent(new ImageDeleteEvent(board.getId(), ImageType.BOARD));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public GetBoardDetailResponse getBoardDetail(long boardId, Member actor) {
         Board board = boardRepository.findByIdWithAuthor(boardId)
                 .orElseThrow(ErrorCode.BOARD_NOT_FOUND::throwServiceException);
