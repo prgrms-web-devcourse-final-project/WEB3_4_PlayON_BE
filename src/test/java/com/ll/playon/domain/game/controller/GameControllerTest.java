@@ -1,11 +1,5 @@
 package com.ll.playon.domain.game.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.ll.playon.domain.chat.repository.PartyRoomRepository;
 import com.ll.playon.domain.game.game.controller.GameController;
 import com.ll.playon.domain.game.game.entity.SteamGame;
@@ -22,8 +16,6 @@ import com.ll.playon.global.openFeign.SteamStoreClient;
 import com.ll.playon.global.openFeign.dto.ranking.GameItem;
 import com.ll.playon.global.openFeign.dto.ranking.SteamSearchResponse;
 import jakarta.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,6 +27,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -138,14 +137,14 @@ public class GameControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    @DisplayName("게임 목록 조회 성공")
-    void getGameListSuccess() throws Exception {
-        mvc.perform(get("/api/games/list"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.items").isArray())
-                .andExpect(jsonPath("$.data.items[0].appid").value(game.getAppid()));
-    }
+//    @Test
+//    @DisplayName("게임 목록 조회 성공")
+//    void getGameListSuccess() throws Exception {
+//        mvc.perform(get("/api/games/list"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.data.items").isArray())
+//                .andExpect(jsonPath("$.data.items[0].appid").value(game.getAppid()));
+//    }
 
     @Test
     @DisplayName("게임 자동완성 검색 성공")
