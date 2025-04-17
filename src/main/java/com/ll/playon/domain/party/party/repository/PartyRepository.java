@@ -190,6 +190,21 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
     List<Party> findRecentCompletedPartiesWithLogs(@Param("partyStatus") PartyStatus partyStatus, Pageable pageable);
 
     @Query("""
+            SELECT p.id
+            FROM Party p
+            WHERE p.publicFlag = true
+            AND p.partyStatus = :partyStatus
+            AND EXISTS (
+            SELECT 1
+                FROM PartyMember pm
+                WHERE pm.party = p
+                AND pm.partyLog IS NOT NULL
+            )
+            ORDER BY p.endedAt DESC
+            """)
+    List<Long> findRecentCompletedPartiesWithLogsForMain(@Param("partyStatus") PartyStatus partyStatus, Pageable pageable);
+
+    @Query("""
             SELECT p
             FROM Party p
             WHERE p.partyAt < :deadline

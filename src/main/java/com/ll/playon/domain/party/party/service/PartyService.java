@@ -243,22 +243,18 @@ public class PartyService {
     public GetPartyMainResponse getCompletedPartyWithLogMain(int limit) {
         Pageable pageable = PageRequest.of(0, limit);
 
-        List<Party> completedParties = this.partyRepository.findRecentCompletedPartiesWithLogs(
+        List<Long> completedParties = this.partyRepository.findRecentCompletedPartiesWithLogsForMain(
                 PartyStatus.COMPLETED, pageable);
 
         if (completedParties.isEmpty()) {
             return new GetPartyMainResponse(Collections.emptyList());
         }
 
-        List<Long> partyIds = completedParties.stream()
-                .map(Party::getId)
-                .toList();
-
         return new GetPartyMainResponse(
                 PartyMergeUtils.mergePartyWithJoinData(
-                        completedParties,
-                        this.partyRepository.findPartyTagsByPartyIds(partyIds),
-                        this.partyRepository.findPartyMembersByPartyIds(partyIds)
+                        this.partyRepository.findPartiesByIds(completedParties),
+                        this.partyRepository.findPartyTagsByPartyIds(completedParties),
+                        this.partyRepository.findPartyMembersByPartyIds(completedParties)
                 ));
     }
 
