@@ -3,6 +3,7 @@ package com.ll.playon.domain.party.party.dto.response;
 import com.ll.playon.domain.party.party.dto.PartyDetailMemberDto;
 import com.ll.playon.domain.party.party.dto.PartyDetailTagDto;
 import com.ll.playon.domain.party.party.entity.Party;
+import com.ll.playon.domain.party.party.entity.PartyMember;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,13 +25,15 @@ public record GetPartyDetailResponse(
 
         long hit,
 
+        long ownerId,
+
         @NonNull
         List<PartyDetailMemberDto> partyMembers,
 
         @NonNull
         List<PartyDetailTagDto> partyTags
 ) {
-    public GetPartyDetailResponse(Party party, List<PartyDetailMemberDto> partyMembers,
+    public GetPartyDetailResponse(Party party, PartyMember owner, List<PartyDetailMemberDto> partyMembers,
                                   List<PartyDetailTagDto> partyTags) {
         this(
                 party.getId(),
@@ -39,6 +42,7 @@ public record GetPartyDetailResponse(
                 party.getDescription(),
                 party.getPartyAt(),
                 party.getHit(),
+                owner.getMember().getId(),
                 partyMembers,
                 partyTags
         );
