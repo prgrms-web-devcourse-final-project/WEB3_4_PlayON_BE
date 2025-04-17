@@ -348,18 +348,18 @@ public class MemberService {
         return this.getRecentActiveParty(actor);
     }
 
-    // 내가 파티 로그를 작성한 적 있는 종료된 파티들을 최근에 끝난 순으로 조회
+    // 내가 참여했던 파티들을 최근에 끝난 순으로 조회
     @Transactional(readOnly = true)
     public Page<GetPartyResponse> getPartiesLoggedByMe(Member actor, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize);
-        Page<Party> partiesLoggedByMe = this.partyRepository.findMembersRecentCompletedPartiesWithLogs(
+        Page<Party> recentCompletedParties = this.partyRepository.findMembersRecentCompletedParties(
                 actor.getId(), PartyStatus.COMPLETED, pageable);
 
-        if (partiesLoggedByMe.isEmpty()) {
+        if (recentCompletedParties.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
 
-        return this.getLoggedPartiesByMembers(partiesLoggedByMe, pageable);
+        return this.getCompletedPartiesByMembers(recentCompletedParties, pageable);
     }
 
     // 타 유저 참여중인 파티 조회
@@ -370,20 +370,20 @@ public class MemberService {
         return this.getRecentActiveParty(actor);
     }
 
-    // 유저가 파티 로그를 작성한 적 있는 종료된 파티들을 최근에 끝난 순으로 조회
+    // 타 유저가 참여햇던 파티들을 최근에 끝난 순으로 조회
     @Transactional(readOnly = true)
     public Page<GetPartyResponse> getPartiesLoggedByMember(long memberId, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize);
         Member actor = this.getActor(memberId);
 
-        Page<Party> partiesLoggedByMember = this.partyRepository.findMembersRecentCompletedPartiesWithLogs(
+        Page<Party> recentCompletedParties = this.partyRepository.findMembersRecentCompletedParties(
                 actor.getId(), PartyStatus.COMPLETED, pageable);
 
-        if (partiesLoggedByMember.isEmpty()) {
+        if (recentCompletedParties.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
 
-        return getLoggedPartiesByMembers(partiesLoggedByMember, pageable);
+        return getCompletedPartiesByMembers(recentCompletedParties, pageable);
     }
 
     private List<GameListResponse> toGameListResponse(List<Long> appIds) {
@@ -425,20 +425,20 @@ public class MemberService {
     }
 
     // 최근 유저에 의해 로그가 작성된 종료된 파티 조회
-    private PageImpl<GetPartyResponse> getLoggedPartiesByMembers(Page<Party> partiesLoggedByMe, Pageable pageable) {
-        List<Long> partyIdsLoggedByMe = partiesLoggedByMe.stream()
+    private PageImpl<GetPartyResponse> getCompletedPartiesByMembers(Page<Party> completedParties, Pageable pageable) {
+        List<Long> completedPartyIds = completedParties.stream()
                 .map(Party::getId)
                 .toList();
 
         List<GetPartyResponse> mergedList = PartyMergeUtils.mergePartyWithJoinData(
-                partiesLoggedByMe.getContent(),
-                this.partyRepository.findPartyTagsByPartyIds(partyIdsLoggedByMe),
-                this.partyRepository.findPartyMembersByPartyIds(partyIdsLoggedByMe)
+                completedParties.getContent(),
+                this.partyRepository.findPartyTagsByPartyIds(completedPartyIds),
+                this.partyRepository.findPartyMembersByPartyIds(completedPartyIds)
         );
 
         return new PageImpl<>(
                 mergedList,
                 pageable,
-                partiesLoggedByMe.getTotalElements());
+                completedParties.getTotalElements());
     }
 }

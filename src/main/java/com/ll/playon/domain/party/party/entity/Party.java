@@ -37,7 +37,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
                 @Index(name = "idx_party_status_public_total_max_party_at_created", columnList = "party_status, is_public, total, maximum, party_at, created_at"),
                 @Index(name = "idx_party_public_status_ended_created", columnList = "is_public, party_status, ended_at, created_at"),
                 @Index(name = "idx_party_created_game", columnList = "created_at, game_id"),
-                @Index(name = "idx_party_party_at_status_ended", columnList = "party_at, party_status, ended_at")
+                @Index(name = "idx_party_party_at_status_ended", columnList = "party_at, party_status, ended_at"),
+                @Index(name = "idx_party_status_party_at", columnList = "party_status, party_at")
         }
 )
 @Getter
