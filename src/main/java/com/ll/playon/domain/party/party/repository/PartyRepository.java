@@ -159,6 +159,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             WHERE pm.member.id = :memberId
             AND pm.partyRole IN :partyRoles
             AND pm.party.partyStatus != :partyStatus
+            ORDER BY pm.party.partyAt ASC
             """)
     List<Party> findMembersActiveParties(@Param("memberId") long memberId,
                                          @Param("partyRoles") List<PartyRole> partyRoles,
@@ -169,6 +170,7 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             FROM PartyMember pm
             JOIN pm.party p
             WHERE pm.member.id = :memberId
+            AND (pm.partyRole = 'OWNER' OR pm.partyRole = 'MEMBER')
             AND p.partyStatus = :partyStatus
             ORDER BY p.endedAt DESC
             """)
