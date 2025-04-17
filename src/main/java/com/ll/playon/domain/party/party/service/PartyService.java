@@ -286,10 +286,15 @@ public class PartyService {
                 .map(PartyDetailTagDto::new)
                 .toList();
 
+        PartyMember owner = partyMembers.stream()
+                .filter(pm -> pm.getPartyRole().equals(PartyRole.OWNER))
+                .findFirst()
+                .orElseThrow(ErrorCode.PARTY_OWNER_NOT_FOUND::throwServiceException);
+
         // 조회수 증가
         party.increaseHit();
 
-        return new GetPartyDetailResponse(party, partyDetailMemberDtos, partyDetailTagDtos);
+        return new GetPartyDetailResponse(party, owner, partyDetailMemberDtos, partyDetailTagDtos);
     }
 
     // 파티 수정
