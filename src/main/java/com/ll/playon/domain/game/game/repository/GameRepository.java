@@ -53,6 +53,7 @@ public interface GameRepository extends JpaRepository<SteamGame, Long>, GameRepo
                 GROUP BY game.id
                 HAVING COUNT(sg.name) = :genreSize
             ))
+            ORDER BY g.id ASC
             """)
     Page<Long> findGameIdsWithAllFilter(
             @Param("keyword") String keyword,
