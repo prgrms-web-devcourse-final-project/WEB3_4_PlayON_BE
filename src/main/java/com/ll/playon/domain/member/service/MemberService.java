@@ -304,12 +304,6 @@ public class MemberService {
     public List<GameListResponse> getOwnedGamesByMember(int count, Member actor) {
 
         List<Long> ownedGames = memberSteamDataRepository.findAppIdsByMemberId(actor.getId(), PageRequest.of(0, count));
-
-        if (ownedGames.isEmpty()) {
-            // 보유 게임이 없으면 임의의 게임 필요
-            return toGameListResponse(List.of(730L, 578080L, 359550L));
-        }
-
         return toGameListResponse(ownedGames);
     }
 
