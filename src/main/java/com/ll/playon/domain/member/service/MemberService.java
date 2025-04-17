@@ -424,7 +424,7 @@ public class MemberService {
                 ));
     }
 
-    // 최근 유저에 의해 로그가 작성된 종료된 파티 조회
+    // 유저가 참여했던 파티들을 최근에 끝난 순으로 조회
     private PageImpl<GetPartyResponse> getCompletedPartiesByMembers(Page<Party> completedParties, Pageable pageable) {
         List<Long> completedPartyIds = completedParties.stream()
                 .map(Party::getId)
