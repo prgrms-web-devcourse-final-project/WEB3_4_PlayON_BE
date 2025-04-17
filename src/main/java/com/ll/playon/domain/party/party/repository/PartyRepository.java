@@ -158,7 +158,6 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             FROM PartyMember pm
             WHERE pm.member.id = :memberId
             AND pm.partyRole IN :partyRoles
-            AND pm.party.publicFlag = true
             AND pm.party.partyStatus != :partyStatus
             """)
     List<Party> findMembersActiveParties(@Param("memberId") long memberId,
@@ -170,14 +169,12 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
             FROM PartyMember pm
             JOIN pm.party p
             WHERE pm.member.id = :memberId
-            AND p.publicFlag = true
             AND p.partyStatus = :partyStatus
-            AND pm.partyLog IS NOT NULL
             ORDER BY p.endedAt DESC
             """)
-    Page<Party> findMembersRecentCompletedPartiesWithLogs(@Param("memberId") Long memberId,
-                                                          @Param("partyStatus") PartyStatus partyStatus,
-                                                          Pageable pageable);
+    Page<Party> findMembersRecentCompletedParties(@Param("memberId") Long memberId,
+                                                  @Param("partyStatus") PartyStatus partyStatus,
+                                                  Pageable pageable);
 
     @Query("""
             SELECT pm.party
