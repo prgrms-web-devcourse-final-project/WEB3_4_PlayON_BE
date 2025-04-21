@@ -23,6 +23,8 @@ public record GetPartyDetailResponse(
         @NonNull
         LocalDateTime partyAt,
 
+        boolean isPublic,
+
         long hit,
 
         long ownerId,
@@ -41,6 +43,7 @@ public record GetPartyDetailResponse(
                 party.getName(),
                 party.getDescription(),
                 party.getPartyAt(),
+                party.isPublicFlag(),
                 party.getHit(),
                 owner.getMember().getId(),
                 partyMembers,
