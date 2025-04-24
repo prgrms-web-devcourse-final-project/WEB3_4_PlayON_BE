@@ -64,8 +64,8 @@ public class GuildJoinRequestService {
         }
 
         boolean isAuthorized = joinRequest.getGuild().getMembers().stream()
-                .anyMatch(gm -> gm.getMember().getId().equals(approver.getId())
-                        && (gm.getGuildRole() == GuildRole.LEADER || gm.getGuildRole() == GuildRole.MANAGER));
+                .anyMatch(gm -> gm.getMember().getId().equals(approver.getId()) &&
+                        (gm.getGuildRole() == GuildRole.LEADER || gm.getGuildRole() == GuildRole.MANAGER));
 
         if (!isAuthorized) {
             throw ErrorCode.GUILD_APPROVAL_UNAUTHORIZED.throwServiceException();
@@ -79,16 +79,20 @@ public class GuildJoinRequestService {
         joinRequest.setApprovedBy(approver);
 
         if (targetState == ApprovalState.APPROVED) {
-            int currentMembers = (int) guildMemberRepository.countByGuildId(joinRequest.getGuild().getId());
-            if (currentMembers >= joinRequest.getGuild().getMaxMembers()) {
+            Guild lockedGuild = guildRepository.findByIdForUpdate(joinRequest.getGuild().getId())
+                    .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
+
+            int currentMembers = (int) guildMemberRepository.countByGuildId(lockedGuild.getId());
+            if (currentMembers >= lockedGuild.getMaxMembers()) {
                 throw ErrorCode.GUILD_MEMBER_LIMIT_EXCEEDED.throwServiceException();
             }
 
             GuildMember newMember = GuildMember.builder()
-                    .guild(joinRequest.getGuild())
+                    .guild(lockedGuild)
                     .member(joinRequest.getMember())
                     .guildRole(GuildRole.MEMBER)
                     .build();
+
             guildMemberRepository.save(newMember);
         }
     }
@@ -99,8 +103,8 @@ public class GuildJoinRequestService {
                 .orElseThrow(ErrorCode.GUILD_NOT_FOUND::throwServiceException);
 
         boolean isAuthorized = guild.getMembers().stream()
-                .anyMatch(gm -> gm.getMember().getId().equals(viewer.getId())
-                        && (gm.getGuildRole() == GuildRole.LEADER || gm.getGuildRole() == GuildRole.MANAGER));
+                .anyMatch(gm -> gm.getMember().getId().equals(viewer.getId()) &&
+                        (gm.getGuildRole() == GuildRole.LEADER || gm.getGuildRole() == GuildRole.MANAGER));
 
         if (!isAuthorized) {
             throw ErrorCode.GUILD_APPROVAL_UNAUTHORIZED.throwServiceException();

@@ -1,9 +1,11 @@
 package com.ll.playon.domain.guild.guild.repository;
 
 import com.ll.playon.domain.guild.guild.entity.Guild;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -24,4 +26,8 @@ public interface GuildRepository extends JpaRepository<Guild, Long>, GuildReposi
 
     @Query("SELECT g FROM Guild g WHERE g.game.appid = :appid AND g.isDeleted = false AND g.isPublic = true ORDER BY g.id DESC")
     List<Guild> findTopNByGameAppid(@Param("appid") Long appid, Pageable pageable);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT g FROM Guild g WHERE g.id=:id")
+    Optional<Guild> findByIdForUpdate(@Param("id") Long id);
 }
